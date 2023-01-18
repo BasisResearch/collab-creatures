@@ -1,7 +1,8 @@
 import numpy as np
 import pandas as pd
 
-import foraging_toolkit as ft
+from collab import foraging_toolkit as ft
+
 
 # from utils import generate_grid
 
@@ -42,16 +43,11 @@ def rewards_to_trace(
         if len(rewt) > 0:
             for re in range(len(rewt)):
                 trace["trace"] += rewards_trace(
-                    np.sqrt(
-                        (rewt["x"].iloc[re] - trace["x"]) ** 2
-                        + (rewt["y"].iloc[re] - trace["y"]) ** 2
-                    ),
+                    np.sqrt((rewt["x"].iloc[re] - trace["x"]) ** 2 + (rewt["y"].iloc[re] - trace["y"]) ** 2),
                     rewards_decay,
                 )
 
-            trace["trace_standardized"] = (
-                trace["trace"] - trace["trace"].mean()
-            ) / trace["trace"].std()
+            trace["trace_standardized"] = (trace["trace"] - trace["trace"].mean()) / trace["trace"].std()
 
             trace["time"] = trace["time"] + time_shift
 

@@ -28,18 +28,8 @@ def object_from_data(birdsDF, rewardsDF):
     for b in range(len(sim.birds)):
         step_maxes.append(
             max(
-                max(
-                    [
-                        abs(sim.birds[b]["x"][t + 1] - sim.birds[b]["x"][t])
-                        for t in range(sim.num_frames - 1)
-                    ]
-                ),
-                max(
-                    [
-                        abs(sim.birds[b]["y"][t + 1] - sim.birds[b]["y"][t])
-                        for t in range(sim.num_frames - 1)
-                    ]
-                ),
+                max([abs(sim.birds[b]["x"][t + 1] - sim.birds[b]["x"][t]) for t in range(sim.num_frames - 1)]),
+                max([abs(sim.birds[b]["y"][t + 1] - sim.birds[b]["y"][t]) for t in range(sim.num_frames - 1)]),
             )
         )
 

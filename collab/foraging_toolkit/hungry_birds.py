@@ -13,7 +13,7 @@ from itertools import product
 import pandas as pd
 import numpy as np
 
-import foraging_toolkit as ft
+# import foraging_toolkit as ft
 
 
 def add_hungry_birds(
@@ -55,9 +55,7 @@ def add_hungry_birds(
             end=t + 1,
         )["visibility"]
 
-        sim.rewards = ft.update_rewards(
-            sim, sim.rewards, new_birds, start=t, end=t + 1
-        )["rewards"]
+        sim.rewards = ft.update_rewards(sim, sim.rewards, new_birds, start=t, end=t + 1)["rewards"]
 
         sim.traces = ft.rewards_to_trace(
             sim.rewards,
@@ -106,9 +104,7 @@ def add_hungry_birds(
     sim.traces = tr["traces"]
     sim.tracesDF = pd.concat(sim.traces)
 
-    vis = ft.construct_visibility(
-        sim.birds, sim.grid_size, visibility_range=visibility_range
-    )
+    vis = ft.construct_visibility(sim.birds, sim.grid_size, visibility_range=visibility_range)
 
     sim.visibility = vis["visibility"]
     sim.visibilityDF = vis["visibilityDF"]

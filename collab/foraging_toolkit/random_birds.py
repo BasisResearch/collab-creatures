@@ -2,7 +2,8 @@ import sys
 
 sys.path.insert(0, "..")
 
-import foraging_toolkit as ft
+from collab import foraging_toolkit as ft
+
 
 import pandas as pd
 import numpy as np
@@ -169,8 +170,7 @@ class Birds:
 
             if size_warning_flag:
                 warnings.warn(
-                    "Warning: bird movements truncated to grid size. "
-                    "Try running again, or increase grid size.",
+                    "Warning: bird movements truncated to grid size. " "Try running again, or increase grid size.",
                     UserWarning,
                 )
 

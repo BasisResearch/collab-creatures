@@ -13,7 +13,7 @@ from itertools import product
 import pandas as pd
 import numpy as np
 
-import foraging_toolkit as ft
+# import foraging_toolkit as ft
 
 
 def add_follower_birds(

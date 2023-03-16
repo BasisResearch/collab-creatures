@@ -14,6 +14,7 @@ from scipy import stats
 import figures 
 import gridworld_utils as util
 from importlib import reload
+import time
 reload(util)
 reload(figures)
 
@@ -21,6 +22,8 @@ figures.setup_fig()
 plt.close('all')
 plot_initial_world = False
 plot_T = False
+
+starttime = time.time()
 
 # ************** CREATE ENVIRONMENT ***************************
 
@@ -62,19 +65,25 @@ N_food = 2
 phi_food = np.zeros([N_states, 1]) 
 list_food_loc_id = np.random.permutation(np.arange(N_states))[:N_food] # randomly choose K locations to place new food 
 phi_food[list_food_loc_id] = 1 
-
 food_2d_locs = np.reshape(phi_food, [edge_size,edge_size])
+
+N_predators = 4
+phi_predator = np.zeros([N_states, 1]) 
+list_predator_loc_id = np.random.permutation(np.arange(N_states))[:N_predators] # randomly choose K locations to place new food 
+phi_predator[list_predator_loc_id] = 1
+predator_2d_locs = np.reshape(phi_predator, [edge_size,edge_size])
 
 if plot_initial_world:
     fig_env, ax_env = plt.subplots()
     plt.imshow(food_2d_locs)
+    plt.imshow(food_2d_locs + predator_2d_locs)
 
 # food_loc_id = loc_id_arr[np.random.randint(edge_size**2)] # pick a random loc_id
 # food_loc_id = edge_size**2 - 1 #put the food as far out as possible
 
 
 # for i in range(N_food):
-#     x, y = util.state_to_2Dloc(list_food_loc_id[i], edge_size)
+#     x, y = util.loc1Dto2D(list_food_loc_id[i], edge_size)
 #     ax_env.plot(x, y, 'ro')
 
 
@@ -82,8 +91,8 @@ if plot_initial_world:
 N_agents = 9
 N_timesteps = 50
 list_agents = []
-arr_loc_id_allagents = np.zeros(N_agents)
-phi_agents = np.zeros([N_states, 1]) # locations occupied by agents 
+arr_loc_id_allagents = np.zeros(N_agents, dtype=int) # array containing location of each agent (index is agent ID)
+phi_agents = np.zeros([N_states, 1]) # # one-hot vector indicating which locations are occupied by agents (index is loc ID)
 
 for i in range(N_agents):
     new_agent = TreeWorld.SimpleAgent(T_prob, N_states, N_timesteps=N_timesteps, discount_factor=0.8)
@@ -93,7 +102,7 @@ for i in range(N_agents):
     new_agent.state_trajectory[0] = current_loc_id
     
     # update which locations are occupied by agents 
-    arr_loc_id_allagents[i] = current_loc_id   # array of state IDs
+    arr_loc_id_allagents[i] = current_loc_id   # list
     phi_agents[current_loc_id] = 1                    # one-hot vector
     
     
@@ -109,24 +118,43 @@ for t in range(N_timesteps-1):
         # sum_weighted_features = agent.c.T @ features 
         prev_state = int(agent.state_trajectory[t])
         c_food = 1
+        c_predator = -2
         c_neighbors = -1
         
         
         phi_agents[prev_state] = 0 # move out of previous location
-
-        agent.phi_neighbors = phi_agents  # assume this agent knows locations of all other agents
+        agent.phi_neighbors = phi_agents  # assume this agent knows the locations of all other agents
         
-        sum_weighted_features = c_food * phi_food + c_neighbors * agent.phi_neighbors
+        # sum_weighted_features = c_food * phi_food + c_neighbors * agent.phi_neighbors
         
+        # compute weighted sum of features
+        xloc_allagents, yloc_allagents = util.loc1Dto2D(arr_loc_id_allagents, edge_size)
+        xloc_self, yloc_self = util.loc1Dto2D(prev_state, edge_size)
+        social_reward_map = agent.compute_reward_otheragents(xloc_allagents, yloc_allagents, xloc_self, yloc_self, edge_size)
+        social_reward_arr = np.reshape(social_reward_map.T, (N_states, 1))
+        sum_weighted_features = c_food * phi_food  + c_predator * phi_predator #+ c_neighbors * social_reward_arr 
+        
+        # compute value function
         value = agent.SR @ sum_weighted_features         # (N_states, 1) vector
         
-        next_state = np.argmax(value * T_eligible[:, prev_state, np.newaxis]) # TO DO: change this to sampling probabilistically 
+        # select next action using the value and eligible states 
+        eligible_states_id = np.nonzero(T_eligible[:, prev_state])[0]       # state IDs of eligible states
+        value_eligible = value[eligible_states_id]
+        next_state = eligible_states_id[np.argmax(value_eligible)]
+        
+        # # This policy only works if the value vector is non-negative 
+        # next_state = np.argmax(value * T_eligible[:, prev_state, np.newaxis]) # TO DO: change this to sampling probabilistically 
         
         agent.state_trajectory[t+1] = next_state        # scalar 
         agent.value_trajectory[:, t+1] = value.flatten()          # (N_states, 1) vector
         
         phi_agents[next_state] = 1                     # move into new location 
+        arr_loc_id_allagents[i] = next_state
     
+endtime = time.time()
+for i, agent in enumerate(list_agents):
+    print(agent.state_trajectory)
+print('simulation run time = ' + str(endtime - starttime))
 
 #%% plot social reward map for one agent
 # fig, ax = plt.subplots()
@@ -183,10 +211,10 @@ for  i, agent in enumerate(list_agents):
 def update_plot(frame, list_agents, edge_size): #, list_food_loc_id, edge_size):
     for  i, agent in enumerate(list_agents):
         state = int(agent.state_trajectory[frame])
-        x, y = util.state_to_2Dloc(state, edge_size)
+        x, y = util.loc1Dto2D(state, edge_size)
         list_plot_agents[i].set_data(x, y)
         
-    # x_food, y_food = util.state_to_2Dloc(list_food_loc_id, edge_size)
+    # x_food, y_food = util.loc1Dto2D(list_food_loc_id, edge_size)
     # plot_food.set_data(x_food, y_food)
     
     # value function of one agent 

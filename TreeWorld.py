@@ -37,9 +37,12 @@ class SimpleAgent(object):
         
         Example calling from main script: 
         ------
-        xloc_allagents, yloc_allagents = loc1Dto2D(arr_loc_id_allagents)
-        xloc_self, yloc_selc = loc1Dto2D(arr_loc_id_allagents)
+        xloc_allagents, yloc_allagents = util.loc1Dto2D(arr_loc_id_allagents, edge_size)
+        xloc_self, yloc_self = util.loc1Dto2D(prev_state, edge_size)
         social_reward_map = agent.compute_reward_otheragents(xloc_allagents, yloc_allagents, xloc_self, yloc_self, edge_size)
+        social_reward_arr = np.reshape(social_reward_map, (N_states, 1))
+        sum_weighted_features = c_food * phi_food + c_neighbors * social_reward_arr
+        
         '''
         reward_map = np.zeros([edge_size, edge_size])
         
@@ -49,7 +52,7 @@ class SimpleAgent(object):
             x = xloc_neighbors[k] 
             y = yloc_neighbors[k]
             # create a donut-shaped reward field centered on the neighbor
-            reward_map[x-1 : x+1 , y-1 : y+1] = 1  
+            reward_map[x-1 : x+2 , y-1 : y+2] = 1  
             reward_map[x + 0, y + 0] = -1    # give the neighbor some personal space
             
         return reward_map

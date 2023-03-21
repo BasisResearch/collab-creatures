@@ -17,7 +17,7 @@ def create_2Dgrid(edge_size):
   return x_flat, y_flat, stateID_arr
 
 # Given a stateID and 2D grid dimensions return scalar x and y coordinates 
-def loc1Dto2D(locs_arr, edge_size):
+def loc1Dto2D(loc_1d_arr, edge_size):
     '''
     Parameters
     ----------
@@ -31,8 +31,8 @@ def loc1Dto2D(locs_arr, edge_size):
     x_flat = np.mod(stateID_arr, edge_size)
     x_grid = np.reshape(x_flat,[edge_size,edge_size])
     y_flat = np.reshape(x_grid.T, [edge_size**2])
-    x_arr = x_flat[locs_arr]
-    y_arr = y_flat[locs_arr]
+    x_arr = x_flat[loc_1d_arr]
+    y_arr = y_flat[loc_1d_arr]
     return x_arr, y_arr
 
 

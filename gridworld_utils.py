@@ -42,3 +42,14 @@ def plot_state_values_on_grid(state_values, edge_size):
   fig, ax = plt.subplots()
   im = plt.imshow(state_values_grid)
   return fig, ax, im
+
+def center_of_mass(xlocs, ylocs):
+    # assume xlocs and ylocs are an array of x and y coordinates of each point, respectively
+    x_c = np.sum(xlocs) / len(xlocs)
+    y_c = np.sum(ylocs) / len(ylocs)
+    return x_c, y_c
+
+# def dist_to_point_heatmap(xloc, yloc): 
+#     # compute each location's distance from a point of interest 
+    
+#     return xdist_arr, ydist_arr

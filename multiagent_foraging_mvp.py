@@ -135,41 +135,50 @@ for t in range(N_timesteps-1):
     for i, agent in enumerate(list_agents):
         # sum_weighted_features = agent.c.T @ features 
         prev_state = int(agent.state_trajectory[t])
-        c_food = 2
-        c_predator = 0
-        c_otheragents = 0.5
-        
+        c_food = 1
+        c_group = 1
+        c_otheragents = 1
+        doProbabilisticPolicy = False
         
         phi_agents[prev_state] = 0 # move out of previous location
         agent.phi_neighbors = phi_agents  # assume this agent knows the locations of all other agents
         
         # sum_weighted_features = c_food * f_food + c_otheragents * agent.phi_neighbors
         
-        # compute weighted sum of features
+        # REWARD FUNCTION: compute weighted sum of features
         xloc_allagents, yloc_allagents = util.loc1Dto2D(arr_loc_id_allagents, edge_size)
         xloc_self, yloc_self = util.loc1Dto2D(prev_state, edge_size)
-        f_otheragents_2d = agent.compute_reward_otheragents(xloc_allagents, yloc_allagents, xloc_self, yloc_self, edge_size)
+        xloc_otheragents = np.delete(xloc_allagents, i)  # remove this agent's own location from the list 
+        yloc_otheragents = np.delete(yloc_allagents, i) # 
+        f_otheragents_2d = agent.reward_function_otheragents(xloc_otheragents, yloc_otheragents, xloc_self, yloc_self, edge_size)
         f_otheragents_1d = np.reshape(f_otheragents_2d, (N_states, 1))
-        sum_weighted_features = c_food * f_food   + c_otheragents * f_otheragents_1d
+        xloc_centerofmass, yloc_centerofmass = util.center_of_mass(xloc_otheragents, yloc_otheragents) 
+        #compute distance from center of mass of each agent. 
+        f_groupcenterofmass = np.zeros([edge_size, edge_size])
+        f_groupcenterofmass[int(yloc_centerofmass), int(xloc_centerofmass)] = 0.5 
+        f_groupcenterofmass = np.reshape(f_groupcenterofmass, (N_states, 1))
+        
+        # sum_weighted_features = c_food * f_food   + c_otheragents * f_otheragents_1d  
+        sum_weighted_features = c_food * f_food  + c_otheragents * f_otheragents_1d    + c_group * f_groupcenterofmass
         # sum_weighted_features = c_food * f_food  + c_predator * phi_predator #+ c_otheragents * f_otheragents_1d
         
-        # compute value function
+        # VALUE FUNCITON 
         value = agent.SR @ sum_weighted_features         # (N_states, 1) vector
         
-        # select next action using the value and eligible states 
+        # POLICY: select next action using the value and eligible states 
         # eligible states are those specified by the transition matrix and states not occupied by other agents
         eligible_states_id = np.nonzero(T_eligible[:, prev_state] * np.logical_not(phi_agents.flatten()))[0]       # state IDs of eligible states
         value_eligible = value[eligible_states_id].flatten()   # value of eligible states plus some noise 
-        # value_eligible += 0.01 * np.random.randn(value_eligible.shape[0]) # add some noise 
         
-        # value_eligible = np.ones(value_eligible.shape[0]) + 0.01 * np.random.randn(value_eligible.shape[0])
-        next_state = eligible_states_id[np.argmax(value_eligible)]  # DETERMINISTIC POLICY that works
-        
-        # #sample eligible states from a categorical distribution whose shape is based on the values 
-        # # convert values into probabilities
-        # prob_arr = value_eligible - np.min(value_eligible) # shift values so they are all positive and add some noise
-        # prob_arr = prob_arr / np.sum(prob_arr) # normalize so they sum to 1
-        # next_state = np.random.choice(eligible_states_id, p=prob_arr)
+        if doProbabilisticPolicy:
+            # #sample eligible states from a categorical distribution whose shape is based on the values 
+            # # convert values into probabilities
+            value_eligible += 0.01 * np.random.randn(value_eligible.shape[0]) # add some noise 
+            prob_arr = value_eligible - np.min(value_eligible) # shift values so they are all positive and add some noise
+            prob_arr = prob_arr / np.sum(prob_arr) # normalize so they sum to 1
+            next_state = np.random.choice(eligible_states_id, p=prob_arr) 
+        else:
+            next_state = eligible_states_id[np.argmax(value_eligible)]  # DETERMINISTIC POLICY that works
         
         agent.state_trajectory[t+1] = next_state        # scalar 
         agent.value_trajectory[:, t+1] = value.flatten()          # (N_states, N_timesteps)   
@@ -266,7 +275,7 @@ saveMovie = False
 if saveMovie:
     # saving to m4 using ffmpeg writer
     filename = r"C:\Users\admin\Dropbox\Code\Basis-code\multiagent_foodonly_v2.gif"
-    filename = r"C:\Users\admin\Dropbox\Code\Basis-code\multiagent_lazy_avoid_others.gif"
+    filename = r"C:\Users\admin\Dropbox\Code\Basis-code\multiagent_simple_n2inner_0p5outer.gif"
     
     ani.save(filename, dpi=300, writer=animation.PillowWriter(fps=2))
     

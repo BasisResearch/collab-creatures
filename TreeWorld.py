@@ -116,7 +116,7 @@ class SimpleAgent(object):
             # create a donut-shaped reward field centered on the neighbor
 
             reward_map[row-1 : row+2 , col-1 : col+2] = 0
-            reward_map[row + 0, col + 0] = -0.5  # give the neighbor some personal space
+            reward_map[row + 0, col + 0] = 1  # give the neighbor some personal space
             
         
         # # make your current state neutral

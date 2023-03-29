@@ -53,3 +53,7 @@ def center_of_mass(xlocs, ylocs):
 #     # compute each location's distance from a point of interest 
     
 #     return xdist_arr, ydist_arr
+
+def softmax(x, T=1):
+    # softmax with temperature term. 
+    return np.exp(x / T) / np.sum(np.exp(x / T))

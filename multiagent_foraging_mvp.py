@@ -63,8 +63,8 @@ if plot_T:
 # 3) array or list of loc_ids (locations) containing rewards 
 N_timesteps = 50
 
-N_food = 2
-f_food = np.zeros([N_states, 1]) 
+N_food = 4
+f_food = np.zeros([N_states, 1]) # 
 food_trajectory = np.zeros([N_states, N_timesteps])
 list_food_loc_id = np.zeros([N_food]) # array of locations where there is food
 # list_food_loc_id = np.random.permutation(np.arange(N_states))[:N_food] # randomly choose K locations to place new food 
@@ -72,14 +72,14 @@ list_food_loc_id = np.zeros([N_food]) # array of locations where there is food
 food_init_loc_2d = np.reshape(f_food, [edge_size,edge_size])
 
 #food dynamics
-food_depletion_rate = 0.7 
-epoch_dur = 25 # add new food in random locations every epoch_dur time steps
+food_depletion_rate = 0.3 
+epoch_dur = 10 # add new food in random locations every epoch_dur time steps
 
-N_predators = 0
-phi_predator = np.zeros([N_states, 1]) 
+N_predators = 3
+f_predators = np.zeros([N_states, 1])  # vector indicating location of predators 
 list_predator_loc_id = np.random.permutation(np.arange(N_states))[:N_predators] # randomly choose K locations to place new food 
-phi_predator[list_predator_loc_id] = 1
-predator_2d_locs = np.reshape(phi_predator, [edge_size,edge_size])
+f_predators[list_predator_loc_id] = 1
+predator_2d_locs = np.reshape(f_predators, [edge_size,edge_size])
 
 if plot_initial_world:
     fig_env, ax_env = plt.subplots()
@@ -95,21 +95,23 @@ if plot_initial_world:
 
 
 # ----------------------- Add agents -----------------------------------
-N_agents = 1
-c_food = 5
+N_agents = 9
+discount_factor = 0.8
+c_food = 1
+c_predators = -1
 c_otheragents = 0
 c_group = 0
 c_weights = [c_food, c_otheragents, c_group]
-doProbabilisticPolicy = True
+doProbabilisticPolicy = False
 doSoftmaxPolicy = True
-exploration_bias = 10
+exploration_bias = 0.01
 
 list_agents = []
 arr_loc_id_allagents = np.zeros(N_agents, dtype=int) # array containing location of each agent (index is agent ID)
 phi_agents = np.zeros([N_states, 1]) # # one-hot vector indicating which locations are occupied by agents (index is loc ID)
 
 for i in range(N_agents):
-    new_agent = TreeWorld.SimpleAgent(T_prob, N_states, N_timesteps=N_timesteps, discount_factor=0.8)
+    new_agent = TreeWorld.SimpleAgent(T_prob, N_states, N_timesteps=N_timesteps, discount_factor=discount_factor)
     list_agents.append(new_agent)
     
     current_loc_id = np.random.randint(N_states) # pick a random location]
@@ -128,21 +130,31 @@ for t in range(N_timesteps-1):
     
     #Update food feature vector 
     # food occupied by an agent decays over time 
-    f_food = f_food - food_depletion_rate * f_food * phi_agents 
+    delta_food = food_depletion_rate * f_food    # change in magnitude of food amount at this time step 
+    f_food = f_food - delta_food * phi_agents 
      
     # randomly add a new food patch every several time steps  
     if t % epoch_dur == 0:
         list_newfood_loc_id = np.random.permutation(np.arange(N_states))[:N_food]
         f_food[list_newfood_loc_id] = 1
+        # TO DO: make f_food a calorie count (randomly pick between a range of calories) 
+        # create an indicator vector phi_food for keeping track of food locations 
         
-    # save food trajectory for plotting
+    # save food trajectory for plotting - how much food is in each location at each time step? 
     food_trajectory[:, t+1] = f_food.flatten()    # (N_states, N_timesteps)   # save as a sparse matrix?
+    
+    
+    #update predator locations
     
     ## ---------------------Update agents ---------------------------------
     
     for i, agent in enumerate(list_agents):
         # sum_weighted_features = agent.c.T @ features 
-        prev_state = int(agent.state_trajectory[t])
+        prev_state = int(agent.state_trajectory[t]) # agent's current location 
+        
+        #update agent's total energy based on it's previous location  
+        #if there was food at the agent's location, agent gains energy
+        # agent.energy_total += delta_food_calories * f_food[prev_state]
         
         phi_agents[prev_state] = 0 # move out of previous location
         agent.phi_neighbors = phi_agents  # assume this agent knows the locations of all other agents
@@ -166,7 +178,7 @@ for t in range(N_timesteps-1):
         f_groupcenterofmass = np.reshape(f_groupcenterofmass, (N_states, 1))
         
         # sum_weighted_features = c_food * f_food   + c_otheragents * f_otheragents_1d  
-        sum_weighted_features = c_food * f_food  + c_otheragents * f_otheragents_1d    + c_group * f_groupcenterofmass
+        sum_weighted_features = c_food * f_food  + c_predators * f_predators + c_otheragents * f_otheragents_1d    + c_group * f_groupcenterofmass 
         # sum_weighted_features = c_food * f_food  + c_predator * phi_predator #+ c_otheragents * f_otheragents_1d
         
         # VALUE FUNCITON 
@@ -214,24 +226,25 @@ ax.set_title('social reward map')
 
 #%% plot probability of choosing a location as a function of value of that location
 
-fig, ax = plt.subplots(); 
-ax.bar(value_eligible, prob_arr, width=0.001); 
-fig.tight_layout()
-
-fig, ax = plt.subplots(); 
-ax.plot(value_eligible, prob_arr, '.'); 
-ax.set_ylim([0,1])
-fig.tight_layout()
-
-fig, ax = plt.subplots(); 
-ax.hist(value_eligible); 
-ax.set_title('distribution of values for eligible locations')
-fig.tight_layout()
-
-fig, ax = plt.subplots(); 
-ax.hist(prob_arr); 
-ax.set_title('distribution of probabilities')
-fig.tight_layout()
+if doProbabilisticPolicy:
+    fig, ax = plt.subplots(); 
+    ax.bar(value_eligible, prob_arr, width=0.001); 
+    fig.tight_layout()
+    
+    fig, ax = plt.subplots(); 
+    ax.plot(value_eligible, prob_arr, '.'); 
+    ax.set_ylim([0,1])
+    fig.tight_layout()
+    
+    fig, ax = plt.subplots(); 
+    ax.hist(value_eligible); 
+    ax.set_title('distribution of values for eligible locations')
+    fig.tight_layout()
+    
+    fig, ax = plt.subplots(); 
+    ax.hist(prob_arr); 
+    ax.set_title('distribution of probabilities')
+    fig.tight_layout()
 
 #%%  #------- plot value function for all agents at a specific time point -------
 
@@ -246,7 +259,7 @@ if plotValueFuncAtTime:
     for  i, agent in enumerate(list_agents):
         r = int(np.ceil((i+1) / ncols) - 1)
         c = i % ncols
-        value_heatmap = np.reshape(list_agents[i].value_trajectory[:, t], [edge_size,edge_size]) 
+        value_heatmap = np.reshape(list_agents[i].value_tlrajectory[:, t], [edge_size,edge_size]) 
         sns.heatmap(ax=ax[r,c], data=value_heatmap,  center=0, vmin=-1, vmax=1, square=True)
         ax[r,c].set_title('value for agent ' + str(i))
 

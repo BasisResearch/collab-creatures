@@ -36,6 +36,12 @@ def loc1Dto2D(loc_1d_arr, edge_size):
     return x_arr, y_arr
 
 
+# convert an array of x and y locations to an array of 1d locations 
+def loc2Dto1D(xloc_arr, yloc_arr, edge_size):
+    return yloc_arr * edge_size + xloc_arr
+    
+
+
 # Given a (Nstates, 1) vector of values at each state, display those values on a grid world
 def plot_state_values_on_grid(state_values, edge_size):
   state_values_grid = np.reshape(state_values,[edge_size,edge_size])
@@ -57,3 +63,15 @@ def center_of_mass(xlocs, ylocs):
 def softmax(x, T=1):
     # softmax with temperature term. 
     return np.exp(x / T) / np.sum(np.exp(x / T))
+
+
+def generate_poisson_events(rate, total_num_frames):
+    # rate - number of events per frame
+    # generate discrete events, one event per frame 
+    # generate a sequence of uniformly distributed random numbers 
+    prob_of_event = rate 
+    event_sequence = np.random.rand(total_num_frames) < prob_of_event 
+    
+    return event_sequence * 1
+ 
+    

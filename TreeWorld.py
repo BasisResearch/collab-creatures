@@ -22,7 +22,8 @@ class SimpleAgent(object):
         self.energy_total = energy_init # scalar quantity (calories)
         self.energy_trajectory = np.zeros([N_timesteps]) # not sure if we need this to be inside the class
         self.energy_trajectory[0] = energy_init
-        self.sight_radius = 7
+        self.times_at_food = [] # list of frames the agent is at a food location 
+        self.sight_radius = 30
         return 
 
     def compute_visible_locations(self, xloc_self, yloc_self, edge_size):

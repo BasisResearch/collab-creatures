@@ -61,18 +61,19 @@ if plot_T:
     
     
 # ---------------------- Simulation parameters ------------------------------
-N_sims = 1
-N_timesteps = 30
+N_sims = 10
+N_timesteps = 20
 N_agents = 9
 
 #food statistics
 food_statistics_type = "static" #  also try "regular_intervals"
 # food_statistics_type = "regular_intervals" #  also try "regular_intervals"
 N_food_units_total = 9
-patch_dim = 1 
+patch_dim = 3
 N_units_per_patch = patch_dim ** 2
 N_patches = np.ceil(N_food_units_total / N_units_per_patch).astype(int)
-food_depletion_rate = 0.1
+# food_depletion_rate = 0.1
+calories_acquired_per_unit_time = 5 # when an agent is at a food location, it gains this many calories per time step 
 epoch_dur = N_timesteps # add new food in random locations every epoch_dur time steps
 
 # Quantities to track 
@@ -144,7 +145,7 @@ for si in range(N_sims):
     discount_factor = 0.8
     c_food = 1
     c_predators = 0
-    c_otheragents = 0
+    c_otheragents = +1
     c_group = 0
     c_weights = [c_food, c_otheragents, c_group]
     caloric_cost_per_unit_dist = 1
@@ -189,7 +190,8 @@ for si in range(N_sims):
         
         #Update food energy 
         # food occupied by an agent decays over time 
-        delta_food_calories_total = food_depletion_rate * food_calories_by_loc * phi_agents # only subtract food calories in locations occupied by agents, scaled by the number of agents 
+        # delta_food_calories_total = food_depletion_rate * food_calories_by_loc * phi_agents # only subtract food calories in locations occupied by agents, scaled by the number of agents 
+        delta_food_calories_total =  calories_acquired_per_unit_time * phi_agents
         # rectify the calorie count for the food locations that will hit negative calories 
         is_overdepleted = delta_food_calories_total > food_calories_by_loc # find locations where the calorie count will hit negative values (we'll set the calorie count to 0)
         delta_food_calories_total[is_overdepleted] = food_calories_by_loc[is_overdepleted]

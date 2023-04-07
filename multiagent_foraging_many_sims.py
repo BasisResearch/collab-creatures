@@ -26,7 +26,7 @@ plot_initial_world = False
 plot_T = False
 plotValueFuncAtTime = False
 doPlotDistanceToNeighbor = False
-doPlotCalories = False
+doPlotCalories = True
 doPrintAgentStateTrajectories = False
 
 starttime = time.time()
@@ -62,17 +62,17 @@ if plot_T:
     
 # ---------------------- Simulation parameters ------------------------------
 N_sims = 1
-N_timesteps = 50
+N_timesteps = 30
 N_agents = 9
 
 #food statistics
 food_statistics_type = "static" #  also try "regular_intervals"
 # food_statistics_type = "regular_intervals" #  also try "regular_intervals"
-N_food_units_total = 3
+N_food_units_total = 9
 patch_dim = 1 
 N_units_per_patch = patch_dim ** 2
 N_patches = np.ceil(N_food_units_total / N_units_per_patch).astype(int)
-food_depletion_rate = 0 
+food_depletion_rate = 0.1
 epoch_dur = N_timesteps # add new food in random locations every epoch_dur time steps
 
 # Quantities to track 
@@ -154,7 +154,7 @@ for si in range(N_sims):
     
     list_agents = []
     arr_loc_id_allagents = np.zeros(N_agents, dtype=int) # array containing location of each agent (index is agent ID)
-    phi_agents = np.zeros([N_states, 1]) # # one-hot vector indicating which locations are occupied by agents (index is loc ID)
+    phi_agents = np.zeros([N_states, 1]) # # one-hot vector indicating how many agents are in each location (index is loc ID)
     
     # matrix tracking energy acquisition over time, used for determining fitness of the species
     calories_acquired_mat = np.zeros([N_agents, N_timesteps]) 
@@ -173,7 +173,7 @@ for si in range(N_sims):
         
         # update which locations are occupied by agents 
         arr_loc_id_allagents[ai] = current_loc_id   # list
-        phi_agents[current_loc_id] = 1                    # one-hot vector
+        phi_agents[current_loc_id] += 1                    # add an agent to this location
         
         # agent.energy_trajectory[0] = 50 # each agent starts with 50 calories --> done inside the class
         
@@ -189,8 +189,12 @@ for si in range(N_sims):
         
         #Update food energy 
         # food occupied by an agent decays over time 
-        delta_food_calories = food_depletion_rate * food_calories_by_loc    # change in magnitude of food amount at this time step 
-        food_calories_by_loc -= delta_food_calories * phi_agents # only subtract food calories in locations occupied by agents
+        delta_food_calories_total = food_depletion_rate * food_calories_by_loc * phi_agents # only subtract food calories in locations occupied by agents, scaled by the number of agents 
+        # rectify the calorie count for the food locations that will hit negative calories 
+        is_overdepleted = delta_food_calories_total > food_calories_by_loc # find locations where the calorie count will hit negative values (we'll set the calorie count to 0)
+        delta_food_calories_total[is_overdepleted] = food_calories_by_loc[is_overdepleted]
+
+        food_calories_by_loc -= delta_food_calories_total
         phi_food = food_calories_by_loc  > 0.01 # update indicator  vector for food locations 
          
         if food_statistics_type == "regular_intervals":
@@ -217,9 +221,9 @@ for si in range(N_sims):
             
             #update agent's total energy based on amount of food at previous location  
             #transfer calories from food to agent
-            agent.energy_total += delta_food_calories[prev_loc_1d]
-            calories_acquired_mat[ai, ti] = delta_food_calories[prev_loc_1d]
-            calories_cumulative_vec[ai, ti+1] = calories_cumulative_vec[ai, ti] + calories_acquired_mat[ai, ti]
+            calories_acquired_mat[ai, ti] = delta_food_calories_total[prev_loc_1d] / phi_agents[prev_loc_1d][0] # if there were N agents at that location, it gets 1/N portion of the calories
+            agent.energy_total += calories_acquired_mat[ai, ti] 
+            calories_cumulative_vec[ai, ti+1] = calories_cumulative_vec[ai, ti] + calories_acquired_mat[ai, ti] # only tracks calories acquired?
             
             # # remove this agent from the list of surviving agents if it's energy reaches zero 
             # if agent.energy_total <= 0:
@@ -227,8 +231,8 @@ for si in range(N_sims):
             
             # -------------- Make a decision --------------------------------  
             
-            phi_agents[prev_loc_1d] = 0 # move out of previous location
-            agent.phi_neighbors = phi_agents  # assume this agent knows the locations of all other agents
+            phi_agents[prev_loc_1d] -= 1 # move out of previous location
+            # agent.phi_neighbors = phi_agents  # assume this agent knows the locations of all other agents
             
             # sum_weighted_features = c_food * phi_food + c_otheragents * agent.phi_neighbors
             
@@ -263,8 +267,8 @@ for si in range(N_sims):
             value = agent.SR @ sum_weighted_features         # (N_states, 1) vector
             
             # POLICY: select next action using the value and eligible states 
-            # eligible states are those specified by the transition matrix and states not occupied by other agents
-            eligible_states_id = np.nonzero(T_eligible[:, prev_loc_1d] * np.logical_not(phi_agents.flatten()))[0]       # state IDs of eligible states
+            # eligible states are those specified by the transition matrix. Can constrain further to exclude states not occupied by other agents
+            eligible_states_id = np.nonzero(T_eligible[:, prev_loc_1d])[0]  # * np.logical_not(phi_agents.flatten()))[0]       # state IDs of eligible states
             value_eligible = value[eligible_states_id].flatten()   # value of eligible states plus some noise 
             
             if doProbabilisticPolicy:
@@ -296,8 +300,10 @@ for si in range(N_sims):
             agent.energy_total -= calories_expended_mat[ai,ti]
             
             #------------- compute metrics for data analysis -----------------
-            dist_to_neighbors = np.sqrt((xloc_otheragents - xloc_self) ** 2 + (yloc_otheragents - yloc_self) ** 2 )
-            dist_to_nearest_neighbor_allsims[si, ai, ti] = np.min(dist_to_neighbors) 
+            if len(list_agents) > 1:
+                dist_to_neighbors = np.sqrt((xloc_otheragents - xloc_self) ** 2 + (yloc_otheragents - yloc_self) ** 2 )
+                dist_to_nearest_neighbor_allsims[si, ai, ti] = np.min(dist_to_neighbors) 
+            
             calories_acquired_allsims[si, ai, ti] = calories_acquired_mat[ai, ti] 
             
             if phi_food[prev_loc_1d][0]:
@@ -310,7 +316,7 @@ for si in range(N_sims):
             agent.energy_trajectory[ti+1] = agent.energy_total   
             calories_total_mat[ai, ti+1] = calories_total_mat[ai, ti] + calories_acquired_mat[ai, ti] - calories_expended_mat[ai,ti]
             
-            phi_agents[next_loc_1d] = 1                     # move into new location 
+            phi_agents[next_loc_1d] += 1                     # move into new location 
             arr_loc_id_allagents[ai] = next_loc_1d
     
 
@@ -410,7 +416,8 @@ if doPlotCalories:
         ax.plot(calories_cumulative_vec[ai,:], '.-')
     # ax.set_title('Agent ' + str(ai))
     ax.set_xlabel('Time step')
-    ax.set_ylabel('Calories acquired')
+    ax.set_ylabel('Cumulative calories acquired')
+    ax.set_ylim([0, np.max(food_trajectory)])
     fig.tight_layout()
     
     # plot each agent's energy level over time 
@@ -493,22 +500,25 @@ if plotValueFuncAtTime:
 #%%
 # ************************* CREATE USER INTERFACE ***************************
 
-#scale the color bar based on the c weights (TO DO: find a better way to do this )
-vmin = np.min(np.min(c_weights), 0)
-vmax = np.max(np.max(c_weights), 0)
-vmin = -1
-vmax = 1
+
 
 fig_ui, (ax_main, ax_value) = plt.subplots(1, 2, figsize=(10, 4))
 
 ax_main.set_title('Environment')
 # phi_food_2d = np.reshape(phi_food, [edge_size,edge_size])
-sns.heatmap(ax=ax_main, data=food_init_loc_2d, vmin=vmin, vmax=vmax, center=0, square=True, cbar=False)
+min_cal = -0.1
+max_cal = np.max(food_trajectory)
+sns.heatmap(ax=ax_main, data=food_init_loc_2d, vmin=min_cal, vmax=max_cal, center=0, square=True, cbar=True)
 
 # Choose one agent to highlight in magenta. Plot in an adjacent 
 # panel the value function of this agent evolving over time 
 z = 0 # index of highlighted agent
 value_heatmap = np.reshape(list_agents[z].value_trajectory[:, 0], [edge_size,edge_size]) 
+#scale the color bar based on the c weights (TO DO: find a better way to do this )
+vmin = np.min(np.min(c_weights), 0)
+vmax = np.max(np.max(c_weights), 0)
+min_value = -1
+max_value = 1
 sns.heatmap(ax=ax_value, data=value_heatmap, vmin=vmin, vmax=vmax, center=0, square=True, cbar=True)
 ax_value.set_title('Value function for one agent')
 
@@ -530,7 +540,7 @@ def update_plot(frame, list_agents, food_trajectory, edge_size): #, list_food_lo
     fig_ui.suptitle('frame ' + str(frame) + ' / ' + str(N_timesteps))
     # food locations and quantities
     food_heatmap = np.reshape(food_trajectory[:, frame], [edge_size,edge_size]) 
-    sns.heatmap(ax=ax_main, data=food_heatmap, vmin=vmin, vmax=vmax, center=0, square=True, cbar=False) #, cbar_ax=ax_cbar, cbar_kws={'shrink':0.5})
+    sns.heatmap(ax=ax_main, data=food_heatmap, vmin=min_cal, vmax=max_cal, center=0, square=True, cbar=False) #, cbar_ax=ax_cbar, cbar_kws={'shrink':0.5})
     
     # x_food, y_food = util.loc1Dto2D(list_food_loc_id, edge_size)
     # plot_food.set_data(x_food, y_food)
@@ -544,7 +554,7 @@ def update_plot(frame, list_agents, food_trajectory, edge_size): #, list_food_lo
     # value function of one agent 
     ax_value.cla()
     value_heatmap = np.reshape(list_agents[z].value_trajectory[:, frame], [edge_size,edge_size]) 
-    sns.heatmap(ax=ax_value, data=value_heatmap, vmin=vmin, vmax=vmax, center=0, square=True, cbar=False) #, cbar_ax=ax_cbar, cbar_kws={'shrink':0.5})
+    sns.heatmap(ax=ax_value, data=value_heatmap, vmin=min_value, vmax=max_value, center=0, square=True, cbar=False) #, cbar_ax=ax_cbar, cbar_kws={'shrink':0.5})
     
     return list_plot_agents #, plot_food
 

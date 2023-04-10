@@ -61,7 +61,7 @@ if plot_T:
     
     
 # ---------------------- Simulation parameters ------------------------------
-N_sims = 10
+N_sims = 1
 N_timesteps = 20
 N_agents = 9
 
@@ -145,13 +145,15 @@ for si in range(N_sims):
     discount_factor = 0.8
     c_food = 1
     c_predators = 0
-    c_otheragents = +1
+    c_otheragents = -0.1
     c_group = 0
-    c_weights = [c_food, c_otheragents, c_group]
+    c_weights = [c_food, c_predators, c_otheragents, c_group]
     caloric_cost_per_unit_dist = 1
     doProbabilisticPolicy = False
     doSoftmaxPolicy = True
     exploration_bias = 0.01
+    
+    # normalize the magnitude of the attention weights so that 
     
     list_agents = []
     arr_loc_id_allagents = np.zeros(N_agents, dtype=int) # array containing location of each agent (index is agent ID)
@@ -238,13 +240,17 @@ for si in range(N_sims):
             
             # sum_weighted_features = c_food * phi_food + c_otheragents * agent.phi_neighbors
             
-            # REWARD FUNCTION: compute weighted sum of features
+            # OTHER AGENTS
             xloc_allagents, yloc_allagents = util.loc1Dto2D(arr_loc_id_allagents, edge_size)
             xloc_self, yloc_self = util.loc1Dto2D(prev_loc_1d, edge_size)
+            # only include locations of agents outside of current location
+            xloc_neighbors, yloc_neighbors = util.loc1Dto2D(arr_loc_id_allagents[arr_loc_id_allagents != prev_loc_1d], edge_size)
+            f_otheragents_2d = agent.reward_function_otheragents(xloc_neighbors, yloc_neighbors, xloc_self, yloc_self, edge_size)
+            f_otheragents_1d = np.reshape(f_otheragents_2d, (N_states, 1))
+            
+            # CENTER OF MASS
             xloc_otheragents = np.delete(xloc_allagents, ai)  # remove this agent's own location from the list 
             yloc_otheragents = np.delete(yloc_allagents, ai) # 
-            f_otheragents_2d = agent.reward_function_otheragents(xloc_otheragents, yloc_otheragents, xloc_self, yloc_self, edge_size)
-            f_otheragents_1d = np.reshape(f_otheragents_2d, (N_states, 1))
             if N_agents > 1:
                 xloc_centerofmass, yloc_centerofmass = util.center_of_mass(xloc_otheragents, yloc_otheragents)
             else:

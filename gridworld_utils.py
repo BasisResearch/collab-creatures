@@ -60,9 +60,11 @@ def center_of_mass(xlocs, ylocs):
     
 #     return xdist_arr, ydist_arr
 
-def softmax(x, T=1):
+def softmax(x, temp=1):
     # softmax with temperature term. 
-    return np.exp(x / T) / np.sum(np.exp(x / T))
+    x -= np.max(x)
+    numerator = np.exp(x / temp)
+    return numerator / np.sum(numerator)
 
 
 def generate_poisson_events(rate, total_num_frames):

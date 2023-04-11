@@ -45,7 +45,7 @@ T = np.zeros([N_states, N_states])
 # (up, down, left ,right)
 for ai in range(N_states):
   for j in range(N_states):
-    T[ai,j] = ( np.sqrt( (x_arr[j] - x_arr[ai])**2 + (y_arr[j] - y_arr[ai])**2 ) ) <= 1 # make this bigger to include more eligible states!!! 
+    T[ai,j] = ( np.sqrt( (x_arr[j] - x_arr[ai])**2 + (y_arr[j] - y_arr[ai])**2 ) ) <= 3 # make this bigger to include more eligible states!!! 
 
 T_eligible = T # save the binary representation 
 T_prob = T / np.sum(T, axis=0, keepdims=True) # normalization so elements represent probabilities 
@@ -62,10 +62,10 @@ if plot_T:
     
 # ---------------------- Simulation parameters ------------------------------
 N_sims = 1
-N_timesteps = 20
+N_timesteps = 2
 N_agents = 9
 
-#food statistics
+# Food and environment parameters 
 food_statistics_type = "static" #  also try "regular_intervals"
 # food_statistics_type = "regular_intervals" #  also try "regular_intervals"
 N_food_units_total = 16
@@ -75,6 +75,22 @@ N_patches = np.ceil(N_food_units_total / N_units_per_patch).astype(int)
 # food_depletion_rate = 0.1
 calories_acquired_per_unit_time = 5 # when an agent is at a food location, it gains this many calories per time step 
 epoch_dur = N_timesteps # add new food in random locations every epoch_dur time steps
+
+# Agent parameters 
+energy_init = 50
+discount_factor = 0.9
+sight_radius = 5
+doShareFoodInfo = True
+c_food = 1
+# c_food_otheragents = 1
+c_otheragents = 0
+c_group = 0
+c_predators = 0
+c_weights = [c_food, c_predators, c_otheragents, c_group]
+caloric_cost_per_unit_dist = 1
+doProbabilisticPolicy = True
+doSoftmaxPolicy = True
+exploration_bias = 0.001
 
 # Quantities to track 
 agent_locs_1d_allsims = np.zeros([N_sims, N_agents, N_timesteps])
@@ -141,18 +157,6 @@ for si in range(N_sims):
     
     
     # ----------------------- Add agents -----------------------------------
-    energy_init = 50
-    discount_factor = 0.9
-    sight_radius = 10
-    c_food = 1
-    c_otheragents = 0
-    c_group = 0
-    c_predators = 0
-    c_weights = [c_food, c_predators, c_otheragents, c_group]
-    caloric_cost_per_unit_dist = 1
-    doProbabilisticPolicy = True
-    doSoftmaxPolicy = True
-    exploration_bias = 0.01
     
     # *** Normalization of attention weights *** 
     # Normalize the magnitude of the attention weights so that the total magnitude sums to 1.
@@ -161,7 +165,7 @@ for si in range(N_sims):
     c_weights = c_weights / np.sum(np.abs(c_weights))
     
     list_agents = []
-    arr_loc_id_allagents = np.zeros(N_agents, dtype=int) # array containing location of each agent (index is agent ID)
+    loc_1d_allagents = np.zeros(N_agents, dtype=int) # array containing location of each agent (index is agent ID)
     phi_agents = np.zeros([N_states, 1]) # # one-hot vector indicating how many agents are in each location (index is loc ID)
     
     # matrix tracking energy acquisition over time, used for determining fitness of the species
@@ -181,7 +185,7 @@ for si in range(N_sims):
         new_agent.state_trajectory[0] = current_loc_id
         
         # update which locations are occupied by agents 
-        arr_loc_id_allagents[ai] = current_loc_id   # list
+        loc_1d_allagents[ai] = current_loc_id   # list
         phi_agents[current_loc_id] += 1                    # add an agent to this location
         
         # agent.energy_trajectory[0] = 50 # each agent starts with 50 calories --> done inside the class
@@ -247,10 +251,10 @@ for si in range(N_sims):
             # sum_weighted_features = c_food * phi_food + c_otheragents * agent.phi_neighbors
             
             # OTHER AGENTS
-            xloc_allagents, yloc_allagents = util.loc1Dto2D(arr_loc_id_allagents, edge_size)
+            xloc_allagents, yloc_allagents = util.loc1Dto2D(loc_1d_allagents, edge_size)
             xloc_self, yloc_self = util.loc1Dto2D(prev_loc_1d, edge_size)
             # only include locations of agents outside of current location
-            xloc_neighbors, yloc_neighbors = util.loc1Dto2D(arr_loc_id_allagents[arr_loc_id_allagents != prev_loc_1d], edge_size)
+            xloc_neighbors, yloc_neighbors = util.loc1Dto2D(loc_1d_allagents[loc_1d_allagents != prev_loc_1d], edge_size)
             f_otheragents_2d = agent.reward_function_otheragents(xloc_neighbors, yloc_neighbors, xloc_self, yloc_self, edge_size)
             f_otheragents_1d = np.reshape(f_otheragents_2d, (N_states, 1))
             
@@ -269,8 +273,15 @@ for si in range(N_sims):
             phi_visible_mat = agent.compute_visible_locations(xloc_self, yloc_self, edge_size)
             phi_visible = np.reshape(phi_visible_mat, (N_states, 1))
             
-            # sum_weighted_features = c_food * phi_food   + c_otheragents * f_otheragents_1d  
-            sum_weighted_features = c_weights[0] * phi_food * phi_visible \
+            # get information from other agents about whether there is food at their locations 
+            if doShareFoodInfo:
+                phi_visible[loc_1d_allagents] = 1   # can this agent see the locations of other agents?
+            
+            f_food = phi_food * phi_visible
+            # f_food_otheragents = phi_food * phi_agents  # making food info from other agents a separate feature with separate weights
+            
+            sum_weighted_features = \
+                  c_weights[0] * f_food \
                 + c_weights[1] * f_predators \
                 + c_weights[2] * f_otheragents_1d   \
                 + c_weights[3] * f_groupcenterofmass 
@@ -287,7 +298,7 @@ for si in range(N_sims):
             
             if doProbabilisticPolicy:
                 if doSoftmaxPolicy:
-                    prob_arr = util.softmax(value_eligible, T=exploration_bias)
+                    prob_arr = util.softmax(value_eligible, temp=exploration_bias)
                 else:
                 
                     # #sample eligible states from a categorical distribution whose shape is based on the values 
@@ -331,7 +342,7 @@ for si in range(N_sims):
             calories_total_mat[ai, ti+1] = calories_total_mat[ai, ti] + calories_acquired_mat[ai, ti] - calories_expended_mat[ai,ti]
             
             phi_agents[next_loc_1d] += 1                     # move into new location 
-            arr_loc_id_allagents[ai] = next_loc_1d
+            loc_1d_allagents[ai] = next_loc_1d
     
 
     for ai, agent in enumerate(list_agents):
@@ -362,9 +373,9 @@ pop_var_time_to_first_food = np.var(time_to_first_food_allsims, axis=1)
 # Distribution over population for one sim 
 si = 0
 fig, ax = plt.subplots()
-ax.hist(time_to_first_food_allsims[si], bins=np.arange(N_timesteps))
+ax.hist(time_to_first_food_allsims[si], bins=np.arange(N_timesteps+2))
 ax.set_title('Time to first food item \n (distr. over individuals)')
-ax.set_xlim([0, N_timesteps])
+ax.set_xlim([0, N_timesteps +2 ])
 fig.tight_layout()
 
 # Distribution over simulations

@@ -13,7 +13,7 @@ class TreeEnvironment(object):
         return
 
 class SimpleAgent(object): 
-    def __init__(self, T_prob, N_states, N_timesteps, discount_factor, energy_init=50): 
+    def __init__(self, T_prob, N_states, N_timesteps, discount_factor, energy_init=50, sight_radius=40): 
         self.discount_factor = discount_factor # scalar between 0 and 1 
         self.SR = np.linalg.pinv(np.eye(N_states) - discount_factor * T_prob) # (N_states, N_states) matrix 
         self.state_trajectory = np.zeros([N_timesteps])
@@ -23,7 +23,7 @@ class SimpleAgent(object):
         self.energy_trajectory = np.zeros([N_timesteps]) # not sure if we need this to be inside the class
         self.energy_trajectory[0] = energy_init
         self.times_at_food = [] # list of frames the agent is at a food location 
-        self.sight_radius = 40
+        self.sight_radius = sight_radius
         return 
 
     def compute_visible_locations(self, xloc_self, yloc_self, edge_size):

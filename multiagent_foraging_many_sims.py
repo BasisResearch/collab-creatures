@@ -45,7 +45,7 @@ T = np.zeros([N_states, N_states])
 # (up, down, left ,right)
 for ai in range(N_states):
   for j in range(N_states):
-    T[ai,j] = ( np.sqrt( (x_arr[j] - x_arr[ai])**2 + (y_arr[j] - y_arr[ai])**2 ) ) <= 3 # make this bigger to include more eligible states!!! 
+    T[ai,j] = ( np.sqrt( (x_arr[j] - x_arr[ai])**2 + (y_arr[j] - y_arr[ai])**2 ) ) <= 1 # make this bigger to include more eligible states!!! 
 
 T_eligible = T # save the binary representation 
 T_prob = T / np.sum(T, axis=0, keepdims=True) # normalization so elements represent probabilities 
@@ -68,8 +68,8 @@ N_agents = 9
 #food statistics
 food_statistics_type = "static" #  also try "regular_intervals"
 # food_statistics_type = "regular_intervals" #  also try "regular_intervals"
-N_food_units_total = 9
-patch_dim = 3
+N_food_units_total = 16
+patch_dim = 4
 N_units_per_patch = patch_dim ** 2
 N_patches = np.ceil(N_food_units_total / N_units_per_patch).astype(int)
 # food_depletion_rate = 0.1
@@ -121,7 +121,7 @@ for si in range(N_sims):
             # TO DO: make phi_food a calorie count (randomly pick between a range of calories) 
     
     
-    N_predators = 3
+    N_predators = 0
     f_predators = np.zeros([N_states, 1])  # vector indicating location of predators 
     list_predator_loc_id = np.random.permutation(np.arange(N_states))[:N_predators] # randomly choose K locations to place new food 
     f_predators[list_predator_loc_id] = 1
@@ -142,18 +142,23 @@ for si in range(N_sims):
     
     # ----------------------- Add agents -----------------------------------
     energy_init = 50
-    discount_factor = 0.8
+    discount_factor = 0.9
+    sight_radius = 10
     c_food = 1
-    c_predators = 0
-    c_otheragents = -0.1
+    c_otheragents = 0
     c_group = 0
+    c_predators = 0
     c_weights = [c_food, c_predators, c_otheragents, c_group]
     caloric_cost_per_unit_dist = 1
-    doProbabilisticPolicy = False
+    doProbabilisticPolicy = True
     doSoftmaxPolicy = True
     exploration_bias = 0.01
     
-    # normalize the magnitude of the attention weights so that 
+    # *** Normalization of attention weights *** 
+    # Normalize the magnitude of the attention weights so that the total magnitude sums to 1.
+    # This ensures that each population or species has the same total amount of attention 
+    # or reward capacity to allocate across different features of the environment. 
+    c_weights = c_weights / np.sum(np.abs(c_weights))
     
     list_agents = []
     arr_loc_id_allagents = np.zeros(N_agents, dtype=int) # array containing location of each agent (index is agent ID)
@@ -168,7 +173,8 @@ for si in range(N_sims):
     # initialize the agents
     for ai in range(N_agents):
         new_agent = TreeWorld.SimpleAgent(T_prob, N_states, N_timesteps=N_timesteps, 
-                                          discount_factor=discount_factor, energy_init=energy_init)
+                                          discount_factor=discount_factor, 
+                                          energy_init=energy_init, sight_radius=sight_radius)
         list_agents.append(new_agent)
         
         current_loc_id = np.random.randint(N_states) # pick a random location]
@@ -264,10 +270,10 @@ for si in range(N_sims):
             phi_visible = np.reshape(phi_visible_mat, (N_states, 1))
             
             # sum_weighted_features = c_food * phi_food   + c_otheragents * f_otheragents_1d  
-            sum_weighted_features = c_food * phi_food * phi_visible \
-                + c_predators * f_predators \
-                + c_otheragents * f_otheragents_1d   \
-                + c_group * f_groupcenterofmass 
+            sum_weighted_features = c_weights[0] * phi_food * phi_visible \
+                + c_weights[1] * f_predators \
+                + c_weights[2] * f_otheragents_1d   \
+                + c_weights[3] * f_groupcenterofmass 
                         
             # sum_weighted_features = c_food * phi_food  + c_predator * phi_predator #+ c_otheragents * f_otheragents_1d
             
@@ -314,8 +320,8 @@ for si in range(N_sims):
             
             calories_acquired_allsims[si, ai, ti] = calories_acquired_mat[ai, ti] 
             
-            if phi_food[prev_loc_1d][0]:
-                agent.times_at_food.append(ti) # add this frame to the list of frames where agent is at a food location
+            if phi_food[next_loc_1d][0]:
+                agent.times_at_food.append(ti+1) # add this frame to the list of frames where agent is at a food location
             
             # ------------------------------------------------------------------- 
             
@@ -345,27 +351,33 @@ print('simulation run time = ' + str(endtime - starttime))
 
 #%% Quantify foraging statistics after running the sims
 
+#%% Time for all food to be depleted 
+
+
 #%% Time to first food item
 
-pop_mean_time_to_first_food = np.mean(time_to_first_food_allsims, axis=0) # (N_sims,) mean across individuals in the population
-pop_var_time_to_first_food = np.var(time_to_first_food_allsims, axis=0)
+pop_mean_time_to_first_food = np.mean(time_to_first_food_allsims, axis=1) # (N_sims,) mean across individuals in the population
+pop_var_time_to_first_food = np.var(time_to_first_food_allsims, axis=1)
 
 # Distribution over population for one sim 
 si = 0
 fig, ax = plt.subplots()
-ax.hist(time_to_first_food_allsims[si])
+ax.hist(time_to_first_food_allsims[si], bins=np.arange(N_timesteps))
 ax.set_title('Time to first food item \n (distr. over individuals)')
+ax.set_xlim([0, N_timesteps])
 fig.tight_layout()
 
 # Distribution over simulations
 fig, ax = plt.subplots()
-ax.hist(pop_mean_time_to_first_food)
+ax.hist(pop_mean_time_to_first_food, bins=np.arange(N_timesteps))
 ax.set_title('Time to first food item \n (mean across population)')
+ax.set_xlim([0, N_timesteps])
 fig.tight_layout()
 
 fig, ax = plt.subplots()
-ax.hist(pop_var_time_to_first_food)
+ax.hist(pop_var_time_to_first_food, bins=np.arange(N_timesteps))
 ax.set_title('Time to first food item \n (variance across population)')
+ax.set_xlim([0, N_timesteps])
 fig.tight_layout()
 
 
@@ -425,7 +437,7 @@ if doPlotCalories:
     # ax.set_title('Agent ' + str(ai))
     ax.set_xlabel('Time step')
     ax.set_ylabel('Cumulative calories acquired')
-    ax.set_ylim([0, np.max(food_trajectory)])
+    # ax.set_ylim([0, np.max(food_trajectory)])
     fig.tight_layout()
     
     # plot each agent's energy level over time 
@@ -500,7 +512,7 @@ if plotValueFuncAtTime:
     for  ai, agent in enumerate(list_agents):
         r = int(np.ceil((ai+1) / ncols) - 1)
         c = ai % ncols
-        value_heatmap = np.reshape(list_agents[ai].value_tlrajectory[:, ti], [edge_size,edge_size]) 
+        value_heatmap = np.reshape(list_agents[ai].value_trajectory[:, ti], [edge_size,edge_size]) 
         sns.heatmap(ax=ax[r,c], data=value_heatmap,  center=0, vmin=-1, vmax=1, square=True)
         ax[r,c].set_title('value for agent ' + str(ai))
 
@@ -527,7 +539,7 @@ vmin = np.min(np.min(c_weights), 0)
 vmax = np.max(np.max(c_weights), 0)
 min_value = -1
 max_value = 1
-sns.heatmap(ax=ax_value, data=value_heatmap, vmin=vmin, vmax=vmax, center=0, square=True, cbar=True)
+sns.heatmap(ax=ax_value, data=value_heatmap, vmin=min_value, vmax=max_value, center=0, square=True, cbar=True)
 ax_value.set_title('Value function for one agent')
 
 list_plot_agents = []

@@ -8,6 +8,11 @@ Created on Mon Mar 13 14:52:17 2023
 import numpy as np
 import gridworld_utils as util
 
+class Simulation(object):
+    def __init__(self): 
+        return
+
+
 class TreeEnvironment(object):
     def __init__(self): 
         return

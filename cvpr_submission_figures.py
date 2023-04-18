@@ -16,40 +16,20 @@ reload(figures)
 plt.close('all')
 figures.setup_fig()
 
-#%% Save the data - execute this section after running multiagent_foraging_many_sims.py 
-# with the desired parameter values. 
+# directory = 'C:/Users/admin/Dropbox/Code/Basis-code/collaborative-intelligence/simulated_data/'
+directory = 'simulated_data/'
 
-# filename = 'distr_ignorers'
-# filename = 'distr_communicators'
-# filename = 'clust_ignorers'
-filename = 'clust_communicators'
-
-# filepath = r"C:\Users\admin\Dropbox\Code\Basis-code\simulated_data\sim1"
-directory = 'C:/Users/admin/Dropbox/Code/Basis-code/simulated_data/'
-filepath = directory + filename
-my_file = Path(filepath + '.sav')
-# saving to m4 using ffmpeg writer
-if my_file.exists():
-    filepath = filepath + '_v2'
-
-# save the model to disk
-# filename = filepath + '.sav'
-dictionary = {'N_sims':N_sims, 'N_timesteps':N_timesteps, 'N_agents':N_agents, \
-              'pop_mean_time_to_first_food': pop_mean_time_to_first_food, \
-              'num_agents_failed_reach_food': num_agents_failed_reach_food, \
-              'N_food_units_total':N_food_units_total, 'patch_dim':patch_dim, \
-              'doShareFoodInfo':doShareFoodInfo, 'example_agent':agent, 'c_weights':c_weights}
-
-pickle.dump(dictionary, open(filepath + '.sav', 'wb'))
 
 #%% Load data from different experimental conditions to make statistical comparisons
 
-food_type = 'clustered'
-# food_type = 'distributed'
+# food_type = 'clustered'
+food_type = 'distributed'
 
 if food_type == 'distributed': 
-    filename1 = 'distr_ignorers'
-    filename2 = 'distr_communicators'
+    # filename1 = 'distr_ignorers'
+    # filename2 = 'distr_communicators'
+    filename1 = 'distr_ignorers_run2'
+    filename2 = 'distr_communicators_run2'
     
 elif food_type == 'clustered':
     filename1 = 'clust_ignorers'

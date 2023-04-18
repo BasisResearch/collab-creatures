@@ -35,17 +35,17 @@ x_arr, y_arr, loc_id_arr = util.create_2Dgrid(edge_size)
     
 # ---------------------- Simulation parameters ------------------------------
 N_sims = 1
-N_timesteps = 2#1 total duration of the simulation in frames 
+N_timesteps = 20#1 total duration of the simulation in frames 
 
 #food statistics and dynamics 
 food_depletion_rate = 0.5
-# food_statistics_type = "poisson"
-food_statistics_type = "static"
+food_statistics_type = "poisson"
+# food_statistics_type = "static"
 
 
 
 if food_statistics_type == "poisson": 
-    food_units_per_frame = 16
+    food_units_per_frame = 1
     N_total_food_units = np.ceil(food_units_per_frame * N_timesteps)# start with this being equal to the number of frames 
     # num_food_units_per_appearance = np.array([1, 4, 9, 16])
     patch_dim = 1
@@ -76,7 +76,7 @@ for si in range(N_sims):
     
     elif food_statistics_type == "static": # drop food into environment only once, at the first time step 
         food_appearance_events = np.zeros(N_timesteps)
-        food_appearance_events[0] = num_patches #
+        food_appearance_events[0] = N_patches #
 
         for pi in range(N_patches): 
             x_start = np.random.randint(0, edge_size - patch_dim)

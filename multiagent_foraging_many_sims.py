@@ -12,6 +12,7 @@ import seaborn as sns
 import numpy as np
 import matplotlib.pyplot as plt 
 import matplotlib.animation as animation
+from matplotlib.colors import LogNorm, Normalize
 from scipy import stats
 from pathlib import Path
 import pickle
@@ -22,40 +23,55 @@ import time
 reload(util)
 reload(figures)
 
-figures.setup_fig()
-plt.close('all')
+# ------------ Would you like to save the simulation? --------------------
+saveData = False
+directory_data = 'simulated_data/' 
+filename_data = 'new_sim'
+
+doAnimation = True
+saveMovie = False
+directory_movie = 'movies/'
+filename_movie = 'new_movie'
+
+# Turn on/off plots an animations
 plot_initial_world = False
 plot_T = False
 plotValueFuncAtTime = False
-doPlotDistanceToNeighbor = False
-doPlotCalories = True
+do_plot_dist_to_neighbors = False
+do_plot_numfailed = False
+do_plot_timetofood = False
+do_plot_calories =  False
+do_plot_visible_food = False
+do_plot_value_otheragents = False
 doPrintAgentStateTrajectories = False
-doAnimation = False
+
+
+figures.setup_fig()
+plt.close('all')
 
 # ---------------------- Simulation parameters ------------------------------
-N_sims = 100
-N_timesteps = 50
+N_sims = 1
+N_timesteps = 20
 N_agents = 9
 
 # Food and environment parameters 
-food_statistics_type = "static" #  also try "regular_intervals"
-# food_statistics_type = "regular_intervals" #  also try "regular_intervals"
+food_statistics_types = ["drop_food_once", "replenish_only_after_depleted", "regular_intervals", "poisson"] 
+food_statistics_type = "drop_food_once"
 N_food_units_total = 16
 patch_dim = 4
 N_units_per_patch = patch_dim ** 2
 N_patches = np.ceil(N_food_units_total / N_units_per_patch).astype(int)
-# food_depletion_rate = 0.1
 calories_acquired_per_unit_time = 5 # when an agent is at a food location, it gains this many calories per time step 
 epoch_dur = N_timesteps # add new food in random locations every epoch_dur time steps
 
 # Agent parameters 
-doShareFoodInfo = True
+doShareFoodInfo = False
+sight_radius = 50
 energy_init = 50
 discount_factor = 0.9
-sight_radius = 5
-c_food = 1
+c_food = 0.5
 # c_food_otheragents = 1
-c_otheragents = 0
+c_otheragents = 0.5
 c_group = 0
 c_predators = 0
 c_weights = [c_food, c_predators, c_otheragents, c_group]
@@ -71,7 +87,6 @@ calories_acquired_allsims = np.zeros([N_sims, N_agents, N_timesteps])
 time_to_first_food_allsims = np.zeros([N_sims, N_agents])
 
 # ************** CREATE ENVIRONMENT ***************************
-
 edge_size = 30 # grid world has dimensions edge_size x edge_size
 x_arr, y_arr, loc_id_arr = util.create_2Dgrid(edge_size)
 
@@ -123,7 +138,7 @@ for si in range(N_sims):
     # phi_food[list_food_loc_id] = 1 # put one food item in the respective locations
     food_init_loc_2d = np.reshape(phi_food, [edge_size,edge_size])
     
-    if food_statistics_type == "static":
+    if food_statistics_type == "drop_food_once":
         for pi in range(N_patches): 
             x_start = np.random.randint(0, edge_size - patch_dim)
             y_start = np.random.randint(0, edge_size - patch_dim) 
@@ -136,7 +151,7 @@ for si in range(N_sims):
             # update food tracking variables 
             phi_food[list_newfood_loc_1d] = 1
             food_calories_by_loc[list_newfood_loc_1d] = 20 # add a fixed number of calories to each new food location 
-            # TO DO: make phi_food a calorie count (randomly pick between a range of calories) 
+
     # if food_statistics_type == 'sequential': # new food appears only when old food is completely depleted 
         
     
@@ -203,7 +218,7 @@ for si in range(N_sims):
         ## ---------------------Update environment----------------------------
         # features = phi_food# (N_features, N_states) matrix, each row being 
         
-        #Update food energy 
+        #Update agent calorie levels 
         # food occupied by an agent decays over time 
         # delta_food_calories_total = food_depletion_rate * food_calories_by_loc * phi_agents # only subtract food calories in locations occupied by agents, scaled by the number of agents 
         delta_food_calories_total =  calories_acquired_per_unit_time * phi_agents
@@ -214,6 +229,9 @@ for si in range(N_sims):
         food_calories_by_loc -= delta_food_calories_total
         phi_food = food_calories_by_loc  > 0.01 # update indicator  vector for food locations 
          
+        # if food_statistics_type == "replenish_after_depletion":
+        #     if np.sum(food_calories_by_loc) <= 0:
+                
         if food_statistics_type == "regular_intervals":
             # randomly add a new food patch every several time steps  
             if ti % epoch_dur == 0:
@@ -279,6 +297,10 @@ for si in range(N_sims):
             # get information from other agents about whether there is food at their locations 
             if doShareFoodInfo:
                 phi_visible[loc_1d_allagents] = 1   # can this agent see the locations of other agents?
+                # It's not quite communication between agents yet because there is no 
+                # capacity for misrepresentation here - the agent simply has information about other agent's locations.
+                # The info from other agents should be represented separately from the agent's own information. 
+                # Then you can change communication parameters such as fidelity of info transmitted (add noise) 
             
             f_food = phi_food * phi_visible
             # f_food_otheragents = phi_food * phi_agents  # making food info from other agents a separate feature with separate weights
@@ -369,54 +391,50 @@ print('simulation run time = ' + str(endtime - starttime))
 did_reach_food = time_to_first_food_allsims < N_timesteps  # did this bird reach food in time? (N_sims, N_agents)
 num_agents_did_reach_food = np.sum(did_reach_food, axis=1) # number of birds that reached food in time (N_sims, 1)
 
-#Distribution over bird populations
-fig, ax = plt.subplots()
-ax.hist(num_agents_did_reach_food, bins=N_agents+1)
-ax.set_title('Number of birds that reached food')
-ax.set_xlim([0, N_agents + 1 ])
-fig.tight_layout()
-
 # number of agents that failed to reach food 
 failed_to_reach_food = 1 - did_reach_food  # did this bird reach food in time? (N_sims, N_agents)
 num_agents_failed_reach_food = np.sum(failed_to_reach_food, axis=1) # number of birds that reached food in time (N_sims, 1)
  
-fig, ax = plt.subplots()
-ax.hist(num_agents_failed_reach_food, bins=N_agents+1)
-# ax.set_title('Number of birds that failed to reach food')
-ax.set_xlabel('$N_{failed}$')
-ax.set_ylabel('Number of individuals')
-ax.set_xlim([0, N_agents + 1 ])
-fig.tight_layout()
+if do_plot_numfailed:
+    fig, ax = plt.subplots()
+    ax.hist(num_agents_failed_reach_food, bins=N_agents+1)
+    # ax.set_title('Number of birds that failed to reach food')
+    ax.set_xlabel('$N_{failed}$')
+    ax.set_ylabel('Number of individuals')
+    ax.set_xlim([0, N_agents + 1 ])
+    fig.tight_layout()
 
 #%% Time to first food item
 
 pop_mean_time_to_first_food = np.mean(time_to_first_food_allsims, axis=1) # (N_sims,) mean across individuals in the population
 pop_var_time_to_first_food = np.var(time_to_first_food_allsims, axis=1)
 
-# Distribution over populations 
-fig, ax = plt.subplots()
-ax.hist(pop_mean_time_to_first_food, bins=np.arange(N_timesteps + 2))
-ax.set_xlabel('Time to food location')
-ax.set_ylabel('Number of populations')
-ax.set_xlim([0, N_timesteps+2 ])
-ax.set_xticks(np.linspace(0, N_timesteps, 6).astype(int))
-fig.tight_layout()
+if do_plot_timetofood:
 
-fig, ax = plt.subplots()
-ax.hist(pop_var_time_to_first_food, bins=np.arange(N_timesteps))
-ax.set_title('Time to food location \n (variance across population)')
-ax.set_ylabel('Number of populations')
-ax.set_xlim([0, N_timesteps+2 ])
-fig.tight_layout()
-
-#Distribution over individuals for the very last population simulated
-si = 0
-fig, ax = plt.subplots()
-ax.hist(time_to_first_food_allsims[si], bins=np.arange(N_timesteps+2))
-ax.set_xlabel('Time to food location')
-ax.set_ylabel('Number of individuals')
-ax.set_xlim([0, N_timesteps +2 ])
-fig.tight_layout()
+    # Distribution over populations 
+    fig, ax = plt.subplots()
+    ax.hist(pop_mean_time_to_first_food, bins=np.arange(N_timesteps + 2))
+    ax.set_xlabel('Time to food location')
+    ax.set_ylabel('Number of populations')
+    ax.set_xlim([0, N_timesteps+2 ])
+    ax.set_xticks(np.linspace(0, N_timesteps, 6).astype(int))
+    fig.tight_layout()
+    
+    fig, ax = plt.subplots()
+    ax.hist(pop_var_time_to_first_food, bins=np.arange(N_timesteps))
+    ax.set_title('Time to food location \n (variance across population)')
+    ax.set_ylabel('Number of populations')
+    ax.set_xlim([0, N_timesteps+2 ])
+    fig.tight_layout()
+    
+    #Distribution over individuals for the very last population simulated
+    si = 0
+    fig, ax = plt.subplots()
+    ax.hist(time_to_first_food_allsims[si], bins=np.arange(N_timesteps+2))
+    ax.set_xlabel('Time to food location')
+    ax.set_ylabel('Number of individuals')
+    ax.set_xlim([0, N_timesteps +2 ])
+    fig.tight_layout()
 
 
 #%%  
@@ -436,7 +454,8 @@ calories_acquired_pop_var = np.var(calories_acquired_per_unit_time, axis=(1))
 # ax.set_title('Mean distance to nearest neighbor (across population)')
 # fig.tight_layout()
 
-if doPlotDistanceToNeighbor:
+
+if do_plot_dist_to_neighbors:
     # Distribution over simulations 
     fig, ax = plt.subplots()
     ax.hist(dist_to_nearest_neighbor_pop_mean)
@@ -448,7 +467,7 @@ if doPlotDistanceToNeighbor:
     ax.set_title('Variance distance to nearest neighbor (across population and time)')
     fig.tight_layout()
 
-if doPlotCalories:
+if do_plot_calories:
     # Distribution over simulations 
     fig, ax = plt.subplots()
     ax.hist(calories_acquired_pop_mean)
@@ -464,7 +483,7 @@ if doPlotCalories:
 
 #%% Quantify foraging success or evolutionary fitness
 
-if doPlotCalories:
+if do_plot_calories:
 
     # plot each agent's cumulative calorie acquitision over time 
     # ai = 0
@@ -495,25 +514,143 @@ if doPlotCalories:
     ax.hist(mean_calories_acquired_time)
     ax.set_xlabel('Mean calories acquired (across time)')
     fig.tight_layout()
+    
+#%% ***************  PLOTS OF MODEL INTERNALS *********************************
+
+#%% State (phi_agent)
+phi_agent = np.zeros([N_states, 1])
+phi_agent[next_loc_1d] = 1 
+phi_agent_2d = np.reshape(phi_agent, (edge_size, edge_size))
+fig, ax = plt.subplots()
+sns.heatmap(ax=ax, data=phi_agent_2d, yticklabels=False, xticklabels=False, 
+            square=True, vmin=0, vmax=1, cbar=False, cmap=sns.color_palette("mako", as_cmap=True))
+
+
+#%% Successor Representation Matrix applied to state (M @ phi_agent) 
+SR_phi = agent.SR @ phi_agent
+SR_phi_2d = np.reshape(SR_phi, (edge_size, edge_size))
+
+fig, ax = plt.subplots()
+sns.heatmap(ax=ax, data=SR_phi_2d, yticklabels=False, xticklabels=False, 
+            square=True, cbar=True, norm=LogNorm(), cmap=sns.color_palette("mako", as_cmap=True))
+
+log_SR_phi_2d = np.log(SR_phi_2d)
+vmin = np.min(log_SR_phi_2d)
+vmax = np.max(log_SR_phi_2d)
+fig, ax = plt.subplots()
+sns.heatmap(ax=ax, data=log_SR_phi_2d, yticklabels=False, xticklabels=False, 
+            square=True, cbar=True, vmin=vmin, vmax=vmax, cmap=sns.color_palette("mako", as_cmap=True))
+
+#%% Expected reward computed for all locations ( w.T @  M )
+
+value_food = f_food.T @ agent.SR
+value_food_2d = np.reshape(value_food, (edge_size, edge_size))
+
+vmin = np.min(value_food_2d)
+vmax = np.max(value_food_2d)
+if vmin <= 0: 
+    vmin = 1e-5
+if vmax <= 0:
+    vmax = 1
+
+fig, ax = plt.subplots()
+sns.heatmap(ax=ax, data=value_food_2d, yticklabels=False, xticklabels=False, 
+            square=True, cbar=True, norm=LogNorm(vmin=vmin, vmax=vmax), cmap=sns.color_palette("rocket", as_cmap=True))
+            # square=True, vmin=0, vmax=1,  cbar=True,  cmap=sns.color_palette("rocket", as_cmap=True))
+# ax.set_title('$ w_{food}^T M$')
+
+value_otheragents = f_otheragents_1d.T @ agent.SR
+value_otheragents_2d = np.reshape(value_otheragents, (edge_size, edge_size))
+
+fig, ax = plt.subplots()
+sns.heatmap(ax=ax, data=value_otheragents_2d , yticklabels=False, xticklabels=False, 
+            square=True,   cbar=True, norm=LogNorm(vmin=vmin, vmax=vmax), cmap=sns.color_palette("rocket", as_cmap=True))
+            # square=True, vmin=0, vmax=1,  cbar=True, norm=LogNorm(), cmap=sns.color_palette("rocket", as_cmap=True))
+# ax.set_title('$ w_{neighbors}^T M $')
+
+#%% Weighted value function
+
+value_food = c_food * f_food.T @ agent.SR
+value_food_2d = np.reshape(value_food, (edge_size, edge_size))
+
+value_otheragents = c_otheragents * f_otheragents_1d.T @ agent.SR
+value_otheragents_2d = np.reshape(value_otheragents, (edge_size, edge_size))
+
+sum_weighted_vals_2d =  value_food_2d + value_otheragents_2d
+val_weighted_sum = agent.SR @ ( c_food * f_food  + c_otheragents * f_otheragents_1d)
+val_weighted_sum_2d = np.reshape( val_weighted_sum , (edge_size, edge_size))
+
+vmax = np.max(value_food_2d)
+if vmin <= 0: 
+    vmin = 1e-5
+if vmax <= 0:
+    vmax = 1
+
+
+fig, ax = plt.subplots()
+sns.heatmap(ax=ax, data=value_food_2d, yticklabels=False, xticklabels=False, 
+            square=True, cbar=True, norm=LogNorm(vmin=vmin, vmax=vmax),  cmap=sns.color_palette("rocket", as_cmap=True))
+# ax.set_title('$c_{food} w_{food}^T M$')
+
+fig, ax = plt.subplots()
+sns.heatmap(ax=ax, data=value_otheragents_2d , yticklabels=False, xticklabels=False, 
+            square=True,  cbar=True, norm=LogNorm(vmin=vmin, vmax=vmax), cmap=sns.color_palette("rocket", as_cmap=True))
+# ax.set_title('$c_{neighbors} w_{neighbors}^T M$')
+
+fig, ax = plt.subplots()
+sns.heatmap(ax=ax, data=sum_weighted_vals_2d , yticklabels=False, xticklabels=False, 
+            square=True,  cbar=True, norm=LogNorm(vmin=vmin, vmax=vmax), cmap=sns.color_palette("rocket", as_cmap=True))
+# ax.set_title('$V(S)$')
+
+fig, ax = plt.subplots()
+sns.heatmap(ax=ax, data=sum_weighted_vals_2d , yticklabels=False, xticklabels=False, 
+            square=True,  cbar=True, norm=LogNorm(vmin=vmin, vmax=vmax), cmap=sns.color_palette("rocket", as_cmap=True))
+ax.set_title('M (c_{food}w_{food}^T + c_{neighbors} w_{neighbors}^T )')
+
+fig, ax = plt.subplots()
+sns.heatmap(ax=ax, data=np.reshape(value, (edge_size, edge_size)), yticklabels=False, xticklabels=False, 
+            square=True, cbar=True, norm=LogNorm(vmin=vmin, vmax=vmax), cmap=sns.color_palette("rocket", as_cmap=True))
+ax.set_title('from sim')
+
+
+#%% Reward locations (phi_food)
+w_2d = np.reshape(f_food, (edge_size, edge_size))
+
+fig, ax = plt.subplots()
+sns.heatmap(ax=ax, data=w_2d, yticklabels=False, xticklabels=False, 
+            square=True, vmin=0, vmax=1, cbar=False, cmap=sns.color_palette("rocket", as_cmap=True))
+
+#%% Value ( w.T @  M @ phi_agent )
+
+# w_SR = f_food.T @ agent.SR
+# w_SR_2d = np.reshape(w_SR, (edge_size, edge_size))
+
+# fig, ax = plt.subplots()
+# sns.heatmap(ax=ax, data=w_SR_2d, yticklabels=False, xticklabels=False, 
+#             square=True, vmin=0, vmax=1, center=0, cbar=False)
+
 
 #%% plot food reward map for one agent
 
-f_food_2d = np.reshape(phi_food * phi_visible, (edge_size, edge_size))
-fig, ax = plt.subplots()
-sns.heatmap(ax=ax, data=f_food_2d, vmin=0, vmax=1, center=0, cbar=True)
-ax.plot(xloc_self, yloc_self, '.')
-ax.set_title('perceived food location')
-
-
-fig, ax = plt.subplots()
-sns.heatmap(ax=ax, data=phi_visible_mat, vmin=0, vmax=1, center=0, cbar=True)
-ax.plot(xloc_self, yloc_self, '.')
-ax.set_title('Sight radius for food')
+if do_plot_visible_food: 
+    f_food_2d = np.reshape(phi_food * phi_visible, (edge_size, edge_size))
+    fig, ax = plt.subplots()
+    sns.heatmap(ax=ax, data=f_food_2d, vmin=0, vmax=1, center=0, cbar=True)
+    ax.plot(xloc_self, yloc_self, '.')
+    ax.set_title('perceived food location')
+    
+    
+    fig, ax = plt.subplots()
+    sns.heatmap(ax=ax, data=phi_visible_mat, vmin=0, vmax=1, center=0, cbar=True)
+    ax.plot(xloc_self, yloc_self, '.')
+    ax.set_title('Sight radius for food')
 
 #%% plot social reward map for one agent
-fig, ax = plt.subplots()
-sns.heatmap(ax=ax, data=f_otheragents_2d, center=0, cbar=True)
-ax.set_title('social reward map')
+
+if do_plot_value_otheragents: 
+    fig, ax = plt.subplots()
+    sns.heatmap(ax=ax, data=f_otheragents_2d, center=0, cbar=True)
+    ax.set_title('social reward map')
 
 #%% plot probability of choosing a location as a function of value of that location
 
@@ -557,8 +694,6 @@ if plotValueFuncAtTime:
 
 #%%
 # ************************* CREATE USER INTERFACE ***************************
-
-doTrajectoryTrace = False
 
 if doAnimation: 
     
@@ -627,38 +762,41 @@ if doAnimation:
 #%% **********************  SAVE DATA ****************************************
 # saveData = False
 
+# filepath = r"C:\Users\admin\Dropbox\Code\Basis-code\simulated_data\sim1"
+filepath_data = directory_data + filename_data
+file_data = Path(filepath_data + '.sav')
+# saving to m4 using ffmpeg writer
+if file_data.exists():
+    filepath_data = filepath_data + '_v2'
 
+# save the model to disk
+# filename = filepath + '.sav'
+dictionary = {'N_sims':N_sims, 'N_timesteps':N_timesteps, 'N_agents':N_agents, \
+              'pop_mean_time_to_first_food': pop_mean_time_to_first_food, \
+              'num_agents_failed_reach_food': num_agents_failed_reach_food, \
+              'N_food_units_total':N_food_units_total, 'patch_dim':patch_dim, \
+              'doShareFoodInfo':doShareFoodInfo, 'example_agent':agent, 'c_weights':c_weights}
 
-# if saveData:
-#     filepath = r"C:\Users\admin\Dropbox\Code\Basis-code\simulated_data\sim1"
-#     my_file = Path(filepath)
-#     # saving to m4 using ffmpeg writer
-#     if my_file.exists():
-#         filepath = filepath + '_v2'
-
-#     # save the model to disk
-#     filename = filepath + ".sav"
-
-#     pickle.dump(pop_mean_time_to_first_food, open(filename, 'wb'))
-    
+pickle.dump(dictionary, open(filepath_data + '.sav', 'wb'))
 
 
 #%% **********************  SAVE ANIMATION  ****************************************
 
-saveMovie = False
+# saveMovie = False
 
 if saveMovie:
-    filepath = r"C:\Users\admin\Dropbox\Code\Basis-code\multiagent_foodonly_v2.gif"
-    filepath = r"C:\Users\admin\Dropbox\Code\Basis-code\multiagent_simple_explorebias10"
+    # filepath = r"C:\Users\admin\Dropbox\Code\Basis-code\multiagent_foodonly_v2.gif"
+    # filepath = r"C:\Users\admin\Dropbox\Code\Basis-code\multiagent_simple_explorebias10"
     
-    my_file = Path(filepath + ".gif")
+    filepath_movie = directory_movie + filename_movie
+    moviefile = Path(filepath_movie + '.gif')
     # saving to m4 using ffmpeg writer
-    if my_file.exists():
-        filepath = filepath + '_v2'
+    if moviefile.exists():
+        filepath_movie = filepath_movie + '_v2'
 
-    ani.save(filepath + ".gif", dpi=300, writer=animation.PillowWriter(fps=2))
+    ani.save(filepath_movie + '.gif', dpi=300, writer=animation.PillowWriter(fps=2))
     
     # ## saving as an mp4
-    filename = r"C:\Users\admin\Dropbox\Code\Basis-code\multiagent_mp4.mp4"
+    # filename = r"C:\Users\admin\Dropbox\Code\Basis-code\multiagent_mp4.mp4"
     # ani.save(filename, writer=animation.FFMpegWriter(fps=30) )
  

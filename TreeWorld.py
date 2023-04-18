@@ -13,9 +13,15 @@ class Simulation(object):
         return
 
 
-class TreeEnvironment(object):
+class Environment(object):
     def __init__(self): 
         return
+    
+    # def add_food_patches(self, N_patches, patch_dim, edge_size):
+        
+    #     return x_locs, y_locs 
+    
+    
 
 class SimpleAgent(object): 
     def __init__(self, T_prob, N_states, N_timesteps, discount_factor, energy_init=50, sight_radius=40): 

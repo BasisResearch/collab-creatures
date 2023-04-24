@@ -58,7 +58,7 @@ N_agents = 9
 food_statistics_types = ["drop_food_once", "replenish_only_after_depleted", "regular_intervals", "poisson"] 
 food_statistics_type = "drop_food_once"
 N_food_units_total = 16
-patch_dim = 4
+patch_dim = 4  #a patch has dimensions (patch_dim x patch_dim )
 N_units_per_patch = patch_dim ** 2
 N_patches = np.ceil(N_food_units_total / N_units_per_patch).astype(int)
 calories_acquired_per_unit_time = 5 # when an agent is at a food location, it gains this many calories per time step 
@@ -66,6 +66,7 @@ epoch_dur = N_timesteps # add new food in random locations every epoch_dur time 
 
 # Agent parameters 
 doShareFoodInfo = False
+max_step_size = 3
 sight_radius = 50
 energy_init = 50
 discount_factor = 0.9
@@ -88,7 +89,7 @@ time_to_first_food_allsims = np.zeros([N_sims, N_agents])
 
 # ************** CREATE ENVIRONMENT ***************************
 edge_size = 30 # grid world has dimensions edge_size x edge_size
-x_arr, y_arr, loc_id_arr = util.create_2Dgrid(edge_size)
+x_arr, y_arr, loc_1d_arr = util.create_2Dgrid(edge_size)
 
 # --------------- Build transition matrix-----------------------------
 
@@ -97,9 +98,9 @@ T = np.zeros([N_states, N_states])
 
 # compute eligible state transitions with a Euclidean distance rule 
 # (up, down, left ,right)
-for ai in range(N_states):
+for i in range(N_states):
   for j in range(N_states):
-    T[ai,j] = ( np.sqrt( (x_arr[j] - x_arr[ai])**2 + (y_arr[j] - y_arr[ai])**2 ) ) <= 3 # make this bigger to include more eligible states!!! 
+    T[i,j] = ( np.sqrt( (x_arr[j] - x_arr[i])**2 + (y_arr[j] - y_arr[i])**2 ) ) <= max_step_size # make this bigger to include more eligible states!!! 
 
 T_eligible = T # save the binary representation 
 T_prob = T / np.sum(T, axis=0, keepdims=True) # normalization so elements represent probabilities 
@@ -166,7 +167,7 @@ for si in range(N_sims):
         plt.imshow(food_init_loc_2d)
         # plt.imshow(food_2d_locs + predator_2d_locs)
     
-    # food_loc_id = loc_id_arr[np.random.randint(edge_size**2)] # pick a random loc_id
+    # food_loc_id = loc_1d_arr[np.random.randint(edge_size**2)] # pick a random loc_id
     # food_loc_id = edge_size**2 - 1 #put the food as far out as possible
     
     # for ai in range(N_food):

@@ -14,11 +14,48 @@ class Simulation(object):
 
 
 class Environment(object):
-    def __init__(self): 
+
+    def __init__(self, edge_size=30, N_total_food_units=16, patch_dim=1, max_step_size=3):
+
+        self.edge_size = edge_size
+        self.N_states = edge_size ** 2
+        self.N_total_food_units = N_total_food_units
+        self.patch_dim = patch_dim 
+
+        self.max_step_size = max_step_size 
+
+        self.x_arr, self.y_arr, self.locs_1d_arr = util.create_2Dgrid(edge_size)
+        self.T_prob, self.T_eligible = self.build_transition_matrix(max_step_size=self.max_step_size)
+
         return
     
+    def build_transition_matrix(self, max_step_size=1):
+        # This function is called when the environment is initialized and the transition matrix becomes fixed. 
+        # The maximum step size is passed in as a parameter in the initialization function. 
+        # After initialization you can still call this function and pass in an arbitrary value for the max step size to 
+        # visualize what different transition matrices look like, but it won't change the transition matrix of the environment. 
+
+        # compute eligible state transitions with a Euclidean distance rule 
+        # (up, down, left ,right)
+
+        T = np.zeros([self.N_states, self.N_states])
+
+        for i in range(self.N_states):
+            for j in range(self.N_states):
+                T[i,j] = ( np.sqrt( (self.x_arr[j] - self.x_arr[i])**2 + (self.y_arr[j] - self.y_arr[i])**2 ) ) <= max_step_size # make this bigger to include more eligible states!!! 
+
+        T_eligible = T # save the binary representation 
+        T_prob = T / np.sum(T, axis=0, keepdims=True) 
+
+        return T_prob, T_eligible
+    
+    # def set_transition_matrix(self, T_prob, T_eligible):
+    #     self.T_prob = T_prob
+    #     self.T_eligible = T_eligible
+    #     return
+    
     # def add_food_patches(self, N_patches, patch_dim, edge_size):
-        
+    #     return 
     #     return x_locs, y_locs 
     
     

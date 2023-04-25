@@ -157,10 +157,10 @@ for si in range(N_sims):
         
     
     N_predators = 0
-    f_predators = np.zeros([N_states, 1])  # vector indicating location of predators 
+    w_predators = np.zeros([N_states, 1])  # vector indicating location of predators 
     list_predator_loc_id = np.random.permutation(np.arange(N_states))[:N_predators] # randomly choose K locations to place new food 
-    f_predators[list_predator_loc_id] = 1
-    predator_2d_locs = np.reshape(f_predators, [edge_size,edge_size])
+    w_predators[list_predator_loc_id] = 1
+    predator_2d_locs = np.reshape(w_predators, [edge_size,edge_size])
     
     if plot_initial_world:
         fig_env, ax_env = plt.subplots()
@@ -265,33 +265,34 @@ for si in range(N_sims):
             # if agent.energy_total <= 0:
             #     list_deceased_agents = list_surviving_agents.pop(ai)  # be careful b/c the rest of this for loop assumes all the agents are alive
             
-            # -------------- Make a decision --------------------------------  
+            # -------------- Compute expected rewards, values, and make a decision --------------------------------  
             
             phi_agents[prev_loc_1d] -= 1 # move out of previous location
-            # agent.phi_neighbors = phi_agents  # assume this agent knows the locations of all other agents
             
-            # sum_weighted_features = c_food * phi_food + c_otheragents * agent.phi_neighbors
-            
-            # OTHER AGENTS
+            # EXPECTED REWARD RELATED TO OTHER AGENTS
             xloc_allagents, yloc_allagents = util.loc1Dto2D(loc_1d_allagents, edge_size)
             xloc_self, yloc_self = util.loc1Dto2D(prev_loc_1d, edge_size)
             # only include locations of agents outside of current location
             xloc_neighbors, yloc_neighbors = util.loc1Dto2D(loc_1d_allagents[loc_1d_allagents != prev_loc_1d], edge_size)
-            f_otheragents_2d = agent.reward_function_otheragents(xloc_neighbors, yloc_neighbors, xloc_self, yloc_self, edge_size)
-            f_otheragents_1d = np.reshape(f_otheragents_2d, (N_states, 1))
             
-            # CENTER OF MASS
+            # expected reward at each location based on proximity to other agents 
+            w_otheragents_2d = agent.reward_function_otheragents(xloc_neighbors, yloc_neighbors, xloc_self, yloc_self, edge_size)
+            w_otheragents_1d = np.reshape(w_otheragents_2d, (N_states, 1))
+            
+            # EXPECTED REWARD RELATED TO CENTER OF MASS
             xloc_otheragents = np.delete(xloc_allagents, ai)  # remove this agent's own location from the list 
             yloc_otheragents = np.delete(yloc_allagents, ai) # 
             if N_agents > 1:
                 xloc_centerofmass, yloc_centerofmass = util.center_of_mass(xloc_otheragents, yloc_otheragents)
             else:
                 xloc_centerofmass, yloc_centerofmass = xloc_self, yloc_self
-            #compute distance from center of mass of each agent. 
-            f_groupcenterofmass = np.zeros([edge_size, edge_size])
-            f_groupcenterofmass[int(yloc_centerofmass), int(xloc_centerofmass)] = 0.5 
-            f_groupcenterofmass = np.reshape(f_groupcenterofmass, (N_states, 1))
+                 
+            # expected reward of each location based on this agent's distance from center of mass of the group
+            w_groupcenterofmass = np.zeros([edge_size, edge_size])
+            w_groupcenterofmass[int(yloc_centerofmass), int(xloc_centerofmass)] = 0.5 
+            w_groupcenterofmass = np.reshape(w_groupcenterofmass, (N_states, 1))
             
+            # VISIBILITY CONSTRAINTS
             phi_visible_mat = agent.compute_visible_locations(xloc_self, yloc_self, edge_size)
             phi_visible = np.reshape(phi_visible_mat, (N_states, 1))
             
@@ -303,16 +304,17 @@ for si in range(N_sims):
                 # The info from other agents should be represented separately from the agent's own information. 
                 # Then you can change communication parameters such as fidelity of info transmitted (add noise) 
             
-            f_food = phi_food * phi_visible
-            # f_food_otheragents = phi_food * phi_agents  # making food info from other agents a separate feature with separate weights
+            # EXPECTED REWARD RELATED TO FOOD
+            w_food = phi_food * phi_visible # expected food reward at each location
+            # w_food_otheragents = phi_food * phi_agents  # making food info from other agents a separate feature with separate weights
             
             sum_weighted_features = \
-                  c_weights[0] * f_food \
-                + c_weights[1] * f_predators \
-                + c_weights[2] * f_otheragents_1d   \
-                + c_weights[3] * f_groupcenterofmass 
+                  c_weights[0] * w_food \
+                + c_weights[1] * w_predators \
+                + c_weights[2] * w_otheragents_1d   \
+                + c_weights[3] * w_groupcenterofmass 
                         
-            # sum_weighted_features = c_food * phi_food  + c_predator * phi_predator #+ c_otheragents * f_otheragents_1d
+            # sum_weighted_features = c_food * phi_food  + c_predator * phi_predator #+ c_otheragents * w_otheragents_1d
             
             # VALUE FUNCITON 
             value = agent.SR @ sum_weighted_features         # (N_states, 1) vector
@@ -321,6 +323,8 @@ for si in range(N_sims):
             # eligible states are those specified by the transition matrix. Can constrain further to exclude states not occupied by other agents
             eligible_states_id = np.nonzero(T_eligible[:, prev_loc_1d])[0]  # * np.logical_not(phi_agents.flatten()))[0]       # state IDs of eligible states
             value_eligible = value[eligible_states_id].flatten()   # value of eligible states plus some noise 
+            
+            # ACTION SELECTION
             
             if doProbabilisticPolicy:
                 if doSoftmaxPolicy:
@@ -525,7 +529,7 @@ phi_agent_2d = np.reshape(phi_agent, (edge_size, edge_size))
 fig, ax = plt.subplots()
 sns.heatmap(ax=ax, data=phi_agent_2d, yticklabels=False, xticklabels=False, 
             square=True, vmin=0, vmax=1, cbar=False, cmap=sns.color_palette("mako", as_cmap=True))
-
+ax.set_title('Agent state')
 
 #%% Successor Representation Matrix applied to state (M @ phi_agent) 
 SR_phi = agent.SR @ phi_agent
@@ -534,18 +538,24 @@ SR_phi_2d = np.reshape(SR_phi, (edge_size, edge_size))
 fig, ax = plt.subplots()
 sns.heatmap(ax=ax, data=SR_phi_2d, yticklabels=False, xticklabels=False, 
             square=True, cbar=True, norm=LogNorm(), cmap=sns.color_palette("mako", as_cmap=True))
+ax.set_title('Successor Representation applied to agent state')
 
-log_SR_phi_2d = np.log(SR_phi_2d)
-vmin = np.min(log_SR_phi_2d)
-vmax = np.max(log_SR_phi_2d)
-fig, ax = plt.subplots()
-sns.heatmap(ax=ax, data=log_SR_phi_2d, yticklabels=False, xticklabels=False, 
-            square=True, cbar=True, vmin=vmin, vmax=vmax, cmap=sns.color_palette("mako", as_cmap=True))
+# log_SR_phi_2d = np.log(SR_phi_2d)
+# vmin = np.min(log_SR_phi_2d)
+# vmax = np.max(log_SR_phi_2d)
+# fig, ax = plt.subplots()
+# sns.heatmap(ax=ax, data=log_SR_phi_2d, yticklabels=False, xticklabels=False, 
+#             square=True, cbar=True, vmin=vmin, vmax=vmax, cmap=sns.color_palette("mako", as_cmap=True))
 
 #%% Expected reward computed for all locations ( w.T @  M )
 
-value_food = f_food.T @ agent.SR
+value_food = w_food.T @ agent.SR
 value_food_2d = np.reshape(value_food, (edge_size, edge_size))
+
+value_otheragents = w_otheragents_1d.T @ agent.SR
+value_otheragents_2d = np.reshape(value_otheragents, (edge_size, edge_size))
+
+# plots
 
 vmin = np.min(value_food_2d)
 vmax = np.max(value_food_2d)
@@ -560,8 +570,6 @@ sns.heatmap(ax=ax, data=value_food_2d, yticklabels=False, xticklabels=False,
             # square=True, vmin=0, vmax=1,  cbar=True,  cmap=sns.color_palette("rocket", as_cmap=True))
 # ax.set_title('$ w_{food}^T M$')
 
-value_otheragents = f_otheragents_1d.T @ agent.SR
-value_otheragents_2d = np.reshape(value_otheragents, (edge_size, edge_size))
 
 fig, ax = plt.subplots()
 sns.heatmap(ax=ax, data=value_otheragents_2d , yticklabels=False, xticklabels=False, 
@@ -571,14 +579,14 @@ sns.heatmap(ax=ax, data=value_otheragents_2d , yticklabels=False, xticklabels=Fa
 
 #%% Weighted value function
 
-value_food = c_food * f_food.T @ agent.SR
+value_food = c_food * w_food.T @ agent.SR
 value_food_2d = np.reshape(value_food, (edge_size, edge_size))
 
-value_otheragents = c_otheragents * f_otheragents_1d.T @ agent.SR
+value_otheragents = c_otheragents * w_otheragents_1d.T @ agent.SR
 value_otheragents_2d = np.reshape(value_otheragents, (edge_size, edge_size))
 
 sum_weighted_vals_2d =  value_food_2d + value_otheragents_2d
-val_weighted_sum = agent.SR @ ( c_food * f_food  + c_otheragents * f_otheragents_1d)
+val_weighted_sum = agent.SR @ ( c_food * w_food  + c_otheragents * w_otheragents_1d)
 val_weighted_sum_2d = np.reshape( val_weighted_sum , (edge_size, edge_size))
 
 vmax = np.max(value_food_2d)
@@ -615,7 +623,7 @@ ax.set_title('from sim')
 
 
 #%% Reward locations (phi_food)
-w_2d = np.reshape(f_food, (edge_size, edge_size))
+w_2d = np.reshape(w_food, (edge_size, edge_size))
 
 fig, ax = plt.subplots()
 sns.heatmap(ax=ax, data=w_2d, yticklabels=False, xticklabels=False, 
@@ -623,7 +631,7 @@ sns.heatmap(ax=ax, data=w_2d, yticklabels=False, xticklabels=False,
 
 #%% Value ( w.T @  M @ phi_agent )
 
-# w_SR = f_food.T @ agent.SR
+# w_SR = w_food.T @ agent.SR
 # w_SR_2d = np.reshape(w_SR, (edge_size, edge_size))
 
 # fig, ax = plt.subplots()
@@ -650,7 +658,7 @@ if do_plot_visible_food:
 
 if do_plot_value_otheragents: 
     fig, ax = plt.subplots()
-    sns.heatmap(ax=ax, data=f_otheragents_2d, center=0, cbar=True)
+    sns.heatmap(ax=ax, data=w_otheragents_2d, center=0, cbar=True)
     ax.set_title('social reward map')
 
 #%% plot probability of choosing a location as a function of value of that location

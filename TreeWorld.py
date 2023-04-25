@@ -21,12 +21,16 @@ class Environment(object):
         self.N_states = edge_size ** 2
         self.N_total_food_units = N_total_food_units
         self.patch_dim = patch_dim 
+        self.food_decay_rate = 0.3 
 
         self.max_step_size = max_step_size 
 
         self.x_arr, self.y_arr, self.locs_1d_arr = util.create_2Dgrid(edge_size)
         self.T_prob, self.T_eligible = self.build_transition_matrix(max_step_size=self.max_step_size)
 
+        self.phi_food = np.zeros([self.N_states, 1]) # indicator vector showing which locations are occupied by food. 
+        self.food_calories_by_loc = np.zeros([self.N_states, 1]) # amount of food at each location in units of calories 
+ 
         return
     
     def build_transition_matrix(self, max_step_size=1):
@@ -54,9 +58,68 @@ class Environment(object):
     #     self.T_eligible = T_eligible
     #     return
     
-    # def add_food_patches(self, N_patches, patch_dim, edge_size):
-    #     return 
-    #     return x_locs, y_locs 
+    def add_food_patches(self, food_statistics_type="drop_food_once"):
+        # returns the x and y locations of the new food locations 
+        N_units_per_patch = self.patch_dim ** 2
+        N_patches = np.ceil(self.N_total_food_units / N_units_per_patch).astype(int)
+
+        if food_statistics_type == "drop_food_once":
+            
+            for pi in range(N_patches): 
+
+                x_start = np.random.randint(0, self.edge_size - self.patch_dim)
+                y_start = np.random.randint(0, self.edge_size - self.patch_dim)
+                # generate (x,y) coordinates for each food unit in the patch 
+                x_range, y_range = np.arange(x_start, x_start + self.patch_dim), np.arange(y_start, y_start + self.patch_dim)
+                x_locs, y_locs = np.meshgrid(x_range, y_range, indexing='xy') 
+                # convert to 1D locations 
+                list_newfood_loc_1d = util.loc2Dto1D(x_locs.flatten(), y_locs.flatten(), self.edge_size)
+                
+                # update food tracking variables 
+                self.phi_food[list_newfood_loc_1d] = 1  # boolean
+                self.food_calories_by_loc[list_newfood_loc_1d] = 20 # add a fixed number of calories to each new food location 
+
+        return 
+    
+    # def initialize_bird_agents(self, N_agents, agent_params):
+    #     list_agents = []
+    #     loc_1d_allagents = np.zeros(N_agents, dtype=int) # array containing location of each agent (index is agent ID)
+    #     phi_agents = np.zeros([env.N_states, 1]) # # one-hot vector indicating how many agents are in each location (index is loc ID)
+    
+    #     for ai in range(N_agents):
+    #         new_agent = BirdAgent(agent_params, self, N_timesteps)
+    #         list_agents.append(new_agent)
+            
+    #         current_loc_id = np.random.randint(N_states) # pick a random location for eaceh agent
+    #         new_agent.state_trajectory[0] = current_loc_id
+            
+    #         # update which locations are occupied by agents 
+    #         loc_1d_allagents[ai] = current_loc_id   # list
+    #         phi_agents[current_loc_id] += 1                    # add an agent to this location
+
+    #     return list_agents, loc_1d_allagents, phi_agents
+
+    
+class BirdAgent(object):
+    def __init__(self, env, N_timesteps, discount_factor, energy_init=50, sight_radius=40): 
+        self.discount_factor = discount_factor # scalar between 0 and 1 
+        self.SR = np.linalg.pinv(np.eye(env.N_states) - discount_factor * env.T_prob) # (N_states, N_states) matrix 
+        self.state_trajectory = np.zeros([N_timesteps])
+        self.value_trajectory = np.zeros([env.N_states, N_timesteps])
+        self.phi_neighbors = np.zeros([env.N_states, 1]) # indicator  vector showing which locations do I see a neighboring agent?
+        self.energy_total = energy_init # scalar quantity (calories)
+        self.energy_trajectory = np.zeros([N_timesteps]) # not sure if we need this to be inside the class
+        self.energy_trajectory[0] = energy_init
+        self.times_at_food = [] # list of frames the agent is at a food location 
+        self.sight_radius = sight_radius
+        
+
+        return 
+    
+    # def step_agent()
+    # def update_calories()
+    # 
+        
     
     
 

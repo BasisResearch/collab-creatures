@@ -120,7 +120,15 @@ class BirdAgent(object):
     # def update_calories()
     # 
         
-    
+    def compute_visible_locations(self, xloc_self, yloc_self, env):
+        phi_visible_mat = np.zeros([env.edge_size, env.edge_size])
+        x_arr = np.arange(env.edge_size)
+        y_arr = np.arange(env.edge_size)
+        x_grid, y_grid = np.meshgrid(x_arr, y_arr, indexing='xy')
+        phi_visible_mat = np.sqrt((x_grid - xloc_self)**2 + (y_grid - yloc_self)**2) <= self.sight_radius
+        
+        return phi_visible_mat
+
     
 
 class SimpleAgent(object): 

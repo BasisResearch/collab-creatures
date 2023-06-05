@@ -101,7 +101,7 @@ class Environment(object):
 
     
 class BirdAgent(object):
-    def __init__(self, env, N_timesteps, discount_factor, energy_init=50, sight_radius=40): 
+    def __init__(self, env, N_timesteps, discount_factor=0.8, energy_init=50, sight_radius=40): 
         self.discount_factor = discount_factor # scalar between 0 and 1 
         self.SR = np.linalg.pinv(np.eye(env.N_states) - discount_factor * env.T_prob) # (N_states, N_states) matrix 
         self.state_trajectory = np.zeros([N_timesteps])

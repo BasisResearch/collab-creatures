@@ -51,7 +51,7 @@ plt.close('all')
 
 # ---------------------- Simulation parameters ------------------------------
 N_sims = 1
-N_timesteps = 20
+N_timesteps = 50
 N_agents = 9
 
 # Food and environment parameters 
@@ -65,13 +65,13 @@ calories_acquired_per_unit_time = 5 # when an agent is at a food location, it ga
 epoch_dur = N_timesteps # add new food in random locations every epoch_dur time steps
 
 # Agent parameters 
-doShareFoodInfo = False
+doShareFoodInfo = True # Binary variable - are the birds communicating or not?
 max_step_size = 3
 sight_radius = 50
 energy_init = 50
 discount_factor = 0.9
 c_food = 0.5
-# c_food_otheragents = 1
+# c_info_otheragents = 1  # to what extent do the birds care about information from other birds?
 c_otheragents = 0.5
 c_group = 0
 c_predators = 0

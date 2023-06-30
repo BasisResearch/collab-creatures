@@ -43,6 +43,7 @@ do_plot_timetofood = False
 do_plot_calories =  False
 do_plot_visible_food = False
 do_plot_value_otheragents = False
+do_plot_model_internals = False
 doPrintAgentStateTrajectories = False
 
 
@@ -65,17 +66,17 @@ calories_acquired_per_unit_time = 5 # when an agent is at a food location, it ga
 epoch_dur = N_timesteps # add new food in random locations every epoch_dur time steps
 
 # Agent parameters 
-doShareFoodInfo = True # Binary variable - are the birds communicating or not?
-max_step_size = 3
-sight_radius = 50
+# doShareFoodInfo = True # Binary variable - are the birds communicating or not?
+max_step_size = 1
+sight_radius = 10
 energy_init = 50
 discount_factor = 0.9
-c_food = 0.5
-# c_info_otheragents = 1  # to what extent do the birds care about information from other birds?
-c_otheragents = 0.5
+c_food_self = 0.5
+c_food_others = 0.5  # to what extent do the birds care about information from other birds?
+c_otheragents = 0
 c_group = 0
-c_predators = 0
-c_weights = [c_food, c_predators, c_otheragents, c_group]
+# c_predators = 0
+c_weights = [c_food_self, c_food_others, c_otheragents, c_group]
 caloric_cost_per_unit_dist = 1
 doProbabilisticPolicy = True
 doSoftmaxPolicy = True
@@ -297,8 +298,8 @@ for si in range(N_sims):
             phi_visible = np.reshape(phi_visible_mat, (N_states, 1))
             
             # get information from other agents about whether there is food at their locations 
-            if doShareFoodInfo:
-                phi_visible[loc_1d_allagents] = 1   # can this agent see the locations of other agents?
+            # if doShareFoodInfo:
+            #     phi_visible[loc_1d_allagents] = 1   # can this agent see the locations of other agents?
                 # It's not quite communication between agents yet because there is no 
                 # capacity for misrepresentation here - the agent simply has information about other agent's locations.
                 # The info from other agents should be represented separately from the agent's own information. 
@@ -306,15 +307,15 @@ for si in range(N_sims):
             
             # EXPECTED REWARD RELATED TO FOOD
             w_food = phi_food * phi_visible # expected food reward at each location
-            # w_food_otheragents = phi_food * phi_agents  # making food info from other agents a separate feature with separate weights
+            w_food_others = phi_food * phi_agents  # making food info from other agents a separate feature with separate weights
             
             sum_weighted_features = \
                   c_weights[0] * w_food \
-                + c_weights[1] * w_predators \
+                + c_weights[1] * w_food_others \
                 + c_weights[2] * w_otheragents_1d   \
                 + c_weights[3] * w_groupcenterofmass 
                         
-            # sum_weighted_features = c_food * phi_food  + c_predator * phi_predator #+ c_otheragents * w_otheragents_1d
+            # sum_weighted_features = c_food_self * phi_food  + c_predator * phi_predator #+ c_otheragents * w_otheragents_1d
             
             # VALUE FUNCITON 
             value = agent.SR @ sum_weighted_features         # (N_states, 1) vector
@@ -522,112 +523,113 @@ if do_plot_calories:
     
 #%% ***************  PLOTS OF MODEL INTERNALS *********************************
 
-#%% State (phi_agent)
-phi_agent = np.zeros([N_states, 1])
-phi_agent[next_loc_1d] = 1 
-phi_agent_2d = np.reshape(phi_agent, (edge_size, edge_size))
-fig, ax = plt.subplots()
-sns.heatmap(ax=ax, data=phi_agent_2d, yticklabels=False, xticklabels=False, 
-            square=True, vmin=0, vmax=1, cbar=False, cmap=sns.color_palette("mako", as_cmap=True))
-ax.set_title('Agent state')
-
-#%% Successor Representation Matrix applied to state (M @ phi_agent) 
-SR_phi = agent.SR @ phi_agent
-SR_phi_2d = np.reshape(SR_phi, (edge_size, edge_size))
-
-fig, ax = plt.subplots()
-sns.heatmap(ax=ax, data=SR_phi_2d, yticklabels=False, xticklabels=False, 
-            square=True, cbar=True, norm=LogNorm(), cmap=sns.color_palette("mako", as_cmap=True))
-ax.set_title('Successor Representation applied to agent state')
-
-# log_SR_phi_2d = np.log(SR_phi_2d)
-# vmin = np.min(log_SR_phi_2d)
-# vmax = np.max(log_SR_phi_2d)
-# fig, ax = plt.subplots()
-# sns.heatmap(ax=ax, data=log_SR_phi_2d, yticklabels=False, xticklabels=False, 
-#             square=True, cbar=True, vmin=vmin, vmax=vmax, cmap=sns.color_palette("mako", as_cmap=True))
-
-#%% Expected reward computed for all locations ( w.T @  M )
-
-value_food = w_food.T @ agent.SR
-value_food_2d = np.reshape(value_food, (edge_size, edge_size))
-
-value_otheragents = w_otheragents_1d.T @ agent.SR
-value_otheragents_2d = np.reshape(value_otheragents, (edge_size, edge_size))
-
-# plots
-
-vmin = np.min(value_food_2d)
-vmax = np.max(value_food_2d)
-if vmin <= 0: 
-    vmin = 1e-5
-if vmax <= 0:
-    vmax = 1
-
-fig, ax = plt.subplots()
-sns.heatmap(ax=ax, data=value_food_2d, yticklabels=False, xticklabels=False, 
-            square=True, cbar=True, norm=LogNorm(vmin=vmin, vmax=vmax), cmap=sns.color_palette("rocket", as_cmap=True))
-            # square=True, vmin=0, vmax=1,  cbar=True,  cmap=sns.color_palette("rocket", as_cmap=True))
-# ax.set_title('$ w_{food}^T M$')
-
-
-fig, ax = plt.subplots()
-sns.heatmap(ax=ax, data=value_otheragents_2d , yticklabels=False, xticklabels=False, 
-            square=True,   cbar=True, norm=LogNorm(vmin=vmin, vmax=vmax), cmap=sns.color_palette("rocket", as_cmap=True))
-            # square=True, vmin=0, vmax=1,  cbar=True, norm=LogNorm(), cmap=sns.color_palette("rocket", as_cmap=True))
-# ax.set_title('$ w_{neighbors}^T M $')
-
-#%% Weighted value function
-
-value_food = c_food * w_food.T @ agent.SR
-value_food_2d = np.reshape(value_food, (edge_size, edge_size))
-
-value_otheragents = c_otheragents * w_otheragents_1d.T @ agent.SR
-value_otheragents_2d = np.reshape(value_otheragents, (edge_size, edge_size))
-
-sum_weighted_vals_2d =  value_food_2d + value_otheragents_2d
-val_weighted_sum = agent.SR @ ( c_food * w_food  + c_otheragents * w_otheragents_1d)
-val_weighted_sum_2d = np.reshape( val_weighted_sum , (edge_size, edge_size))
-
-vmax = np.max(value_food_2d)
-if vmin <= 0: 
-    vmin = 1e-5
-if vmax <= 0:
-    vmax = 1
-
-
-fig, ax = plt.subplots()
-sns.heatmap(ax=ax, data=value_food_2d, yticklabels=False, xticklabels=False, 
-            square=True, cbar=True, norm=LogNorm(vmin=vmin, vmax=vmax),  cmap=sns.color_palette("rocket", as_cmap=True))
-# ax.set_title('$c_{food} w_{food}^T M$')
-
-fig, ax = plt.subplots()
-sns.heatmap(ax=ax, data=value_otheragents_2d , yticklabels=False, xticklabels=False, 
-            square=True,  cbar=True, norm=LogNorm(vmin=vmin, vmax=vmax), cmap=sns.color_palette("rocket", as_cmap=True))
-# ax.set_title('$c_{neighbors} w_{neighbors}^T M$')
-
-fig, ax = plt.subplots()
-sns.heatmap(ax=ax, data=sum_weighted_vals_2d , yticklabels=False, xticklabels=False, 
-            square=True,  cbar=True, norm=LogNorm(vmin=vmin, vmax=vmax), cmap=sns.color_palette("rocket", as_cmap=True))
-# ax.set_title('$V(S)$')
-
-fig, ax = plt.subplots()
-sns.heatmap(ax=ax, data=sum_weighted_vals_2d , yticklabels=False, xticklabels=False, 
-            square=True,  cbar=True, norm=LogNorm(vmin=vmin, vmax=vmax), cmap=sns.color_palette("rocket", as_cmap=True))
-ax.set_title('M (c_{food}w_{food}^T + c_{neighbors} w_{neighbors}^T )')
-
-fig, ax = plt.subplots()
-sns.heatmap(ax=ax, data=np.reshape(value, (edge_size, edge_size)), yticklabels=False, xticklabels=False, 
-            square=True, cbar=True, norm=LogNorm(vmin=vmin, vmax=vmax), cmap=sns.color_palette("rocket", as_cmap=True))
-ax.set_title('from sim')
-
-
-#%% Reward locations (phi_food)
-w_2d = np.reshape(w_food, (edge_size, edge_size))
-
-fig, ax = plt.subplots()
-sns.heatmap(ax=ax, data=w_2d, yticklabels=False, xticklabels=False, 
-            square=True, vmin=0, vmax=1, cbar=False, cmap=sns.color_palette("rocket", as_cmap=True))
+if do_plot_model_internals: 
+    #%% State (phi_agent)
+    phi_agent = np.zeros([N_states, 1])
+    phi_agent[next_loc_1d] = 1 
+    phi_agent_2d = np.reshape(phi_agent, (edge_size, edge_size))
+    fig, ax = plt.subplots()
+    sns.heatmap(ax=ax, data=phi_agent_2d, yticklabels=False, xticklabels=False, 
+                square=True, vmin=0, vmax=1, cbar=False, cmap=sns.color_palette("mako", as_cmap=True))
+    ax.set_title('Agent state')
+    
+    #%% Successor Representation Matrix applied to state (M @ phi_agent) 
+    SR_phi = agent.SR @ phi_agent
+    SR_phi_2d = np.reshape(SR_phi, (edge_size, edge_size))
+    
+    fig, ax = plt.subplots()
+    sns.heatmap(ax=ax, data=SR_phi_2d, yticklabels=False, xticklabels=False, 
+                square=True, cbar=True, norm=LogNorm(), cmap=sns.color_palette("mako", as_cmap=True))
+    ax.set_title('Successor Representation applied to agent state')
+    
+    # log_SR_phi_2d = np.log(SR_phi_2d)
+    # vmin = np.min(log_SR_phi_2d)
+    # vmax = np.max(log_SR_phi_2d)
+    # fig, ax = plt.subplots()
+    # sns.heatmap(ax=ax, data=log_SR_phi_2d, yticklabels=False, xticklabels=False, 
+    #             square=True, cbar=True, vmin=vmin, vmax=vmax, cmap=sns.color_palette("mako", as_cmap=True))
+    
+    #%% Expected reward computed for all locations ( w.T @  M )
+    
+    value_food = w_food.T @ agent.SR
+    value_food_2d = np.reshape(value_food, (edge_size, edge_size))
+    
+    value_otheragents = w_otheragents_1d.T @ agent.SR
+    value_otheragents_2d = np.reshape(value_otheragents, (edge_size, edge_size))
+    
+    # plots
+    
+    vmin = np.min(value_food_2d)
+    vmax = np.max(value_food_2d)
+    if vmin <= 0: 
+        vmin = 1e-5
+    if vmax <= 0:
+        vmax = 1
+    
+    fig, ax = plt.subplots()
+    sns.heatmap(ax=ax, data=value_food_2d, yticklabels=False, xticklabels=False, 
+                square=True, cbar=True, norm=LogNorm(vmin=vmin, vmax=vmax), cmap=sns.color_palette("rocket", as_cmap=True))
+                # square=True, vmin=0, vmax=1,  cbar=True,  cmap=sns.color_palette("rocket", as_cmap=True))
+    # ax.set_title('$ w_{food}^T M$')
+    
+    
+    fig, ax = plt.subplots()
+    sns.heatmap(ax=ax, data=value_otheragents_2d , yticklabels=False, xticklabels=False, 
+                square=True,   cbar=True, norm=LogNorm(vmin=vmin, vmax=vmax), cmap=sns.color_palette("rocket", as_cmap=True))
+                # square=True, vmin=0, vmax=1,  cbar=True, norm=LogNorm(), cmap=sns.color_palette("rocket", as_cmap=True))
+    # ax.set_title('$ w_{neighbors}^T M $')
+    
+    #%% Weighted value function
+    
+    value_food = c_food_self * w_food.T @ agent.SR
+    value_food_2d = np.reshape(value_food, (edge_size, edge_size))
+    
+    value_otheragents = c_otheragents * w_otheragents_1d.T @ agent.SR
+    value_otheragents_2d = np.reshape(value_otheragents, (edge_size, edge_size))
+    
+    sum_weighted_vals_2d =  value_food_2d + value_otheragents_2d
+    val_weighted_sum = agent.SR @ ( c_food_self * w_food  + c_otheragents * w_otheragents_1d)
+    val_weighted_sum_2d = np.reshape( val_weighted_sum , (edge_size, edge_size))
+    
+    vmax = np.max(value_food_2d)
+    if vmin <= 0: 
+        vmin = 1e-5
+    if vmax <= 0:
+        vmax = 1
+    
+    
+    fig, ax = plt.subplots()
+    sns.heatmap(ax=ax, data=value_food_2d, yticklabels=False, xticklabels=False, 
+                square=True, cbar=True, norm=LogNorm(vmin=vmin, vmax=vmax),  cmap=sns.color_palette("rocket", as_cmap=True))
+    # ax.set_title('$c_{food} w_{food}^T M$')
+    
+    fig, ax = plt.subplots()
+    sns.heatmap(ax=ax, data=value_otheragents_2d , yticklabels=False, xticklabels=False, 
+                square=True,  cbar=True, norm=LogNorm(vmin=vmin, vmax=vmax), cmap=sns.color_palette("rocket", as_cmap=True))
+    # ax.set_title('$c_{neighbors} w_{neighbors}^T M$')
+    
+    fig, ax = plt.subplots()
+    sns.heatmap(ax=ax, data=sum_weighted_vals_2d , yticklabels=False, xticklabels=False, 
+                square=True,  cbar=True, norm=LogNorm(vmin=vmin, vmax=vmax), cmap=sns.color_palette("rocket", as_cmap=True))
+    # ax.set_title('$V(S)$')
+    
+    fig, ax = plt.subplots()
+    sns.heatmap(ax=ax, data=sum_weighted_vals_2d , yticklabels=False, xticklabels=False, 
+                square=True,  cbar=True, norm=LogNorm(vmin=vmin, vmax=vmax), cmap=sns.color_palette("rocket", as_cmap=True))
+    ax.set_title('M (c_{food}w_{food}^T + c_{neighbors} w_{neighbors}^T )')
+    
+    fig, ax = plt.subplots()
+    sns.heatmap(ax=ax, data=np.reshape(value, (edge_size, edge_size)), yticklabels=False, xticklabels=False, 
+                square=True, cbar=True, norm=LogNorm(vmin=vmin, vmax=vmax), cmap=sns.color_palette("rocket", as_cmap=True))
+    ax.set_title('from sim')
+    
+    
+    #%% Reward locations (phi_food)
+    w_2d = np.reshape(w_food, (edge_size, edge_size))
+    
+    fig, ax = plt.subplots()
+    sns.heatmap(ax=ax, data=w_2d, yticklabels=False, xticklabels=False, 
+                square=True, vmin=0, vmax=1, cbar=False, cmap=sns.color_palette("rocket", as_cmap=True))
 
 #%% Value ( w.T @  M @ phi_agent )
 
@@ -784,7 +786,7 @@ dictionary = {'N_sims':N_sims, 'N_timesteps':N_timesteps, 'N_agents':N_agents, \
               'pop_mean_time_to_first_food': pop_mean_time_to_first_food, \
               'num_agents_failed_reach_food': num_agents_failed_reach_food, \
               'N_food_units_total':N_food_units_total, 'patch_dim':patch_dim, \
-              'doShareFoodInfo':doShareFoodInfo, 'example_agent':agent, 'c_weights':c_weights}
+                  'example_agent':agent, 'c_weights':c_weights}
 
 pickle.dump(dictionary, open(filepath_data + '.sav', 'wb'))
 

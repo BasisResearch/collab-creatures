@@ -48,7 +48,7 @@ figures.setup_fig()
 plt.close('all')
 
 # ---------------------- Simulation parameters ------------------------------
-N_sims = 1
+N_sims = 100
 N_timesteps = 50
 N_agents = 9
 
@@ -65,12 +65,12 @@ epoch_dur = N_timesteps # add new food in random locations every epoch_dur time 
 # Agent parameters 
 doShareFoodInfo = True # Binary variable - are the birds communicating or not?
 max_step_size = 3
-sight_radius = 50
+sight_radius = 5
 energy_init = 50
 discount_factor = 0.9
-c_food = 0.5
+c_food = 1    
 # c_info_otheragents = 1  # to what extent do the birds care about information from other birds?
-c_otheragents = 0.5
+c_otheragents = 0
 c_group = 0
 c_predators = 0
 c_weights = [c_food, c_predators, c_otheragents, c_group]

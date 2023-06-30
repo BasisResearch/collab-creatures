@@ -22,14 +22,14 @@ directory = 'simulated_data/'
 
 #%% Load data from different experimental conditions to make statistical comparisons
 
-# food_type = 'clustered'
-food_type = 'distributed'
+food_type = 'clustered'
+# food_type = 'distributed'
 
 if food_type == 'distributed': 
-    # filename1 = 'distr_ignorers'
-    # filename2 = 'distr_communicators'
-    filename1 = 'distr_ignorers_run2'
-    filename2 = 'distr_communicators_run2'
+    filename1 = 'distr_ignorers'
+    filename2 = 'distr_communicators'
+    # filename1 = 'distr_ignorers_run2'
+    # filename2 = 'distr_communicators_run2'
     
 elif food_type == 'clustered':
     filename1 = 'clust_ignorers'

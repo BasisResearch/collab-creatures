@@ -26,14 +26,23 @@ food_type = 'clustered'
 # food_type = 'distributed'
 
 if food_type == 'distributed': 
-    filename1 = 'distr_ignorers'
-    filename2 = 'distr_communicators'
+    # filename1 = 'distr_ignorers'
+    # filename2 = 'distr_communicators'
     # filename1 = 'distr_ignorers_run2'
     # filename2 = 'distr_communicators_run2'
+    filename1 = 'model_v2_distr_ignorers'
+    filename2 = 'model_v2_distr_communicators'
+    # filename1 = 'model_v2_strong_ignorers_distr'
+    # filename2 = 'model_v2_strong_communicators_distr'
+
     
 elif food_type == 'clustered':
-    filename1 = 'clust_ignorers'
-    filename2 = 'clust_communicators'
+    # filename1 = 'clust_ignorers'
+    # filename2 = 'clust_communicators'
+    filename1 = 'model_v2_clust_ignorers'
+    filename2 = 'model_v2_clust_communicators'
+    # filename1 = 'model_v2_strong_ignorers_clust'
+    # filename2 = 'model_v2_strong_communicators_clust'
 
 # load the dictionary
 dict_ignorers = pickle.load(open(directory + filename1 + '.sav', 'rb'))

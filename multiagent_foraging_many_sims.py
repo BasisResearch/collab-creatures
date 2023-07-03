@@ -24,11 +24,11 @@ reload(util)
 reload(figures)
 
 # ------------ Would you like to save the simulation? --------------------
-saveData = False
+saveData = True
 directory_data = 'simulated_data/' 
-filename_data = 'new_sim'
+filename_data = 'model_v2_distr_ignorers_patchdim1_self0p9_others0p1'
 
-doAnimation = True
+doAnimation = False
 saveMovie = False
 directory_movie = 'movies/'
 filename_movie = 'new_movie'
@@ -51,7 +51,7 @@ figures.setup_fig()
 plt.close('all')
 
 # ---------------------- Simulation parameters ------------------------------
-N_sims = 1
+N_sims = 100
 N_timesteps = 50
 N_agents = 9
 
@@ -67,12 +67,12 @@ epoch_dur = N_timesteps # add new food in random locations every epoch_dur time 
 
 # Agent parameters 
 # doShareFoodInfo = True # Binary variable - are the birds communicating or not?
-max_step_size = 1
-sight_radius = 10
+max_step_size = 3
+sight_radius = 5
 energy_init = 50
 discount_factor = 0.9
-c_food_self = 0.5
-c_food_others = 0.5  # to what extent do the birds care about information from other birds?
+c_food_self = 0.9
+c_food_others = 0.1 # to what extent do the birds care about information from other birds?
 c_otheragents = 0
 c_group = 0
 # c_predators = 0
@@ -786,7 +786,8 @@ dictionary = {'N_sims':N_sims, 'N_timesteps':N_timesteps, 'N_agents':N_agents, \
               'pop_mean_time_to_first_food': pop_mean_time_to_first_food, \
               'num_agents_failed_reach_food': num_agents_failed_reach_food, \
               'N_food_units_total':N_food_units_total, 'patch_dim':patch_dim, \
-                  'example_agent':agent, 'c_weights':c_weights}
+                  'example_agent':agent, 'sight_radius':sight_radius, 
+                  'discount_factor':discount_factor,  'c_weights':c_weights}
 
 pickle.dump(dictionary, open(filepath_data + '.sav', 'wb'))
 

@@ -52,7 +52,11 @@ figures.setup_fig()
 plt.close("all")
 
 # ---------------------- Simulation parameters ------------------------------
-N_sims = 100
+N_sims = 100  
+
+## ru: so you run them multiple times, but every time with the same parameters?
+## ru: for the paper it would be great to randomize them a bit
+
 N_timesteps = 50
 N_agents = 9
 
@@ -88,7 +92,7 @@ c_group = 0
 # c_predators = 0
 c_weights = [c_food_self, c_food_others, c_otheragents, c_group]
 caloric_cost_per_unit_dist = 1
-doProbabilisticPolicy = True
+doProbabilisticPolicy = True 
 doSoftmaxPolicy = True
 exploration_bias = 0.001
 
@@ -127,7 +131,7 @@ if plot_T:
 
     plt.figure()
     plt.title("State transition probabilities")
-    plt.imshow(T)
+    plt.imshow(T_prob)
 
 
 # ----------------------------------------------------------------------------
@@ -315,7 +319,11 @@ for si in range(N_sims):
             calories_acquired_mat[ai, ti] = (
                 delta_food_calories_total[prev_loc_1d]
                 / phi_agents[prev_loc_1d][0]
-            )  # if there were N agents at that location, it gets 1/N portion of the calories
+            )[0]
+            # RU: added [0] to ensure its a scalar; otherwise deprecation warning
+            # RU: make sure that this is in line with your intentions
+            
+            #   # if there were N agents at that location, it gets 1/N portion of the calories
             agent.energy_total += calories_acquired_mat[ai, ti]
             calories_cumulative_vec[ai, ti + 1] = (
                 calories_cumulative_vec[ai, ti] + calories_acquired_mat[ai, ti]
@@ -365,12 +373,19 @@ for si in range(N_sims):
             w_groupcenterofmass = np.reshape(
                 w_groupcenterofmass, (N_states, 1)
             )
-
+            
             # VISIBILITY CONSTRAINTS
             phi_visible_mat = agent.compute_visible_locations(
                 xloc_self, yloc_self, edge_size
             )
             phi_visible = np.reshape(phi_visible_mat, (N_states, 1))
+
+
+            #RU: let me make sure I understand: 
+            #The info from other agents is just info about whether
+            #there is food at their exact locations, 
+            #not whether there is food within the other birds
+            #visibility range, right?
 
             # get information from other agents about whether there is food at their locations
             # if doShareFoodInfo:
@@ -397,7 +412,7 @@ for si in range(N_sims):
 
             # sum_weighted_features = c_food_self * phi_food  + c_predator * phi_predator #+ c_otheragents * w_otheragents_1d
 
-            # VALUE FUNCITON
+            # VALUE FUNCTION
             value = agent.SR @ sum_weighted_features  # (N_states, 1) vector
 
             # POLICY: select next action using the value and eligible states

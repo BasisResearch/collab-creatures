@@ -204,7 +204,7 @@ def visualise_bird_predictors(tr, prox, hf, com=None):
         template="plotly_dark",
     )
     fig.update_layout(
-        title="Trace (standardized)",
+        title="Trace",
         xaxis_title="trace",
         yaxis_title="how far score",
     )
@@ -217,7 +217,7 @@ def visualise_bird_predictors(tr, prox, hf, com=None):
         template="plotly_dark",
     )
     fig2.update_layout(
-        title="Proximity (standardized)",
+        title="Proximity",
         xaxis_title="proximity",
         yaxis_title="how far score",
     )
@@ -236,6 +236,7 @@ def visualise_bird_predictors(tr, prox, hf, com=None):
     if com is not None:
         fig3 = px.scatter(
             df,
+            title = "Communication",
             x="communicate",
             y="how_far_score",
             opacity=0.3,

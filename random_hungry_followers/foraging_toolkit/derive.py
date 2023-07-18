@@ -126,6 +126,8 @@ def derive_predictors(
     sim.communicatesDF.loc[:, "time"] = sim.communicatesDF["time"] - time_shift
     sim.derivedDF.loc[:, "time"] = sim.derivedDF["time"] - time_shift
 
+    sim.derivedDF.dropna(inplace=True)
+
     return sim
 
 

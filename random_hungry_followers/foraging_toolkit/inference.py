@@ -25,9 +25,9 @@ import logging
 logging.basicConfig(format="%(message)s", level=logging.INFO)
 
 
-def prep_data_for__communicators_inference(sim_derived):
+def prep_data_for_communicators_inference(sim_derived):
     print("Initial dataset size:", sim_derived.derivedDF.shape[0])
-    df = sim_derived.derivedDF.copy().dropna()
+    # df = sim_derived.derivedDF.copy().dropna()
     print("Complete cases:", df.shape[0])
     # large drop expected as we only care about points within birds' visibility range
     # and many communicates are outside of it
@@ -75,6 +75,10 @@ def prep_data_for_robust_inference(sim, gridsize=11):
 
         return vector_binned
 
+    def normalize(column):
+        return (column - column.min()) / (column.max() - column.min())
+
+    sim.derivedDF = sim.derivedDF.dropna(inplace=True)
     sim.derivedDF["proximity_cat"] = bin(
         sim.derivedDF["proximity_standardized"], gridsize=gridsize
     )
@@ -91,12 +95,63 @@ def prep_data_for_robust_inference(sim, gridsize=11):
         sim.derivedDF["communicate_standardized"], gridsize=gridsize
     )
 
+    columns_to_normalize = [
+        "trace_standardized",
+        "proximity_standardized",
+        "communicate_standardized",
+        "visibility",
+        "how_far_squared_scaled",
+    ]
+
+    for column in columns_to_normalize:
+        sim.derivedDF[column] = normalize(sim.derivedDF[column])
+
     return sim
 
 
-def model_sigmavar_com(
-    proximity, trace, visibility, communicate, how_far_score
-):
+def get_tensorized_data(sim_derived):
+    print("Initial dataset size:", sim_derived.derivedDF.shape[0])
+    df = sim_derived.derivedDF.copy().dropna()
+    print("Complete cases:", df.shape[0])
+
+    for column_name, column in df.items():
+        if column.dtype.name == "category":
+            df[column_name] = column.cat.codes
+
+    trace_standardized = torch.tensor(
+        df["trace_standardized"].values, dtype=torch.float32
+    )
+    trace_cat = torch.tensor(df["trace_cat"].values, dtype=torch.int8)
+    proximity_standardized = torch.tensor(
+        df["proximity_standardized"].values, dtype=torch.float32
+    )
+    proximity_cat = torch.tensor(df["proximity_cat"].values, dtype=torch.int8)
+    visibility = torch.tensor(df["visibility"].values, dtype=torch.float32)
+    visibility_cat = torch.tensor(df["visibility_cat"].values, dtype=torch.int8)
+    communicate_standardized = torch.tensor(
+        df["communicate_standardized"].values, dtype=torch.float32
+    )
+    communicate_cat = torch.tensor(df["communicate_cat"].values, dtype=torch.int8)
+    how_far_squared_scaled = torch.tensor(
+        df["how_far_squared_scaled"].values, dtype=torch.float32
+    )
+
+    data = {
+        "trace_standardized": trace_standardized,
+        "trace_cat": trace_cat,
+        "proximity_standardized": proximity_standardized,
+        "proximity_cat": proximity_cat,
+        "visibility": visibility,
+        "visibility_cat": visibility_cat,
+        "communicate_standardized": communicate_standardized,
+        "communicate_cat": communicate_cat,
+        "how_far": how_far_squared_scaled,
+    }
+
+    return data
+
+
+def model_sigmavar_com(proximity, trace, visibility, communicate, how_far_score):
     p = pyro.sample("p", dist.Normal(0, 0.3))
     t = pyro.sample("t", dist.Normal(0, 0.3))
     v = pyro.sample("v", dist.Normal(0, 0.3))
@@ -109,9 +164,7 @@ def model_sigmavar_com(
     cs = pyro.sample("cs", dist.Normal(0, 0.3))
     bs = pyro.sample("bs", dist.Normal(0.2, 0.3))
 
-    sigmaRaw = (
-        bs + ps * proximity + ts * trace + vs * visibility + cs * communicate
-    )
+    sigmaRaw = bs + ps * proximity + ts * trace + vs * visibility + cs * communicate
     sigma = pyro.deterministic("sigma", F.softplus(sigmaRaw))
     mean = b + p * proximity + t * trace + v * visibility + c * communicate
 
@@ -119,12 +172,8 @@ def model_sigmavar_com(
         pyro.sample("obs", dist.Normal(mean, sigma), obs=how_far_score)
 
 
-def svi_training(
-    model, proximity, trace, visibility, communicate, how_far_score
-):
-    guide = AutoMultivariateNormal(
-        model_sigmavar_com, init_loc_fn=init_to_mean
-    )
+def svi_training(model, proximity, trace, visibility, communicate, how_far_score):
+    guide = AutoMultivariateNormal(model_sigmavar_com, init_loc_fn=init_to_mean)
     svi = SVI(model, guide, optim.Adam({"lr": 0.01}), loss=Trace_ELBO())
 
     iterations = []
@@ -133,9 +182,7 @@ def svi_training(
     pyro.clear_param_store()
     num_iters = 1000
     for i in range(num_iters):
-        elbo = svi.step(
-            proximity, trace, visibility, communicate, how_far_score
-        )
+        elbo = svi.step(proximity, trace, visibility, communicate, how_far_score)
         iterations.append(i)
         losses.append(elbo)
         if i % 200 == 0:
@@ -195,14 +242,10 @@ def svi_prediction(
 
 def mcmc_training(model, num_samples, sites=None, *args):
     nuts_kernel = NUTS(model)
-    mcmc = MCMC(
-        nuts_kernel, num_samples=num_samples, warmup_steps=num_samples // 4
-    )
+    mcmc = MCMC(nuts_kernel, num_samples=num_samples, warmup_steps=num_samples // 4)
     mcmc.run(*args)
 
-    hmc_samples = {
-        k: v.detach().cpu().numpy() for k, v in mcmc.get_samples().items()
-    }
+    hmc_samples = {k: v.detach().cpu().numpy() for k, v in mcmc.get_samples().items()}
 
     if sites is None:
         sites = [site_name for site_name in hmc_samples.keys()]

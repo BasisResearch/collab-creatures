@@ -27,8 +27,9 @@ from .how_far import add_how_far_squared_scaled
 from .derive import derive_predictors
 
 from .inference import (
-    prep_data_for__communicators_inference,
+    prep_data_for_communicators_inference,
     prep_data_for_robust_inference,
+    get_tensorized_data,
     model_sigmavar_com,
     svi_training,
     svi_prediction,

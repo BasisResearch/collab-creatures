@@ -48,8 +48,8 @@ figures.setup_fig()
 plt.close('all')
 
 # ---------------------- Simulation parameters ------------------------------
-N_sims = 100
-N_timesteps = 50
+N_sims = 1
+N_timesteps = 2
 N_agents = 9
 
 # Food and environment parameters 
@@ -185,11 +185,14 @@ for si in range(N_sims):
     loc_1d_allagents = np.zeros(N_agents, dtype=int) # array containing location of each agent (index is agent ID)
     phi_agents = np.zeros([N_states, 1]) # # one-hot vector indicating how many agents are in each location (index is loc ID)
     
-    # matrix tracking energy acquisition over time, used for determining fitness of the species
+    # array tracking energy acquisition over time, used for determining fitness of the species
     calories_acquired_mat = np.zeros([N_agents, N_timesteps]) 
     calories_expended_mat = np.zeros([N_agents, N_timesteps]) 
     calories_total_mat = np.zeros([N_agents, N_timesteps]) 
     calories_cumulative_vec = np.zeros([N_agents, N_timesteps])
+    
+    # array tracking directness of path over time for each bird
+    directness_birds_all = np.zeros([N_agents, N_timesteps]) 
     
     # initialize the agents
     for ai in range(N_agents):
@@ -361,6 +364,30 @@ for si in range(N_sims):
             
             if phi_food[next_loc_1d][0]:
                 agent.times_at_food.append(ti+1) # add this frame to the list of frames where agent is at a food location
+            
+            # -------- compute directness of path metric -------------------
+            
+            # 1. Compute vector from this bird's prev state to next state
+            bird_path_vec = np.array([xloc_next - xloc_prev, yloc_next - yloc_prev])
+            # 2. Get the location of each food item
+            #   2. A. Convert 1-hot representation to locations
+            food_1D_locs = np.nonzero(phi_food)[0]
+            #   2. B. Convert 1D location to x y coordinates 
+            xloc_food_arr, yloc_food_arr = util.loc1Dto2D(food_1D_locs, edge_size)
+            # 3. 
+            directness_allfood = np.zeros([len(food_1D_locs), 1])
+            for fi in range(len(food_1D_locs)):
+                # Compute vector from bird to each food item 
+                food_path_vec = np.array([xloc_food_arr[fi] - xloc_prev, yloc_food_arr[fi] - yloc_prev ])
+                
+                # Compute directness of path for each food item 
+                numerator = np.dot(bird_path_vec, food_path_vec)
+                denom = np.linalg.norm(bird_path_vec) * np.linalg.norm(food_path_vec)
+                directness_allfood[fi] = numerator / denom
+                # directness = cosine_func(bird_path_vec, food_path_vec)
+                
+            # 5. Store the minimum directness 
+            directness_birds_all[ai, ti] = np.min(directness_allfood) 
             
             # ------------------------------------------------------------------- 
             

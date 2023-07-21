@@ -66,6 +66,9 @@ class RandomBirds:
                 self.grid_size / 2
             )  # make centered
 
+            bird_x[bird_x < 0] = 0
+            bird_x[bird_x > self.grid_size] = self.grid_size
+
             bird_y = np.cumsum(
                 np.random.choice(
                     self.steps,
@@ -74,6 +77,9 @@ class RandomBirds:
                     replace=True,
                 )
             ) + (self.grid_size / 2)
+
+            bird_y[bird_y < 0] = 0
+            bird_y[bird_y > self.grid_size] = self.grid_size
 
             bird = pd.DataFrame({"x": bird_x, "y": bird_y})
             self.birds.append(bird)
@@ -86,6 +92,7 @@ class RandomBirds:
             range(1, self.num_frames + 1), self.num_birds
         )
 
+        # remove later, as it is very likely redundant
         bird_data.loc[bird_data["x"] < 0, "x"] = 0
         bird_data.loc[bird_data["x"] > self.grid_size, "x"] = self.grid_size
         bird_data.loc[bird_data["y"] < 0, "y"] = 0
@@ -102,11 +109,7 @@ class RandomBirds:
         )
 
         rewards = []
-        rewards.append(
-            pd.DataFrame(
-                {"x": rewardsX, "y": rewardsY, "time": [1] * self.num_rewards}
-            )
-        )
+        rewards.append(pd.DataFrame({"x": rewardsX, "y": rewardsY, "time": 1}))
 
         self.rewards = rewards
         self.rewardsDF = pd.concat(self.rewards)

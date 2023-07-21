@@ -1,3 +1,7 @@
+import pandas as pd
+import numpy as np
+
+
 from itertools import product
 
 import pandas as pd
@@ -27,8 +31,40 @@ def update_rewards(rewards, birds, num_birds, num_frames, grab_range):
         if eaten:
             rewards[t] = rewards[t].drop(eaten)
 
-        rewards[t]["time"] = t + 1
+        rewards[t]["time"] = t
     rewards = rewards
     rewardsDF = pd.concat(rewards)
 
     return {"rewards": rewards, "rewardsDF": rewardsDF}
+
+
+# adding trace of rewards
+def rewards_trace(distance, rewards_decay):
+    return np.exp(-rewards_decay * distance)
+
+
+def rewards_to_trace(rewards, grid_size, num_frames, rewards_decay):
+    grid = generate_grid(grid_size)
+    traces = []
+
+    for t in range(num_frames):
+        rewt = rewards[t]
+        trace = grid.copy()
+        trace["trace"] = 0
+        trace["time"] = t
+
+        if len(rewt) > 0:
+            for re in range(len(rewt)):
+                trace["trace"] += rewards_trace(
+                    np.sqrt(
+                        (rewt["x"].iloc[re] - trace["x"]) ** 2
+                        + (rewt["y"].iloc[re] - trace["y"]) ** 2
+                    ),
+                    rewards_decay,
+                )
+
+        traces.append(trace)
+    assert len(traces) == num_frames
+    assert traces[0].shape == (grid_size**2, 4)
+
+    return traces

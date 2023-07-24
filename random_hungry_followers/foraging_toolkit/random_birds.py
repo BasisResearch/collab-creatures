@@ -7,6 +7,7 @@ import foraging_toolkit as ft
 
 import pandas as pd
 import numpy as np
+import warnings
 
 # import foraging_toolkit as ft
 
@@ -121,6 +122,8 @@ class RandomBirds:
     def generate_random_birds(self):  # generate birds
         self.birds = []
 
+        size_warning_flag = False
+
         for bird in range(self.num_birds):
             bird_x = np.cumsum(
                 np.random.choice(
@@ -133,8 +136,10 @@ class RandomBirds:
                 self.grid_size / 2
             )  # make centered
 
-            bird_x[bird_x < 0] = 0
-            bird_x[bird_x > self.grid_size] = self.grid_size
+            if any(bird_x < 0) or any(bird_x > self.grid_size):
+                size_warning_flag = True
+                bird_x[bird_x < 0] = 0
+                bird_x[bird_x > self.grid_size] = self.grid_size
 
             bird_y = np.cumsum(
                 np.random.choice(
@@ -145,8 +150,16 @@ class RandomBirds:
                 )
             ) + (self.grid_size / 2)
 
-            bird_y[bird_y < 0] = 0
-            bird_y[bird_y > self.grid_size] = self.grid_size
+            if any(bird_y < 0) or any(bird_y > self.grid_size):
+                bird_y[bird_y < 0] = 0
+                bird_y[bird_y > self.grid_size] = self.grid_size
+
+            if size_warning_flag:
+                warnings.warn(
+                    "Warning: bird movements truncated to grid size. "
+                    "Increase grid size to avoid this.",
+                    UserWarning,
+                )
 
             bird = pd.DataFrame({"x": bird_x, "y": bird_y})
             self.birds.append(bird)
@@ -158,12 +171,6 @@ class RandomBirds:
         bird_data["time"] = np.tile(
             range(1, self.num_frames + 1), self.num_birds
         )
-
-        # remove later, as it is very likely redundant
-        bird_data.loc[bird_data["x"] < 0, "x"] = 0
-        bird_data.loc[bird_data["x"] > self.grid_size, "x"] = self.grid_size
-        bird_data.loc[bird_data["y"] < 0, "y"] = 0
-        bird_data.loc[bird_data["y"] > self.grid_size, "y"] = self.grid_size
 
         self.birdsDF = bird_data
 

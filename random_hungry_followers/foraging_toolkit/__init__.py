@@ -21,6 +21,6 @@ from .proximity import (
 
 from .how_far import add_how_far_squared_scaled
 
-from .transform import transform_birds
+from .derive import derive_predictors
 
 from .animate_birds import animate_birds, visualise_bird_predictors

@@ -13,7 +13,7 @@ sys.path.insert(0, parent_dir)
 import foraging_toolkit as ft
 
 
-def transform_birds(
+def derive_predictors(
     sim,
     rewards_decay=0.5,
     visibility_range=10,

@@ -2,14 +2,11 @@ import sys
 
 sys.path.insert(0, "..")
 
-# print(sys.path)
 import foraging_toolkit as ft
 
 import pandas as pd
 import numpy as np
 import warnings
-
-# import foraging_toolkit as ft
 
 from itertools import product
 
@@ -29,8 +26,8 @@ class RandomBirds:
         include_random_birds=True,
     ):
         """
-            A class representing a simulation of random bird movements and rewards
-        in a grid-based environment.
+            A class representing a simulation of random bird movements
+            and rewards in a grid-based environment.
 
         Args (included among the attributes):
             grid_size (int): The size of the grid representing the environment.
@@ -82,7 +79,6 @@ class RandomBirds:
                 information in a single DataFrame.
 
 
-
         Methods:
             __call__(): Executes the random bird movement and rewards generation.
             generate_random_birds(): Generates random bird movements for the simulation.
@@ -124,17 +120,8 @@ class RandomBirds:
             self.birdsDF = pd.concat(self.birds)
 
         ft.update_rewards(self)
-        # rw = ft.update_rewards(
-        #     self.rewards,
-        #     self.birds,
-        #     self.num_birds,
-        #     self.num_frames,
-        #     self.grab_range,
-        # )
-        # self.rewards = rw["rewards"]
-        # self.rewardsDF = rw["rewardsDF"]
 
-    def generate_random_birds(self):  # generate birds
+    def generate_random_birds(self):
         self.random_birds = []
 
         size_warning_flag = False
@@ -188,12 +175,6 @@ class RandomBirds:
             self.random_birds.append(bird)
 
         random_bird_data = pd.concat(self.random_birds)
-        # random_bird_data["bird"] = pd.Categorical(
-        #     np.repeat(range(1, self.num_birds + 1), self.num_frames)
-        # )
-        # random_bird_data["time"] = np.tile(
-        #     range(1, self.num_frames + 1), self.num_birds
-        # )
 
         self.random_birdsDF = random_bird_data
 

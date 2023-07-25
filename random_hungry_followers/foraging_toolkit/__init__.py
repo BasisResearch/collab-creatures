@@ -9,7 +9,7 @@ from .trace import (
 )
 
 
-from .random_birds import RandomBirds
+from .random_birds import Birds, RandomBirds
 
 from .visibility import visibility_vs_distance, construct_visibility
 

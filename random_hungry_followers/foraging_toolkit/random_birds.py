@@ -14,7 +14,7 @@ import pandas as pd
 import numpy as np
 
 
-class RandomBirds:
+class Birds:
     def __init__(
         self,
         grid_size=30,
@@ -23,10 +23,10 @@ class RandomBirds:
         num_frames=10,
         num_rewards=8,
         grab_range=2,
-        include_random_birds=True,
+        include_random_birds=False,
     ):
         """
-            A class representing a simulation of random bird movements
+            A class representing a simulation of random bird movements (as placeholders)
             and rewards in a grid-based environment.
 
         Args (included among the attributes):
@@ -119,7 +119,8 @@ class RandomBirds:
             self.birds.extend(self.random_birds)
             self.birdsDF = pd.concat(self.birds)
 
-        ft.update_rewards(self)
+        if self.birds:
+            ft.update_rewards(self)
 
     def generate_random_birds(self):
         self.random_birds = []
@@ -179,15 +180,33 @@ class RandomBirds:
         self.random_birdsDF = random_bird_data
 
     def generate_random_rewards(self):
-        rewardsX = np.random.choice(
-            range(1, self.grid_size + 1), size=self.num_rewards
-        )
-        rewardsY = np.random.choice(
-            range(1, self.grid_size + 1), size=self.num_rewards
-        )
+        rewardsX = np.random.choice(range(1, self.grid_size + 1), size=self.num_rewards)
+        rewardsY = np.random.choice(range(1, self.grid_size + 1), size=self.num_rewards)
 
         rewards = []
         rewards.append(pd.DataFrame({"x": rewardsX, "y": rewardsY, "time": 1}))
 
         self.rewards = rewards
         self.rewardsDF = pd.concat(self.rewards)
+
+
+class RandomBirds(Birds):
+    def __init__(
+        self,
+        grid_size=30,
+        probabilities=[1, 2, 3, 2, 1, 2, 3, 2, 1],
+        num_birds=3,
+        num_frames=10,
+        num_rewards=8,
+        grab_range=2,
+        include_random_birds=True,
+    ):
+        super().__init__(
+            grid_size=grid_size,
+            probabilities=probabilities,
+            num_birds=num_birds,
+            num_frames=num_frames,
+            num_rewards=num_rewards,
+            grab_range=grab_range,
+            include_random_birds=include_random_birds,
+        )

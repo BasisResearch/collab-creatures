@@ -26,6 +26,7 @@ class RandomBirds:
         num_frames=10,
         num_rewards=8,
         grab_range=2,
+        include_random_birds=True,
     ):
         """
             A class representing a simulation of random bird movements and rewards
@@ -52,6 +53,11 @@ class RandomBirds:
                             grab them by being within the `grab_range`.
 
             grab_range (int): The range within which rewards can be grabbed.
+
+            include_random_birds (bool): Whether to include random birds in
+                            the final output (if you only use the sim as
+                            a starting point for another foragint strategy,
+                            you might want to set this to False).
 
         Other attributes:
             step_size_max (int): The maximum step size for bird movements
@@ -103,24 +109,33 @@ class RandomBirds:
         self.num_rewards = num_rewards
         self.grab_range = grab_range
         self.steps = np.arange(-self.step_size_max, self.step_size_max + 1)
+        self.include_random_birds = include_random_birds
 
         self.grid = ft.generate_grid(self.grid_size)
 
     def __call__(self):
         self.generate_random_birds()
         self.generate_random_rewards()
-        rw = ft.update_rewards(
-            self.rewards,
-            self.birds,
-            self.num_birds,
-            self.num_frames,
-            self.grab_range,
-        )
-        self.rewards = rw["rewards"]
-        self.rewardsDF = rw["rewardsDF"]
+
+        self.birds = []
+
+        if self.include_random_birds:
+            self.birds.extend(self.random_birds)
+            self.birdsDF = pd.concat(self.birds)
+
+        ft.update_rewards(self)
+        # rw = ft.update_rewards(
+        #     self.rewards,
+        #     self.birds,
+        #     self.num_birds,
+        #     self.num_frames,
+        #     self.grab_range,
+        # )
+        # self.rewards = rw["rewards"]
+        # self.rewardsDF = rw["rewardsDF"]
 
     def generate_random_birds(self):  # generate birds
-        self.birds = []
+        self.random_birds = []
 
         size_warning_flag = False
 
@@ -161,18 +176,26 @@ class RandomBirds:
                     UserWarning,
                 )
 
-            bird = pd.DataFrame({"x": bird_x, "y": bird_y})
-            self.birds.append(bird)
+            bird = pd.DataFrame(
+                {
+                    "x": bird_x,
+                    "y": bird_y,
+                    "time": range(1, self.num_frames + 1),
+                    "bird": bird + 1,
+                    "type": "random",
+                }
+            )
+            self.random_birds.append(bird)
 
-        bird_data = pd.concat(self.birds)
-        bird_data["bird"] = pd.Categorical(
-            np.repeat(range(1, self.num_birds + 1), self.num_frames)
-        )
-        bird_data["time"] = np.tile(
-            range(1, self.num_frames + 1), self.num_birds
-        )
+        random_bird_data = pd.concat(self.random_birds)
+        # random_bird_data["bird"] = pd.Categorical(
+        #     np.repeat(range(1, self.num_birds + 1), self.num_frames)
+        # )
+        # random_bird_data["time"] = np.tile(
+        #     range(1, self.num_frames + 1), self.num_birds
+        # )
 
-        self.birdsDF = bird_data
+        self.random_birdsDF = random_bird_data
 
     def generate_random_rewards(self):
         rewardsX = np.random.choice(

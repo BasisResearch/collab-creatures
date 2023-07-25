@@ -124,6 +124,12 @@ def animate_birds(
                     trace.marker.colorscale = color_scale
                     trace.marker.size = 5
 
+    fig = go.Figure(
+        data=fig["frames"][0]["data"],
+        frames=fig["frames"],
+        layout=fig.layout,
+    )
+
     fig.show()
 
 

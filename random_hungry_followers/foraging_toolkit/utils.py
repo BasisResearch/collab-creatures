@@ -11,24 +11,28 @@ def generate_grid(grid_size):
 
 
 # remove rewards eaten by birds in proximity
-def update_rewards(rewards, birds, num_birds, num_frames, grab_range):
-    for t in range(1, num_frames):
-        rewards.append(rewards[t - 1].copy())
+def update_rewards(sim, start=1):
+    for t in range(start, sim.birds[0].shape[0]):
+        sim.rewards.append(sim.rewards[t - 1].copy())
         eaten = []
 
-        for b in range(num_birds):
-            eaten_b = rewards[t][
-                (abs(rewards[t]["x"] - birds[b].iloc[t]["x"]) <= grab_range)
-                & (abs(rewards[t]["y"] - birds[b].iloc[t]["y"]) <= grab_range)
+        for b in range(len(sim.birds)):
+            eaten_b = sim.rewards[t][
+                (
+                    abs(sim.rewards[t]["x"] - sim.birds[b].iloc[t]["x"])
+                    <= sim.grab_range
+                )
+                & (
+                    abs(sim.rewards[t]["y"] - sim.birds[b].iloc[t]["y"])
+                    <= sim.grab_range
+                )
             ].index.tolist()
             if eaten_b:
                 eaten.extend(eaten_b)
 
         if eaten:
-            rewards[t] = rewards[t].drop(eaten)
+            sim.rewards[t] = sim.rewards[t].drop(eaten)
 
-        rewards[t]["time"] = t + 1
-    rewards = rewards
-    rewardsDF = pd.concat(rewards)
-
-    return {"rewards": rewards, "rewardsDF": rewardsDF}
+        sim.rewards[t]["time"] = t + 1
+    # sim.rewards = sim.rewards
+    sim.rewardsDF = pd.concat(sim.rewards)

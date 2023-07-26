@@ -99,6 +99,8 @@ class Birds:
 
         self.grid_size = grid_size
         self.step_size_max = 4
+        if len(probabilities) % 2 == 0:
+            raise ValueError("The length of 'probabilities' must be odd.")
         self.probabilities = np.array(probabilities) / sum(probabilities)
         self.num_birds = num_birds
         self.num_frames = num_frames

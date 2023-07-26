@@ -133,7 +133,7 @@ def animate_birds(
                     trace.marker.color = selected_rows["proximity"] * 10
                     trace.marker.colorscale = color_scale
                     trace.marker.size = 5
-                    trace.marker.opacity = 0.3
+                    trace.marker.opacity = 0.6
 
     fig = go.Figure(
         data=fig["frames"][0]["data"],

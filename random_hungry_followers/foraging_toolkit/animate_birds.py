@@ -70,6 +70,14 @@ def animate_birds(
 
     fig.update_traces(marker=dict(size=point_size))
 
+    for t in range(0, len(fig.frames)):
+        for trace in fig.frames[t].data:
+            if trace.name.isdigit():
+                trace.marker.symbol = "square"
+                trace.marker.size = 14
+                trace.marker.line = dict(width=3)
+                trace.marker.opacity = 0.8
+
     if plot_rewards:
         fig.update_traces(
             showlegend=False,
@@ -95,6 +103,7 @@ def animate_birds(
                     trace.marker.color = "orange"
                     trace.showlegend = False
                     trace.marker.size = selected_rows["trace"] * 10
+                    trace.marker.opacity = 0.3
 
     if plot_visibility > 0:
         fig.update_traces(showlegend=False, selector=dict(name="visibility"))
@@ -107,6 +116,7 @@ def animate_birds(
                     trace.marker.color = "gray"
                     trace.showlegend = False
                     trace.marker.size = selected_rows["visibility"] * 10
+                    trace.marker.opacity = 0.3
 
     if plot_proximity > 0:
         color_scale = "Purples"
@@ -123,12 +133,18 @@ def animate_birds(
                     trace.marker.color = selected_rows["proximity"] * 10
                     trace.marker.colorscale = color_scale
                     trace.marker.size = 5
+                    trace.marker.opacity = 0.3
 
     fig = go.Figure(
         data=fig["frames"][0]["data"],
         frames=fig["frames"],
         layout=fig.layout,
     )
+
+    # n = sim.num_birds
+    # first_n_elements = fig.data[:n]
+    # remaining_elements = fig.data[n:]
+    # fig.data = fig.data + first_n_elements
 
     fig.show()
 

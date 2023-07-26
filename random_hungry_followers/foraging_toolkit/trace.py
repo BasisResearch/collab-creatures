@@ -11,6 +11,7 @@ def rewards_trace(distance, rewards_decay):
 
 
 def rewards_to_trace(rewards, grid_size, num_frames, rewards_decay=0.5):
+
     grid = ft.generate_grid(grid_size)
     traces = []
 
@@ -36,10 +37,7 @@ def rewards_to_trace(rewards, grid_size, num_frames, rewards_decay=0.5):
             ) / trace["trace"].std()
 
         traces.append(trace)
-    # assert len(traces) == num_frames
-    # assert traces[1].shape == (grid_size**2, 4)
 
     tracesDF = pd.concat(traces)
-    # tracesDF = dict()
 
     return {"traces": traces, "tracesDF": tracesDF}

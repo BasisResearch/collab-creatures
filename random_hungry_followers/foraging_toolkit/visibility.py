@@ -29,16 +29,18 @@ def visibility_vs_distance(distance, visibility_range):
 # plt.show()
 
 
-def construct_visibility(birds, grid_size, visibility_range):
+def construct_visibility(birds, grid_size, visibility_range, end=None):
     num_birds = len(birds)
-    num_frames = len(birds[0])
+
+    if end is None:
+        end = len(birds[0])
 
     visibility = []
 
     for bird in range(num_birds):
         gridb = []
         ranges = []
-        for frame in range(num_frames):
+        for frame in range(end):
             g = generate_grid(grid_size)
             gridb.append(g)
             gridb[frame]["distance"] = (
@@ -46,15 +48,9 @@ def construct_visibility(birds, grid_size, visibility_range):
                 + (gridb[frame]["y"] - birds[bird]["y"].iloc[frame]) ** 2
             ) ** 0.5
 
-            range_df = gridb[frame][
-                gridb[frame]["distance"] <= visibility_range
-            ].copy()
-            range_df["distance_x"] = abs(
-                range_df["x"] - birds[bird]["x"].iloc[frame]
-            )
-            range_df["distance_y"] = abs(
-                range_df["y"] - birds[bird]["y"].iloc[frame]
-            )
+            range_df = gridb[frame][gridb[frame]["distance"] <= visibility_range].copy()
+            range_df["distance_x"] = abs(range_df["x"] - birds[bird]["x"].iloc[frame])
+            range_df["distance_y"] = abs(range_df["y"] - birds[bird]["y"].iloc[frame])
             range_df["visibility"] = range_df["distance"].apply(
                 lambda d: visibility_vs_distance(d, visibility_range)
             )

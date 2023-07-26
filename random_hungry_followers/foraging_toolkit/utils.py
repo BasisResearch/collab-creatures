@@ -11,8 +11,11 @@ def generate_grid(grid_size):
 
 
 # remove rewards eaten by birds in proximity
-def update_rewards(sim, birds, start=1):
-    for t in range(start, birds[0].shape[0]):
+def update_rewards(sim, birds, start=1, stop=None):
+    if stop is None:
+        stop = birds[0].shape[0]
+
+    for t in range(start, stop):
         sim.rewards.append(sim.rewards[t - 1].copy())
         eaten = []
 
@@ -28,5 +31,5 @@ def update_rewards(sim, birds, start=1):
             sim.rewards[t] = sim.rewards[t].drop(eaten)
 
         sim.rewards[t]["time"] = t + 1
-    # sim.rewards = sim.rewards
+
     sim.rewardsDF = pd.concat(sim.rewards)

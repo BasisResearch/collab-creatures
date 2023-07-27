@@ -11,11 +11,11 @@ def generate_grid(grid_size):
 
 
 # remove rewards eaten by birds in proximity
-def update_rewards(sim, birds, start=1, stop=None):
-    if stop is None:
-        stop = birds[0].shape[0]
+def update_rewards(sim, birds, start=1, end=None):
+    if end is None:
+        end = birds[0].shape[0]
 
-    for t in range(start, stop):
+    for t in range(start, end):
         sim.rewards.append(sim.rewards[t - 1].copy())
         eaten = []
 

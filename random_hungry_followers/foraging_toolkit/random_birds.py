@@ -166,7 +166,7 @@ class Birds:
             if size_warning_flag:
                 warnings.warn(
                     "Warning: bird movements truncated to grid size. "
-                    "Increase grid size to avoid this.",
+                    "Try running again, or increase grid size.",
                     UserWarning,
                 )
 

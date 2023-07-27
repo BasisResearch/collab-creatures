@@ -13,6 +13,9 @@ def animate_birds(
     plot_traces=False,
     plot_visibility=0,
     plot_proximity=0,
+    trace_multiplier=10,
+    visibility_multiplier=10,
+    proximity_multiplier=10,
 ):
     if plot_rewards:
         rew = sim.rewardsDF.copy()
@@ -102,7 +105,7 @@ def animate_birds(
                     trace.marker.symbol = "circle"
                     trace.marker.color = "orange"
                     trace.showlegend = False
-                    trace.marker.size = selected_rows["trace"] * 10
+                    trace.marker.size = selected_rows["trace"] * trace_multiplier
                     trace.marker.opacity = 0.3
 
     if plot_visibility > 0:
@@ -115,7 +118,9 @@ def animate_birds(
                     trace.marker.symbol = "circle"
                     trace.marker.color = "gray"
                     trace.showlegend = False
-                    trace.marker.size = selected_rows["visibility"] * 10
+                    trace.marker.size = (
+                        selected_rows["visibility"] * visibility_multiplier
+                    )
                     trace.marker.opacity = 0.3
 
     if plot_proximity > 0:
@@ -130,7 +135,9 @@ def animate_birds(
                     trace.marker.symbol = "circle"
                     # trace.marker.color = "red"
                     trace.showlegend = False
-                    trace.marker.color = selected_rows["proximity"] * 10
+                    trace.marker.color = (
+                        selected_rows["proximity"] * proximity_multiplier
+                    )
                     trace.marker.colorscale = color_scale
                     trace.marker.size = 5
                     trace.marker.opacity = 0.6

@@ -34,118 +34,149 @@ def add_hungry_birds(
     # TODO Check if different bird types mix well
     how_many_birds_already = len(old_birds)
 
-    new_birds = sim.generate_random_birds(num_hungry_birds)["random_birds"]
+    new_birds = sim.generate_random_birds(num_hungry_birds, size=1)["random_birds"]
 
     for new_bird in new_birds:
         new_bird["bird"] = new_bird["bird"] + how_many_birds_already
         new_bird["type"] = "hungry"
 
-    sim.birds.extend(new_birds)
+    for t in range(0, sim.num_frames):
+        _vis = ft.construct_visibility(
+            new_birds,
+            sim.grid_size,
+            visibility_range=visibility_range,
+            start=t,
+            end=t + 1,
+        )["visibility"]
+        print(_vis)
+        print(len(_vis))
 
-    ft.update_rewards(sim, sim.birds, start=1)
 
-    tr = ft.rewards_to_trace(
-        sim.rewards,
-        sim.grid_size,
-        sim.num_frames,
-        rewards_decay,
-    )
-    sim.traces = tr["traces"]
-    sim.tracesDF = pd.concat(sim.traces)
+#
+# for b in range(num_hungry_birds):
+#     options = sim.visibility[b + how_many_birds_already][t - 1].copy()
+#     options = options.merge(sim.traces[t - 1], how="inner")
+#     options.sort_values(by="trace", ascending=False, inplace=True)
+#     # options = options.head(4)
+#     # chosen_option = options.iloc[np.random.randint(0, 4)]
+#     chosen_option = options.head(1)
+#     print("at ", t, "bird", b, "chose \n",
+#           chosen_option)
+#     new_birds[b].loc[new_birds[b]["time"] == t, "x"] = chosen_option["x"]
+#     new_birds[b].loc[new_birds[b]["time"] == t, "y"] = chosen_option["y"]
 
-    vis = ft.construct_visibility(
-        sim.birds, sim.grid_size, visibility_range=visibility_range
-    )
-    sim.visibility_range = visibility_range
-    sim.visibility = vis["visibility"]
-    #    sim.visibilityDF = vis["visibilityDF"]
 
-    for t in range(1, sim.num_frames):
-        for b in range(
-            how_many_birds_already, how_many_birds_already + num_hungry_birds
-        ):
-            options = sim.visibility[b][t - 1].copy()
-            options = options.merge(sim.traces[t - 1], how="inner")
-            options.sort_values(by="trace", ascending=False, inplace=True)
-            # options = options.head(4)
-            # chosen_option = options.iloc[np.random.randint(0, 4)]
-            chosen_option = options.head(1)
-            print("at ", t, "bird", b, "chose \n",
-                  chosen_option)
-            sim.birds[b].loc[sim.birds[b]["time"] == t, "x"] = chosen_option["x"]
-            sim.birds[b].loc[sim.birds[b]["time"] == t, "y"] = chosen_option["y"]
+# if old_birds:
+#     sim.birds = old_birds.extend(new_birds)
+# else:
+#     sim.birds = new_birds
 
-            vis = ft.construct_visibility(
-                sim.birds, sim.grid_size, visibility_range=visibility_range
-            )
-            sim.visibility = vis["visibility"]
+# sim.birdsDF = pd.concat(sim.birds)
 
-    sim.birdsDF = pd.concat(sim.birds)
+#    return sim
 
-    return sim
+# sim.birds.extend(new_birds)
 
-    # ft.update_rewards(sim, sim.birds, start=1)
+# ft.update_rewards(sim, sim.birds, start=1)
 
-    # trf = ft.rewards_to_trace(
-    #     sim.rewards,
-    #     sim.grid_size,
-    #     sim.num_frames,
-    #     rewards_decay,
-    # )
-    # tr = trf["traces"]
+# tr = ft.rewards_to_trace(
+#     sim.rewards,
+#     sim.grid_size,
+#     sim.num_frames,
+#     rewards_decay,
+# )
+# sim.traces = tr["traces"]
+# sim.tracesDF = pd.concat(sim.traces)
 
-    # sim.visibility_range = visibility_range
-    # sim.visibility = vis["visibility"]
-    # sim.visibilityDF = vis["visibilityDF"]
+# vis = ft.construct_visibility(
+#     sim.birds, sim.grid_size, visibility_range=visibility_range
+# )
+# sim.visibility_range = visibility_range
+# sim.visibility = vis["visibility"]
+# #    sim.visibilityDF = vis["visibilityDF"]
 
-    # _tr = tr["traces"].copy()
+# for t in range(1, sim.num_frames):
+#     for b in range(
+#         how_many_birds_already, how_many_birds_already + num_hungry_birds
+#     ):
+#         options = sim.visibility[b][t - 1].copy()
+#         options = options.merge(sim.traces[t - 1], how="inner")
+#         options.sort_values(by="trace", ascending=False, inplace=True)
+#         # options = options.head(4)
+#         # chosen_option = options.iloc[np.random.randint(0, 4)]
+#         chosen_option = options.head(1)
+#         print("at ", t, "bird", b, "chose \n",
+#               chosen_option)
+#         sim.birds[b].loc[sim.birds[b]["time"] == t, "x"] = chosen_option["x"]
+#         sim.birds[b].loc[sim.birds[b]["time"] == t, "y"] = chosen_option["y"]
 
-    # for b in range(num_hungry_birds):
-    #     for t in range(1, sim.num_frames):
-    #         options = _vis[b][t - 1].copy()
-    #         options = options.merge(_tr[t - 1], how="inner")
-    #         options.sort_values(by="trace", ascending=False, inplace=True)
-    #         options = options.head(5)
-    #         chosen_option = options.iloc[np.random.randint(0, 5)]
-    #         new_birds[b].loc[new_birds[b]["time"] == t, "x"] = chosen_option["x"]
-    #         new_birds[b].loc[new_birds[b]["time"] == t, "y"] = chosen_option["y"]
+#         vis = ft.construct_visibility(
+#             sim.birds, sim.grid_size, visibility_range=visibility_range
+#         )
+#         sim.visibility = vis["visibility"]
 
-    #         joint_birds = old_birds + new_birds
+# ft.update_rewards(sim, sim.birds, start=1)
 
-    #         ft.update_rewards(sim, joint_birds)
+# trf = ft.rewards_to_trace(
+#     sim.rewards,
+#     sim.grid_size,
+#     sim.num_frames,
+#     rewards_decay,
+# )
+# tr = trf["traces"]
 
-    #         _tr = ft.rewards_to_trace(
-    #             sim.rewards,
-    #             sim.grid_size,
-    #             sim.num_frames,
-    #             rewards_decay,
-    #         )["traces"]
+# sim.visibility_range = visibility_range
+# sim.visibility = vis["visibility"]
+# sim.visibilityDF = vis["visibilityDF"]
 
-    #         _vis = ft.construct_visibility(
-    #             new_birds, sim.grid_size, visibility_range=visibility_range
-    #         )["visibility"]
+# _tr = tr["traces"].copy()
 
-    # sim.birds = joint_birds
+# for b in range(num_hungry_birds):
+#     for t in range(1, sim.num_frames):
+#         options = _vis[b][t - 1].copy()
+#         options = options.merge(_tr[t - 1], how="inner")
+#         options.sort_values(by="trace", ascending=False, inplace=True)
+#         options = options.head(5)
+#         chosen_option = options.iloc[np.random.randint(0, 5)]
+#         new_birds[b].loc[new_birds[b]["time"] == t, "x"] = chosen_option["x"]
+#         new_birds[b].loc[new_birds[b]["time"] == t, "y"] = chosen_option["y"]
 
-    # ft.update_rewards(sim, sim.birds, start=1)
+#         joint_birds = old_birds + new_birds
 
-    # tr = ft.rewards_to_trace(
-    #     sim.rewards,
-    #     sim.grid_size,
-    #     sim.num_frames,
-    #     rewards_decay,
-    # )
+#         ft.update_rewards(sim, joint_birds)
 
-    # sim.traces = tr["traces"]
-    # sim.tracesDF = pd.concat(sim.traces)
-    # # sim.tracesDF = tr["tracesDF"]
+#         _tr = ft.rewards_to_trace(
+#             sim.rewards,
+#             sim.grid_size,
+#             sim.num_frames,
+#             rewards_decay,
+#         )["traces"]
 
-    # vis = ft.construct_visibility(
-    #     sim.birds, sim.grid_size, visibility_range=visibility_range
-    # )
-    # sim.visibility_range = visibility_range
-    # sim.visibility = vis["visibility"]
-    # sim.visibilityDF = vis["visibilityDF"]
-    # # sim.visibilityDF = vis["visibilityDF"]
+#         _vis = ft.construct_visibility(
+#             new_birds, sim.grid_size, visibility_range=visibility_range
+#         )["visibility"]
 
-    # return sim
+# sim.birds = joint_birds
+
+# ft.update_rewards(sim, sim.birds, start=1)
+
+# tr = ft.rewards_to_trace(
+#     sim.rewards,
+#     sim.grid_size,
+#     sim.num_frames,
+#     rewards_decay,
+# )
+
+# sim.traces = tr["traces"]
+# sim.tracesDF = pd.concat(sim.traces)
+# # sim.tracesDF = tr["tracesDF"]
+
+# vis = ft.construct_visibility(
+#     sim.birds, sim.grid_size, visibility_range=visibility_range
+# )
+# sim.visibility_range = visibility_range
+# sim.visibility = vis["visibility"]
+# sim.visibilityDF = vis["visibilityDF"]
+# # sim.visibilityDF = vis["visibilityDF"]
+
+# return sim

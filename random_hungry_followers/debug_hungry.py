@@ -52,24 +52,39 @@ import foraging_toolkit as ft
 start_time = time.time()
 
 hungry_sim = ft.Birds(
-    grid_size=40, num_birds=3, num_frames=10, num_rewards=15, grab_range=4
+    grid_size=40, num_birds=1, num_frames=3, num_rewards=10, grab_range=4
 )
 hungry_sim()
 
 
 hungry_sim = ft.add_hungry_birds(
-    hungry_sim, num_hungry_birds=3, rewards_decay=0.3, visibility_range=6
+    hungry_sim, num_hungry_birds=1, rewards_decay=0.3, visibility_range=6
 )
 end_time = time.time()
 
 print("Time elapsed: ", end_time - start_time)
 
-ft.animate_birds(
-    hungry_sim,
-    plot_rewards=True,
-    width=600,
-    height=600,
-    point_size=10,
-    plot_traces=True,
-    trace_multiplier=3,
-)
+
+# print(pd.concat(hungry_sim.birds))
+
+# print(hungry_sim.birdsDF)
+# ft.animate_birds(
+#     hungry_sim,
+#     plot_rewards=True,
+#     width=600,
+#     height=600,
+#     point_size=10,
+#     plot_traces=False,
+#     trace_multiplier=3,
+# )
+
+
+# ft.animate_birds(
+#     hungry_sim,
+#     plot_rewards=True,
+#     width=600,
+#     height=600,
+#     point_size=10,
+#     plot_traces=False,
+#     trace_multiplier=3,
+# )

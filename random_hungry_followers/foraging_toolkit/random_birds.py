@@ -128,7 +128,9 @@ class Birds:
         if self.birds:
             ft.update_rewards(self, self.birds, start=1)
 
-    def generate_random_birds(self, num_birds):
+    def generate_random_birds(self, num_birds, size=None):
+        if size is None:
+            size = self.num_frames
         random_birds = []
 
         size_warning_flag = False
@@ -137,7 +139,7 @@ class Birds:
             bird_x = np.cumsum(
                 np.random.choice(
                     self.steps,
-                    size=self.num_frames,
+                    size=size,
                     p=self.probabilities,
                     replace=True,
                 )
@@ -153,7 +155,7 @@ class Birds:
             bird_y = np.cumsum(
                 np.random.choice(
                     self.steps,
-                    size=self.num_frames,
+                    size=size,
                     p=self.probabilities,
                     replace=True,
                 )
@@ -174,7 +176,7 @@ class Birds:
                 {
                     "x": bird_x,
                     "y": bird_y,
-                    "time": range(1, self.num_frames + 1),
+                    "time": range(1, size + 1),
                     "bird": bird + 1,
                     "type": "random",
                 }
@@ -185,9 +187,11 @@ class Birds:
 
         return {"random_birds": random_birds, "random_birdsDF": random_birds_data}
 
-    def generate_random_rewards(self):
-        rewardsX = np.random.choice(range(1, self.grid_size + 1), size=self.num_rewards)
-        rewardsY = np.random.choice(range(1, self.grid_size + 1), size=self.num_rewards)
+    def generate_random_rewards(self, size=None):
+        if size is None:
+            size = self.num_rewards
+        rewardsX = np.random.choice(range(1, self.grid_size + 1), size=size)
+        rewardsY = np.random.choice(range(1, self.grid_size + 1), size=size)
 
         rewards = []
         rewards.append(pd.DataFrame({"x": rewardsX, "y": rewardsY, "time": 1}))

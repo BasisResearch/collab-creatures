@@ -54,7 +54,7 @@ def derive_predictors(
 
     ft.add_how_far_squared_scaled(sim)
 
-    sim.transformationsDF = (
+    sim.derivedDF = (
         sim.tracesDF.merge(sim.visibilityDF, how="inner")
         .merge(sim.proximityDF, how="inner")
         .merge(sim.how_farDF, how="inner")

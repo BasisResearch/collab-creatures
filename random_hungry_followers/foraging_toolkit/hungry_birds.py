@@ -40,7 +40,7 @@ def add_hungry_birds(
         new_bird["bird"] = new_bird["bird"] + how_many_birds_already
         new_bird["type"] = "hungry"
 
-    for t in range(0, 1):  # change to num frames
+    for t in range(0, sim.num_frames):  # change to num frames
         _vis = ft.construct_visibility(
             new_birds,
             sim.grid_size,
@@ -61,20 +61,27 @@ def add_hungry_birds(
         )["traces"]
 
         for b in range(num_hungry_birds):
-            options = _vis[b][t].copy()
+            options = _vis[b][0].copy()
             options = options.merge(sim.traces[t], how="inner")
             options.sort_values(by="trace", ascending=False, inplace=True)
-            # options = options.head(4)
-            # chosen_option = options.iloc[np.random.randint(0, 4)]
-            chosen_option = options.head(1)
-            print("at ", t, "bird", b, "chose \n", chosen_option)
+            options = options.head(4)
+            chosen_option = options.iloc[np.random.randint(0, 4)]
+            # chosen_option = options.head(0)
+
             if t < sim.num_frames - 1:
-                new_birds[b].loc[new_birds[b]["time"] == t + 1, "x"] = chosen_option[
-                    "x"
-                ]
-                new_birds[b].loc[new_birds[b]["time"] == t + 1, "y"] = chosen_option[
-                    "y"
-                ]
+                new_x = chosen_option["x"]
+                new_y = chosen_option["y"]
+
+                new_row = {
+                    "x": new_x,
+                    "y": new_y,
+                    "time": t + 2,
+                    "bird": b + 1,
+                    "type": "hungry",
+                }
+
+                new_birds[b].loc[len(new_birds[b])] = new_row
+
     sim.birds.extend(new_birds)
     sim.birdsDF = pd.concat(sim.birds)
 

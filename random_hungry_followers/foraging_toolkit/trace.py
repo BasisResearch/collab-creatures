@@ -10,12 +10,19 @@ def rewards_trace(distance, rewards_decay):
     return np.exp(-rewards_decay * distance)
 
 
-def rewards_to_trace(rewards, grid_size, num_frames, rewards_decay=0.5):
+def rewards_to_trace(
+    rewards, grid_size, num_frames, rewards_decay=0.5, start=None, end=None
+):
+    if start is None:
+        start = 0
+
+    if end is None:
+        end = num_frames
 
     grid = ft.generate_grid(grid_size)
     traces = []
 
-    for t in range(num_frames):
+    for t in range(start, end):
         rewt = rewards[t]
         trace = grid.copy()
         trace["trace"] = 0

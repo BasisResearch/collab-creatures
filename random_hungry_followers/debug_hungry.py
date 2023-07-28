@@ -56,6 +56,7 @@ hungry_sim = ft.Birds(
 )
 hungry_sim()
 
+print("num frames", hungry_sim.num_frames)
 
 hungry_sim = ft.add_hungry_birds(
     hungry_sim, num_hungry_birds=1, rewards_decay=0.3, visibility_range=6
@@ -67,7 +68,7 @@ print("Time elapsed: ", end_time - start_time)
 
 # print(pd.concat(hungry_sim.birds))
 
-# print(hungry_sim.birdsDF)
+print(hungry_sim.birdsDF)
 # ft.animate_birds(
 #     hungry_sim,
 #     plot_rewards=True,

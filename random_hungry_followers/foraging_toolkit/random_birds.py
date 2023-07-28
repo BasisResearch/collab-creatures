@@ -126,7 +126,9 @@ class Birds:
             self.birdsDF = pd.concat(self.birds)
 
         if self.birds:
-            ft.update_rewards(self, self.birds, start=1)
+            rew = ft.update_rewards(self, self.rewards, self.birds, start=1)
+            self.rewards = rew["rewards"]
+            self.rewardsDF = rew["rewardsDF"]
 
     def generate_random_birds(self, num_birds, size=None):
         if size is None:
@@ -194,7 +196,8 @@ class Birds:
         rewardsY = np.random.choice(range(1, self.grid_size + 1), size=size)
 
         rewards = []
-        rewards.append(pd.DataFrame({"x": rewardsX, "y": rewardsY, "time": 1}))
+        for t in range(1, self.num_frames + 1):
+            rewards.append(pd.DataFrame({"x": rewardsX, "y": rewardsY, "time": t}))
 
         return {"rewards": rewards, "rewardsDF": pd.concat(rewards)}
 

@@ -40,7 +40,7 @@ def add_hungry_birds(
         new_bird["bird"] = new_bird["bird"] + how_many_birds_already
         new_bird["type"] = "hungry"
 
-    for t in range(0, sim.num_frames):
+    for t in range(0, 1):  # change to num frames
         _vis = ft.construct_visibility(
             new_birds,
             sim.grid_size,
@@ -48,8 +48,59 @@ def add_hungry_birds(
             start=t,
             end=t + 1,
         )["visibility"]
-        print(_vis)
-        print(len(_vis))
+
+        sim.rewards = ft.update_rewards(
+            sim, sim.rewards, new_birds, start=t, end=t + 1
+        )["rewards"]
+
+        sim.traces = ft.rewards_to_trace(
+            sim.rewards,
+            sim.grid_size,
+            sim.num_frames,
+            rewards_decay,
+        )["traces"]
+
+        for b in range(num_hungry_birds):
+            options = _vis[b][t].copy()
+            options = options.merge(sim.traces[t], how="inner")
+            options.sort_values(by="trace", ascending=False, inplace=True)
+            # options = options.head(4)
+            # chosen_option = options.iloc[np.random.randint(0, 4)]
+            chosen_option = options.head(1)
+            print("at ", t, "bird", b, "chose \n", chosen_option)
+            if t < sim.num_frames - 1:
+                new_birds[b].loc[new_birds[b]["time"] == t + 1, "x"] = chosen_option[
+                    "x"
+                ]
+                new_birds[b].loc[new_birds[b]["time"] == t + 1, "y"] = chosen_option[
+                    "y"
+                ]
+    sim.birds.extend(new_birds)
+    sim.birdsDF = pd.concat(sim.birds)
+
+    rew = ft.update_rewards(sim, sim.rewards, sim.birds, start=1)
+
+    sim.rewards = rew["rewards"]
+    sim.rewardsDF = rew["rewardsDF"]
+
+    tr = ft.rewards_to_trace(
+        sim.rewards,
+        sim.grid_size,
+        sim.num_frames,
+        rewards_decay,
+    )
+
+    sim.traces = tr["traces"]
+    sim.tracesDF = pd.concat(sim.traces)
+
+    vis = ft.construct_visibility(
+        sim.birds, sim.grid_size, visibility_range=visibility_range
+    )
+
+    sim.visibility = vis["visibility"]
+    sim.visibilityDF = vis["visibilityDF"]
+
+    return sim
 
 
 #

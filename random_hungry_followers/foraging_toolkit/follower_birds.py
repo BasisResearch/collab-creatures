@@ -57,15 +57,15 @@ def add_follower_birds(
             end=t + 1,
         )["visibility"]
 
-        _birds = old_birds.extend(new_birds)
-
         _prox = ft.generate_proximity_score(
-            _birds,
+            new_birds,
             _vis,
             visibility_range=visibility_range,
             getting_worse=getting_worse,
             optimal=optimal,
             proximity_decay=proximity_decay,
+            start=0,
+            end=1,
         )["proximity"]
 
         # sim.rewards = ft.update_rewards(
@@ -81,7 +81,7 @@ def add_follower_birds(
 
         for b in range(num_follower_birds):
             options = _vis[b][0].copy()
-            options = options.merge(_prox[t], how="inner")
+            options = options.merge(_prox[b][0], how="inner")
             options.sort_values(by="proximity", ascending=False, inplace=True)
             options = options.head(10)
             chosen_option = options.iloc[np.random.randint(0, 10)]
@@ -96,7 +96,7 @@ def add_follower_birds(
                     "y": new_y,
                     "time": t + 2,
                     "bird": b + 1,
-                    "type": "hungry",
+                    "type": "follower",
                 }
 
                 new_birds[b].loc[len(new_birds[b])] = new_row

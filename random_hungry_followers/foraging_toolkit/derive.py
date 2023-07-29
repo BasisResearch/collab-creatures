@@ -60,4 +60,7 @@ def derive_predictors(
         .merge(sim.how_farDF, how="inner")
     )
 
+    # TODO: ignore outliers resulting from bird crowding?
+    sim.derivedDF = sim.derivedDF[sim.derivedDF["proximity"] > 0]
+
     return sim

@@ -11,14 +11,10 @@ import numpy as np
 
 def proximity_score(distance, getting_worse=1.5, optimal=4, proximity_decay=1):
     if distance <= getting_worse:
-        return math.sin(
-            math.pi / (2 * getting_worse) * (distance + 3 * getting_worse)
-        )
+        return math.sin(math.pi / (2 * getting_worse) * (distance + 3 * getting_worse))
     elif distance <= getting_worse + 1.5 * (optimal - getting_worse):
         return math.sin(
-            math.pi
-            / (2 * (optimal - getting_worse))
-            * (distance - getting_worse)
+            math.pi / (2 * (optimal - getting_worse)) * (distance - getting_worse)
         )
     else:
         return math.sin(
@@ -26,8 +22,7 @@ def proximity_score(distance, getting_worse=1.5, optimal=4, proximity_decay=1):
             / (2 * (optimal - getting_worse))
             * (1.5 * (optimal - getting_worse))
         ) * math.exp(1) ** (
-            -proximity_decay
-            * (distance - optimal - 0.5 * (optimal - getting_worse))
+            -proximity_decay * (distance - optimal - 0.5 * (optimal - getting_worse))
         )
 
 
@@ -58,12 +53,17 @@ def generate_proximity_score(
     getting_worse=1.5,
     optimal=4,
     proximity_decay=1,
+    start=0,
+    end=None,
 ):
+    if end is None:
+        end = len(birds[0])
+
     bird_distances = birds_to_bird_distances(birds)
 
     proximity = visibility.copy()
     for b in range(len(birds)):
-        for t in range(len(birds[0])):
+        for t in range(start, end):
             proximity[b][t]["proximity"] = 0
 
             distbt = bird_distances[b].iloc[t].drop(b + 1)
@@ -76,9 +76,7 @@ def generate_proximity_score(
                     o_y = birds[visible_birds[vb] - 1]["y"].iloc[t]
 
                     proximity[b][t]["proximity"] += [
-                        proximity_score(
-                            s, getting_worse, optimal, proximity_decay
-                        )
+                        proximity_score(s, getting_worse, optimal, proximity_decay)
                         for s in np.sqrt(
                             (proximity[b][t]["x"] - o_x) ** 2
                             + (proximity[b][t]["y"] - o_y) ** 2
@@ -96,8 +94,7 @@ def generate_proximity_score(
                     # )
 
             proximity[b][t]["proximity_standardized"] = (
-                proximity[b][t]["proximity"]
-                - proximity[b][t]["proximity"].mean()
+                proximity[b][t]["proximity"] - proximity[b][t]["proximity"].mean()
             ) / proximity[b][t]["proximity"].std()
 
             proximity[b][t]["proximity_standardized"].fillna(0, inplace=True)

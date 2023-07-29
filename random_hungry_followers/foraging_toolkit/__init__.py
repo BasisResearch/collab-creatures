@@ -12,6 +12,7 @@ from .trace import (
 from .random_birds import Birds, RandomBirds
 
 from .hungry_birds import add_hungry_birds
+from .follower_birds import add_follower_birds
 
 from .visibility import visibility_vs_distance, construct_visibility
 

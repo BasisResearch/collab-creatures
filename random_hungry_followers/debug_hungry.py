@@ -52,7 +52,7 @@ import foraging_toolkit as ft
 start_time = time.time()
 
 hungry_sim = ft.Birds(
-    grid_size=40, num_birds=3, num_frames=10, num_rewards=15, grab_range=3
+    grid_size=100, num_birds=3, num_frames=50, num_rewards=90, grab_range=3
 )
 hungry_sim()
 
@@ -129,7 +129,7 @@ data = torch.tensor(
             "how_far_squared_scaled",
         ]
     ].values,
-    dtype=torch.float32,
+    # dtype=torch.float32,
 )
 
 proximity, trace, visibility, how_far = data[:, 0], data[:, 1], data[:, 2], data[:, 3]

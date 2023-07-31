@@ -22,13 +22,13 @@ os.makedirs(plots_dir, exist_ok=True)
 
 # Boids simulation parameters
 num_birds = 25
-num_steps_train = 100
-num_sims_train = 300
-num_steps_test = 150
+num_steps_train = 150
+num_sims_train = 150
+num_steps_test = 300
 grid_size = 40
 neighbor_radius = 8
 close_radius = 5
-alignment_weight = 0.2
+alignment_weight = 0.1
 cohesion_weight = 0.05
 separation_weight = 0.1
 max_speed=.5
@@ -57,7 +57,7 @@ dataset = GNN_foraging_birds.generate_dataset_boid(num_birds, num_sims_train, nu
 # Train GNN model
 for meta_epoch in range(20):
     print('Meta epoch: ', meta_epoch)
-    model = GNN_foraging_birds.train_GNN_model(dataset, hidden_dim=32, num_epochs=5, learning_rate=0.001, load_path='gnn_extended_params_boid.pth', save_path='gnn_extended_params_boid.pth')
+    model = GNN_foraging_birds.train_GNN_model(dataset, hidden_dim=32, num_epochs=20, learning_rate=0.002, load_path='gnn_extended_params_boid.pth', save_path='gnn_extended_params_boid.pth')
     torch.save(model.state_dict(), os.path.join(plots_dir, 'gnn_extended_params_boid_meta_epoch'+str(meta_epoch)+'.pth'))
 
     # Initial bird positions and velocities

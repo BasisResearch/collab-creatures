@@ -195,6 +195,7 @@ def train_GNN_model(dataset, hidden_dim=32, num_epochs=100, learning_rate=0.01, 
             optimizer.zero_grad()
             out = model(data.x, data.edge_index)
             loss = ((out - data.y)**2).mean()  # Mean Squared Error loss
+            loss = loss + 1000*((out**2).mean() - (data.y**2).mean())**2  # gotta get the magnitude right
             loss.backward()
             optimizer.step()
             total_loss += loss.item()

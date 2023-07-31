@@ -12,9 +12,11 @@ import matplotlib.animation as animation
 from matplotlib import colors
 import csv
 from torch_geometric.nn import BatchNorm
+from sklearn.preprocessing import StandardScaler
 
 
-def generate_dataset_boid(num_birds, num_sims_train, num_steps_train, neighbor_radius=15, close_radius=3, alignment_weight=0.1, cohesion_weight=0.1, separation_weight=0.1, grid_size=30):
+
+def generate_dataset_boid(num_birds, num_sims_train, num_steps_train, neighbor_radius=15, close_radius=3, alignment_weight=0.1, cohesion_weight=0.1, separation_weight=0.1, grid_size=30, max_speed=.25):
     dataset = []
 
     for sim in range(num_sims_train):
@@ -28,8 +30,10 @@ def generate_dataset_boid(num_birds, num_sims_train, num_steps_train, neighbor_r
             dists = np.sqrt(((positions[:, None] - positions)**2).sum(-1))
             edges = np.argwhere(dists < neighbor_radius)
 
+            # normalize data for gnn input
+            gnn_in_position, gnn_in_velocity = transform_position_velocity_for_gnn(positions, velocities, grid_size)
             # Convert to PyTorch tensors
-            x = torch.tensor(np.hstack([positions, velocities]), dtype=torch.float)
+            x = torch.tensor(np.hstack([gnn_in_position, gnn_in_velocity]), dtype=torch.float)
             edge_index = torch.tensor(edges.transpose(), dtype=torch.long)
             y = torch.tensor(new_velocities, dtype=torch.float)
 
@@ -43,7 +47,7 @@ def generate_dataset_boid(num_birds, num_sims_train, num_steps_train, neighbor_r
             
     return dataset
 
-def step_position_velocity_boid(positions, velocities, neighbor_radius=15, close_radius=3, alignment_weight=0.01, cohesion_weight=0.01, separation_weight=0.01, grid_size=30):
+def step_position_velocity_boid(positions, velocities, neighbor_radius=15, close_radius=3, alignment_weight=0.01, cohesion_weight=0.01, separation_weight=0.01, grid_size=30, max_speed=.25):
     num_birds = len(positions)
 
     # Compute pairwise distances
@@ -85,8 +89,8 @@ def step_position_velocity_boid(positions, velocities, neighbor_radius=15, close
 
     # Limit speed
     speeds = np.sqrt((new_velocities**2).sum(axis=1))
-    over_speed_birds = speeds > 1
-    new_velocities[over_speed_birds] = new_velocities[over_speed_birds] / speeds[over_speed_birds, None]
+    over_speed_birds = speeds > max_speed
+    new_velocities[over_speed_birds] = new_velocities[over_speed_birds] / speeds[over_speed_birds, None] * max_speed
 
     # Update positions
     new_positions = positions + new_velocities
@@ -105,6 +109,11 @@ def step_position_velocity_boid(positions, velocities, neighbor_radius=15, close
     new_velocities[mask_outside_y, 1] *= -1
 
     return new_positions, new_velocities
+
+def transform_position_velocity_for_gnn(position, velocity, grid_size=30):
+    tr_position = position/grid_size
+    tr_velocity = velocity
+    return tr_position, tr_velocity
 
 
 class GNN_foraging_simple(torch.nn.Module):
@@ -225,9 +234,12 @@ def generate_trajectories(model, positions, velocities, num_steps, neighbor_radi
         if isinstance(model, Module):
             # Model is a PyTorch module
 
+            # normalize positions and velocities for input to GNN
+            gnn_in_position, gnn_in_velocity = transform_position_velocity_for_gnn(positions, velocities, grid_size=30)
+
             # Convert to PyTorch tensors
-            positions_t = torch.tensor(positions, dtype=torch.float)
-            velocities_t = torch.tensor(velocities, dtype=torch.float)
+            positions_t = torch.tensor(gnn_in_position, dtype=torch.float)
+            velocities_t = torch.tensor(gnn_in_velocity, dtype=torch.float)
             x = torch.cat([positions_t, velocities_t], dim=-1)
 
             # Compute pairwise distances and find neighbors
@@ -261,7 +273,7 @@ def animate_agents(actual_trajectories, predicted_trajectories=[], num_steps_tes
     ax.set_ylim(0, grid_size)
     ax.set_aspect('equal')
     plt.xticks([])
-    plt.xticks([])
+    plt.yticks([])
     # ax.set_title('Actual and Predicted Trajectories')
 
     fade_steps = 10

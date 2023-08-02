@@ -48,16 +48,16 @@ do_plot_model_internals = False
 doPrintAgentStateTrajectories = False
 
 # RU: needed to comment out these two to be able to run without errors!
-figures.setup_fig()
-plt.close("all")
+# figures.setup_fig()
+# plt.close("all")
 
 # ---------------------- Simulation parameters ------------------------------
 
 ## ru: so you run them multiple times, but every time with the same parameters?
 ## ru: for the paper it would be great to randomize them a bit
 
-N_timesteps = 3
-N_agents = 2
+N_timesteps = 30
+N_agents = 6
 
 # Food and environment parameters
 food_statistics_types = [

@@ -47,7 +47,7 @@ do_plot_value_otheragents = False
 do_plot_model_internals = False
 doPrintAgentStateTrajectories = False
 
-
+# RU: needed to comment out these two to be able to run without errors!
 figures.setup_fig()
 plt.close("all")
 
@@ -71,10 +71,10 @@ N_food_units_total = 16
 patch_dim = 4  # a patch has dimensions (patch_dim x patch_dim )
 N_units_per_patch = patch_dim**2
 N_patches = np.ceil(N_food_units_total / N_units_per_patch).astype(int)
-calories_acquired_per_unit_time = 5  # when an agent is at a food location, it gains this many calories per time step
-epoch_dur = (
-    N_timesteps  # add new food in random locations every epoch_dur time steps
+calories_acquired_per_unit_time = (
+    5  # when an agent is at a food location, it gains this many calories per time step
 )
+epoch_dur = N_timesteps  # add new food in random locations every epoch_dur time steps
 
 # Agent parameters
 # doShareFoodInfo = True # Binary variable - are the birds communicating or not?
@@ -87,25 +87,27 @@ doProbabilisticPolicy = True
 doSoftmaxPolicy = True
 exploration_bias = 0.005
 # agent_type = 'ignorers'
-agent_type = 'communicators'
+agent_type = "communicators"
 # agent_type = 'followers'
 
-if agent_type == 'ignorers':
+if agent_type == "ignorers":
     c_food_self = 0.9
-    c_food_others = 0.1  # to what extent do the birds care about information from other birds?
+    c_food_others = (
+        0.1  # to what extent do the birds care about information from other birds?
+    )
     c_otheragents = 0
     c_group = 0
-elif agent_type == 'communicators':
+elif agent_type == "communicators":
     # Note the implementation of communicators here is slightly different from
-    # that of the CVPR workshop paper. For the CVPR paper's implementation 
+    # that of the CVPR workshop paper. For the CVPR paper's implementation
     # see cvpr_submission_sims.py
     c_food_self = 0.5
-    c_food_others = 0.5   
+    c_food_others = 0.5
     c_otheragents = 0
     c_group = 0
-elif agent_type == 'followers':
+elif agent_type == "followers":
     c_food_self = 0.1
-    c_food_others = 0.9   
+    c_food_others = 0.9
     c_otheragents = 0
     c_group = 0
 
@@ -113,7 +115,7 @@ c_weights = [c_food_self, c_food_others, c_otheragents, c_group]
 
 # Quantities to track
 x_agents_all = np.zeros([N_agents, N_timesteps])
-y_agents_all = np.zeros([N_agents, N_timesteps]) 
+y_agents_all = np.zeros([N_agents, N_timesteps])
 agent_locs_1d_all = np.zeros([N_agents, N_timesteps])
 dist_to_nearest_neighbor_all = np.zeros([N_agents, N_timesteps])
 calories_acquired_all = np.zeros([N_agents, N_timesteps])
@@ -170,9 +172,7 @@ phi_food = np.zeros(
 food_calories_by_loc = np.zeros(
     [N_states, 1]
 )  # amount of food at each location in units of calories
-food_trajectory = np.zeros(
-    [N_states, N_timesteps]
-)  # track food calories over time
+food_trajectory = np.zeros([N_states, N_timesteps])  # track food calories over time
 # list_food_loc_id = np.zeros([N_food]) # array of locations where there is food
 # list_food_loc_id = np.random.permutation(np.arange(N_states))[:N_food] # randomly choose K locations to place new food
 # phi_food[list_food_loc_id] = 1 # put one food item in the respective locations
@@ -183,9 +183,9 @@ if food_statistics_type == "drop_food_once":
         x_start = np.random.randint(0, edge_size - patch_dim)
         y_start = np.random.randint(0, edge_size - patch_dim)
         # generate (x,y) coordinates for each food unit in the patch
-        x_range, y_range = np.arange(
-            x_start, x_start + patch_dim
-        ), np.arange(y_start, y_start + patch_dim)
+        x_range, y_range = np.arange(x_start, x_start + patch_dim), np.arange(
+            y_start, y_start + patch_dim
+        )
         x_locs, y_locs = np.meshgrid(x_range, y_range, indexing="xy")
         # convert to 1D locations
         list_newfood_loc_1d = util.loc2Dto1D(
@@ -201,9 +201,7 @@ if food_statistics_type == "drop_food_once":
 # if food_statistics_type == 'sequential': # new food appears only when old food is completely depleted
 
 N_predators = 0
-w_predators = np.zeros(
-    [N_states, 1]
-)  # vector indicating location of predators
+w_predators = np.zeros([N_states, 1])  # vector indicating location of predators
 list_predator_loc_id = np.random.permutation(np.arange(N_states))[
     :N_predators
 ]  # randomly choose K locations to place new food
@@ -265,9 +263,7 @@ for ai in range(N_agents):
 
     # agent.energy_trajectory[0] = 50 # each agent starts with 50 calories --> done inside the class
 
-calories_total_mat[
-    :, 0
-] = energy_init  # each agent starts with 50 calories
+calories_total_mat[:, 0] = energy_init  # each agent starts with 50 calories
 
 # ************************** RUN SIMULATION  ***************************
 
@@ -280,16 +276,12 @@ for ti in range(N_timesteps - 1):
     # Update agent calorie levels
     # food occupied by an agent decays over time
     # delta_food_calories_total = food_depletion_rate * food_calories_by_loc * phi_agents # only subtract food calories in locations occupied by agents, scaled by the number of agents
-    delta_food_calories_total = (
-        calories_acquired_per_unit_time * phi_agents
-    )
+    delta_food_calories_total = calories_acquired_per_unit_time * phi_agents
     # rectify the calorie count for the food locations that will hit negative calories
     is_overdepleted = (
         delta_food_calories_total > food_calories_by_loc
     )  # find locations where the calorie count will hit negative values (we'll set the calorie count to 0)
-    delta_food_calories_total[is_overdepleted] = food_calories_by_loc[
-        is_overdepleted
-    ]
+    delta_food_calories_total[is_overdepleted] = food_calories_by_loc[is_overdepleted]
 
     food_calories_by_loc -= delta_food_calories_total
     phi_food = (
@@ -302,9 +294,7 @@ for ti in range(N_timesteps - 1):
     if food_statistics_type == "regular_intervals":
         # randomly add a new food patch every several time steps
         if ti % epoch_dur == 0:
-            list_newfood_loc_id = np.random.permutation(
-                np.arange(N_states)
-            )[:N_patches]
+            list_newfood_loc_id = np.random.permutation(np.arange(N_states))[:N_patches]
             phi_food[list_newfood_loc_id] = 1
             food_calories_by_loc[
                 list_newfood_loc_id
@@ -324,21 +314,18 @@ for ti in range(N_timesteps - 1):
 
     for ai, agent in enumerate(list_agents):
         # sum_weighted_features = agent.c.T @ features
-        prev_loc_1d = int(
-            agent.state_trajectory[ti]
-        )  # agent's current location
+        prev_loc_1d = int(agent.state_trajectory[ti])  # agent's current location
 
         # ------ update energy consequences of previous time step's actions --------
 
         # update agent's total energy based on amount of food at previous location
         # transfer calories from food to agent
         calories_acquired_mat[ai, ti] = (
-            delta_food_calories_total[prev_loc_1d]
-            / phi_agents[prev_loc_1d][0]
+            delta_food_calories_total[prev_loc_1d] / phi_agents[prev_loc_1d][0]
         )[0]
         # RU: added [0] to ensure its a scalar; otherwise deprecation warning
         # RU: make sure that this is in line with your intentions
-        
+
         #   # if there were N agents at that location, it gets 1/N portion of the calories
         agent.energy_total += calories_acquired_mat[ai, ti]
         calories_cumulative_vec[ai, ti + 1] = (
@@ -354,9 +341,7 @@ for ti in range(N_timesteps - 1):
         phi_agents[prev_loc_1d] -= 1  # move out of previous location
 
         # EXPECTED REWARD RELATED TO OTHER AGENTS
-        xloc_allagents, yloc_allagents = util.loc1Dto2D(
-            loc_1d_allagents, edge_size
-        )
+        xloc_allagents, yloc_allagents = util.loc1Dto2D(loc_1d_allagents, edge_size)
         xloc_self, yloc_self = util.loc1Dto2D(prev_loc_1d, edge_size)
         # only include locations of agents outside of current location
         xloc_neighbors, yloc_neighbors = util.loc1Dto2D(
@@ -383,25 +368,20 @@ for ti in range(N_timesteps - 1):
 
         # expected reward of each location based on this agent's distance from center of mass of the group
         w_groupcenterofmass = np.zeros([edge_size, edge_size])
-        w_groupcenterofmass[
-            int(yloc_centerofmass), int(xloc_centerofmass)
-        ] = 0.5
-        w_groupcenterofmass = np.reshape(
-            w_groupcenterofmass, (N_states, 1)
-        )
-        
+        w_groupcenterofmass[int(yloc_centerofmass), int(xloc_centerofmass)] = 0.5
+        w_groupcenterofmass = np.reshape(w_groupcenterofmass, (N_states, 1))
+
         # VISIBILITY CONSTRAINTS
         phi_visible_mat = agent.compute_visible_locations(
             xloc_self, yloc_self, edge_size
         )
         phi_visible = np.reshape(phi_visible_mat, (N_states, 1))
 
-
-        #RU: let me make sure I understand: 
-        #The info from other agents is just info about whether
-        #there is food at their exact locations, 
-        #not whether there is food within the other birds
-        #visibility range, right?
+        # RU: let me make sure I understand:
+        # The info from other agents is just info about whether
+        # there is food at their exact locations,
+        # not whether there is food within the other birds
+        # visibility range, right?
 
         # get information from other agents about whether there is food at their locations
         # if doShareFoodInfo:
@@ -412,9 +392,7 @@ for ti in range(N_timesteps - 1):
         # Then you can change communication parameters such as fidelity of info transmitted (add noise)
 
         # EXPECTED REWARD RELATED TO FOOD
-        w_food = (
-            phi_food * phi_visible
-        )  # expected food reward at each location
+        w_food = phi_food * phi_visible  # expected food reward at each location
         w_food_others = (
             phi_food * phi_agents
         )  # making food info from other agents a separate feature with separate weights
@@ -444,9 +422,7 @@ for ti in range(N_timesteps - 1):
 
         if doProbabilisticPolicy:
             if doSoftmaxPolicy:
-                prob_arr = util.softmax(
-                    value_eligible, temp=exploration_bias
-                )
+                prob_arr = util.softmax(value_eligible, temp=exploration_bias)
             else:
                 # #sample eligible states from a categorical distribution whose shape is based on the values
                 # # convert values into probabilities
@@ -458,9 +434,7 @@ for ti in range(N_timesteps - 1):
                     * 0.001
                     * np.random.rand(value_eligible.shape[0])
                 )
-                prob_arr = prob_arr / np.sum(
-                    prob_arr
-                )  # normalize so they sum to 1
+                prob_arr = prob_arr / np.sum(prob_arr)  # normalize so they sum to 1
 
             next_loc_1d = np.random.choice(eligible_states_id, p=prob_arr)
 
@@ -469,22 +443,18 @@ for ti in range(N_timesteps - 1):
                 np.argmax(value_eligible)
             ]  # DETERMINISTIC POLICY that works
 
-
-
         # ------ Locations of agents and rewards at each time point --------
         xloc_prev, yloc_prev = util.loc1Dto2D(prev_loc_1d, edge_size)
         xloc_next, yloc_next = util.loc1Dto2D(next_loc_1d, edge_size)
-        
+
         x_agents_all[ai, ti] = xloc_prev
         y_agents_all[ai, ti] = yloc_prev
-        
+
         # ------- compute energy cost of moving to new location --------------
         dist_traveled = np.sqrt(
             (xloc_next - xloc_prev) ** 2 + (yloc_next - yloc_prev) ** 2
         )
-        calories_expended_mat[ai, ti] = (
-            caloric_cost_per_unit_dist * dist_traveled
-        )
+        calories_expended_mat[ai, ti] = caloric_cost_per_unit_dist * dist_traveled
         agent.energy_total -= calories_expended_mat[ai, ti]
 
         # ------------- compute metrics for data analysis -----------------
@@ -493,13 +463,9 @@ for ti in range(N_timesteps - 1):
                 (xloc_otheragents - xloc_self) ** 2
                 + (yloc_otheragents - yloc_self) ** 2
             )
-            dist_to_nearest_neighbor_all[ai, ti] = np.min(
-                dist_to_neighbors
-            )
+            dist_to_nearest_neighbor_all[ai, ti] = np.min(dist_to_neighbors)
 
-        calories_acquired_all[ai, ti] = calories_acquired_mat[
-            ai, ti
-        ]
+        calories_acquired_all[ai, ti] = calories_acquired_mat[ai, ti]
 
         if phi_food[next_loc_1d][0]:
             agent.times_at_food.append(
@@ -509,9 +475,7 @@ for ti in range(N_timesteps - 1):
         # -------------------------------------------------------------------
 
         agent.state_trajectory[ti + 1] = next_loc_1d  # scalar
-        agent.value_trajectory[
-            :, ti + 1
-        ] = value.flatten()  # (N_states, N_timesteps)
+        agent.value_trajectory[:, ti + 1] = value.flatten()  # (N_states, N_timesteps)
         agent.energy_trajectory[ti + 1] = agent.energy_total
         calories_total_mat[ai, ti + 1] = (
             calories_total_mat[ai, ti]
@@ -525,7 +489,9 @@ for ti in range(N_timesteps - 1):
 for ai, agent in enumerate(list_agents):
     # print(agent.times_at_food)
     if len(agent.times_at_food) == 0:
-        time_to_first_food_all[ai] = N_timesteps  # TO DO: figure out how to track agents who never reach food
+        time_to_first_food_all[
+            ai
+        ] = N_timesteps  # TO DO: figure out how to track agents who never reach food
     else:
         time_to_first_food_all[ai] = agent.times_at_food[
             0
@@ -540,10 +506,10 @@ if doPrintAgentStateTrajectories:
 print("simulation run time = " + str(endtime - starttime))
 
 # -------Save locations of each agent and reward in data frames-----------
-# all_birdsDF: 
+# all_birdsDF:
 # all_rewardsDF:
 
-# Bird locations  
+# Bird locations
 birds_all = []
 for ai in range(N_agents):
     single_agent = pd.DataFrame(
@@ -557,12 +523,12 @@ for ai in range(N_agents):
     )
 
     birds_all.append(single_agent)
-    
+
 all_birdsDF = pd.concat(birds_all)
 
 all_birdsDF.head()
 
-# Reward locations 
+# Reward locations
 rewards_all = []
 for ti in range(N_timesteps):
     loc1D = [idx for idx, val in enumerate(food_trajectory[:, ti]) if val > 0]
@@ -576,12 +542,16 @@ for ti in range(N_timesteps):
             }
         )
         rewards_all.append(single_time)
-    
+
 all_rewardsDF = pd.concat(rewards_all)
 
 print(all_birdsDF)
 print(all_rewardsDF)
-    
+
+communicatorsDFs = [all_birdsDF, all_rewardsDF]
+with open("communicatorsDFs.pkl", "wb") as f:
+    pickle.dump(communicatorsDFs, f)
+
 
 # %%
 # ************************* CREATE USER INTERFACE ***************************
@@ -642,9 +612,7 @@ if doAnimation:
     ):  # , list_food_loc_id, edge_size):
         fig_ui.suptitle("frame " + str(frame) + " / " + str(N_timesteps))
         # food locations and quantities
-        food_heatmap = np.reshape(
-            food_trajectory[:, frame], [edge_size, edge_size]
-        )
+        food_heatmap = np.reshape(food_trajectory[:, frame], [edge_size, edge_size])
         sns.heatmap(
             ax=ax_main,
             data=food_heatmap,
@@ -731,9 +699,7 @@ if saveMovie:
     if moviefile.exists():
         filepath_movie = filepath_movie + "_v2"
 
-    ani.save(
-        filepath_movie + ".gif", dpi=300, writer=animation.PillowWriter(fps=2)
-    )
+    ani.save(filepath_movie + ".gif", dpi=300, writer=animation.PillowWriter(fps=2))
 
     # ## saving as an mp4
     # filename = r"C:\Users\admin\Dropbox\Code\Basis-code\multiagent_mp4.mp4"

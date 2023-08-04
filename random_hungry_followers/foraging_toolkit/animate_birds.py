@@ -13,11 +13,11 @@ def animate_birds(
     plot_traces=False,
     plot_visibility=0,
     plot_proximity=0,
-    plot_communicates=0,
+    plot_communicate=0,
     trace_multiplier=10,
     visibility_multiplier=10,
     proximity_multiplier=10,
-    communicates_multiplier=10,
+    communicate_multiplier=10,
 ):
     if plot_rewards:
         rew = sim.rewardsDF.copy()
@@ -35,10 +35,8 @@ def animate_birds(
     if plot_visibility > 0:
         vis = sim.visibilityDF.copy()
         vis = vis[vis["bird"] == plot_visibility]
-        print(vis.head(n=3))
         vis["who"] = vis["bird"]
         vis["bird"] = "visibility"
-        print(df.head())
         df = pd.concat([df, vis])
 
     if plot_proximity > 0:
@@ -48,13 +46,14 @@ def animate_birds(
         prox["bird"] = "proximity"
         df = pd.concat([df, prox])
 
-    if plot_communicates > 0:
+    if plot_communicate > 0:
         com = sim.communicatesDF.copy()
-        com = com[com["bird"] == plot_communicates]
+        com = com[com["bird"] == plot_communicate]
         com["who"] = com["bird"]
-        com["bird"] = "communicates"
-        df = pd.concat([com, df])
-        # df = df.sort_values(by="time")
+        com["bird"] = "communicate"
+        com = com.reset_index(drop=True)
+        df = df.reset_index(drop=True)
+        df = pd.concat([com, df], axis=0, ignore_index=True, verify_integrity=True)
 
     fig = px.scatter(df, x="x", y="y", animation_frame="time", color="bird")
 
@@ -107,6 +106,21 @@ def animate_birds(
                     trace.marker.color = "yellow"
                     trace.showlegend = False
 
+    if plot_communicate > 0:
+        fig.update_traces(showlegend=False, selector=dict(name="communicate"))
+
+        for t in range(0, len(fig.frames)):
+            selected_rows = com[(com["time"] == t + 1)]
+            for trace in fig.frames[t].data:
+                if trace.name == "communicate":
+                    trace.marker.symbol = "circle"
+                    trace.marker.color = "red"
+                    trace.showlegend = False
+                    trace.marker.size = (
+                        selected_rows["communicate"] * communicate_multiplier
+                    )
+                    trace.marker.opacity = 0.3
+
     if plot_traces:
         fig.update_traces(showlegend=False, selector=dict(name="trace"))
 
@@ -119,25 +133,6 @@ def animate_birds(
                     trace.showlegend = False
                     trace.marker.size = selected_rows["trace"] * trace_multiplier
                     trace.marker.opacity = 0.3
-
-    if plot_communicates > 0:
-        fig.update_traces(
-            showlegend=False,
-            selector=dict(name="communicates"),
-        )
-
-        for t in range(0, len(fig.frames)):
-            selected_rows = com[(com["time"] == t + 1)]
-            print(selected_rows)
-            for trace in fig.frames[t].data:
-                if trace.name == "communicates":
-                    trace.marker.symbol = "circle"
-                    trace.marker.color = "red"
-                    trace.showlegend = False
-                    trace.marker.size = (
-                        selected_rows["communicate"] * communicates_multiplier
-                    )
-                    trace.marker.opacity = 0.4
 
     if plot_visibility > 0:
         fig.update_traces(showlegend=False, selector=dict(name="visibility"))
@@ -178,11 +173,6 @@ def animate_birds(
         frames=fig["frames"],
         layout=fig.layout,
     )
-
-    # n = sim.num_birds
-    # first_n_elements = fig.data[:n]
-    # remaining_elements = fig.data[n:]
-    # fig.data = fig.data + first_n_elements
 
     fig.show()
 

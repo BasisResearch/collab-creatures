@@ -1,7 +1,9 @@
 import pandas as pd
+from pyro.infer import MCMC, NUTS
 
 
-def summary(samples, sites):
+
+def summary(samples, sites = None):
     if sites is None:
         sites = [site_name for site_name in samples.keys()]
 

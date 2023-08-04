@@ -177,13 +177,18 @@ def animate_birds(
     fig.show()
 
 
-def visualise_bird_predictors(tr, prox, hf):
-    df = pd.DataFrame({"trace": tr, "proximity": prox, "how far score": hf})
+def visualise_bird_predictors(tr, prox, hf, com=None):
+    if com is not None:
+        df = pd.DataFrame(
+            {"trace": tr, "proximity": prox, "communicate": com, "how_far_score": hf}
+        )
+    else:
+        df = pd.DataFrame({"trace": tr, "proximity": prox, "how far score": hf})
 
     fig = px.scatter(
         df,
         x="trace",
-        y="how far score",
+        y="how_far_score",
         opacity=0.3,
         template="plotly_dark",
     )
@@ -196,7 +201,7 @@ def visualise_bird_predictors(tr, prox, hf):
     fig2 = px.scatter(
         df,
         x="proximity",
-        y="how far score",
+        y="how_far_score",
         opacity=0.3,
         template="plotly_dark",
     )
@@ -216,3 +221,17 @@ def visualise_bird_predictors(tr, prox, hf):
 
     fig.show()
     fig2.show()
+
+    if com is not None:
+        fig3 = px.scatter(
+            df,
+            x="communicate",
+            y="how_far_score",
+            opacity=0.3,
+            template="plotly_dark",
+        )
+        fig3.update_traces(marker={"size": 4})
+        fig3.update_xaxes(showgrid=False)
+        fig3.update_yaxes(showgrid=False)
+
+        fig3.show()

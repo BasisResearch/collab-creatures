@@ -20,6 +20,9 @@ def derive_predictors(
     getting_worse=1.5,
     optimal=4,
     proximity_decay=1,
+    generate_communicates=False,
+    info_time_decay=3,
+    info_spatial_decay=0.15,
 ):
     tr = ft.rewards_to_trace(
         sim.rewards,
@@ -60,7 +63,14 @@ def derive_predictors(
         .merge(sim.how_farDF, how="inner")
     )
 
-    # TODO: ignore outliers resulting from bird crowding?
+    if generate_communicates:
+        com = ft.generate_communicates(sim, info_time_decay, info_spatial_decay)
+        sim.communicates = com["communicates"]
+        sim.communicatesDF = com["communicatesDF"]
+
+        sim.derivedDF = sim.derivedDF.merge(sim.communicatesDF, how="inner")
+
+    # TODO: maybe ignore outliers resulting from bird crowding?
     # sim.derivedDF = sim.derivedDF[sim.derivedDF["proximity"] > 0]
 
     return sim

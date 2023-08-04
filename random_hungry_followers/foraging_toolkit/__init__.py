@@ -1,7 +1,4 @@
-from .utils import (
-    generate_grid,
-    update_rewards,
-)
+from .utils import generate_grid, update_rewards, object_from_data
 
 from .trace import (
     rewards_trace,
@@ -22,8 +19,13 @@ from .proximity import (
     generate_proximity_score,
 )
 
+from .communicates import generate_communicates
+
 from .how_far import add_how_far_squared_scaled
 
+
 from .derive import derive_predictors
+
+from .inference import summary, mcmc_training
 
 from .animate_birds import animate_birds, visualise_bird_predictors

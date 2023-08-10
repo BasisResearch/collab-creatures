@@ -53,7 +53,9 @@ def animate_birds(
         com["bird"] = "communicate"
         com = com.reset_index(drop=True)
         df = df.reset_index(drop=True)
-        df = pd.concat([com, df], axis=0, ignore_index=True, verify_integrity=True)
+        df = pd.concat(
+            [com, df], axis=0, ignore_index=True, verify_integrity=True
+        )
 
     fig = px.scatter(df, x="x", y="y", animation_frame="time", color="bird")
 
@@ -131,7 +133,9 @@ def animate_birds(
                     trace.marker.symbol = "circle"
                     trace.marker.color = "orange"
                     trace.showlegend = False
-                    trace.marker.size = selected_rows["trace"] * trace_multiplier
+                    trace.marker.size = (
+                        selected_rows["trace"] * trace_multiplier
+                    )
                     trace.marker.opacity = 0.3
 
     if plot_visibility > 0:
@@ -180,10 +184,17 @@ def animate_birds(
 def visualise_bird_predictors(tr, prox, hf, com=None):
     if com is not None:
         df = pd.DataFrame(
-            {"trace": tr, "proximity": prox, "communicate": com, "how_far_score": hf}
+            {
+                "trace": tr,
+                "proximity": prox,
+                "communicate": com,
+                "how_far_score": hf,
+            }
         )
     else:
-        df = pd.DataFrame({"trace": tr, "proximity": prox, "how far score": hf})
+        df = pd.DataFrame(
+            {"trace": tr, "proximity": prox, "how_far_score": hf}
+        )
 
     fig = px.scatter(
         df,

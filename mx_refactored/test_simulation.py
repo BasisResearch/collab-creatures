@@ -15,13 +15,13 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from matplotlib.colors import LogNorm, Normalize
 from scipy import stats
-import figures 
-import gridworld_utils as util
+# import figures 
+import utils as util
 from importlib import reload
 import time
 import imp 
 reload(util)
-reload(figures)
+# reload(figures)
 reload(environments)
 reload(agents)
 reload(simulation)

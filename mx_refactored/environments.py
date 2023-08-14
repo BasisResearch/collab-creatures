@@ -5,7 +5,7 @@ Created on Fri Jul 28 17:44:48 2023
 @author: admin
 """
 import numpy as np
-import gridworld_utils as util
+import utils as util
 
 class Environment(object):
 

@@ -15,13 +15,22 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from matplotlib.colors import LogNorm, Normalize
 from scipy import stats
+<<<<<<< HEAD
 # import figures 
 import utils as util
+=======
+import figures 
+import gridworld_utils as util
+>>>>>>> e15390c (version 1 of refactoring simulation sandbox)
 from importlib import reload
 import time
 import imp 
 reload(util)
+<<<<<<< HEAD
 # reload(figures)
+=======
+reload(figures)
+>>>>>>> e15390c (version 1 of refactoring simulation sandbox)
 reload(environments)
 reload(agents)
 reload(simulation)

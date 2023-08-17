@@ -6,7 +6,11 @@ Created on Fri Jul 28 17:45:41 2023
 """
 
 import numpy as np
+<<<<<<< HEAD
 import utils as util
+=======
+import gridworld_utils as util
+>>>>>>> e15390c (version 1 of refactoring simulation sandbox)
 
 class BirdAgent(object):
     def __init__(self, env, N_timesteps, agent_type='ignorer', discount_factor=0.8, energy_init=50, sight_radius=40): 

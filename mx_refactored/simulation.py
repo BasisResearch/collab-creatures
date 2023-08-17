@@ -8,7 +8,11 @@ Created on Fri Jul 28 11:03:32 2023
 import numpy as np
 import environments
 import agents
+<<<<<<< HEAD
 import utils as util
+=======
+import gridworld_utils as util
+>>>>>>> e15390c (version 1 of refactoring simulation sandbox)
 from importlib import reload
 import pandas as pd
 reload(agents)
@@ -99,10 +103,13 @@ class Simulation(object):
             self.env.food_calories_by_loc -= delta_food_cal
             phi_food = self.env.food_calories_by_loc > 0.01 # update indicator  vector for food locations
             
+<<<<<<< HEAD
             # if phi_food is empty, generate new food 
             if np.sum(phi_food) <= 1:
                 self.env.add_food_patches()
             
+=======
+>>>>>>> e15390c (version 1 of refactoring simulation sandbox)
             # if food_statistics_type == "regular_intervals":
             #     # randomly add a new food patch every several time steps
             #     if ti % epoch_dur == 0:

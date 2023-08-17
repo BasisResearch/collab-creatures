@@ -5,7 +5,11 @@ Created on Fri Jul 28 17:44:48 2023
 @author: admin
 """
 import numpy as np
+<<<<<<< HEAD
 import utils as util
+=======
+import gridworld_utils as util
+>>>>>>> e15390c (version 1 of refactoring simulation sandbox)
 
 class Environment(object):
 

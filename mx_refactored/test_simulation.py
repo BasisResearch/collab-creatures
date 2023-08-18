@@ -26,7 +26,6 @@ reload(environments)
 reload(agents)
 reload(simulation)
 
-doAnimation = False
 
 # Create an initialize a new environment 
 env = environments.Environment(edge_size=30, N_total_food_units=16, patch_dim=1, max_step_size=3)

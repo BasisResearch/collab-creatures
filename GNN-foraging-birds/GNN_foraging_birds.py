@@ -1,17 +1,17 @@
 import numpy as np
-import numpy as np
 import torch
 from torch_geometric.data import Data
 from torch_geometric.loader import DataLoader
 from torch.nn import Sequential, Linear, ReLU, Module
-from torch_geometric.nn import GCNConv
+from torch_geometric.nn import GCNConv, ChebConv, global_add_pool, BatchNorm
 import torch.nn.functional as F
+from torch_geometric.utils import add_self_loops, degree
+
 
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from matplotlib import colors
 import csv
-from torch_geometric.nn import BatchNorm
 from sklearn.preprocessing import StandardScaler
 
 
@@ -116,19 +116,19 @@ def transform_position_velocity_for_gnn(position, velocity, grid_size=30):
     return tr_position, tr_velocity
 
 
-class GNN_foraging_simple(torch.nn.Module):
+class GNN_foraging_simplest(torch.nn.Module):
     def __init__(self, input_dim, hidden_dim, output_dim):
-        super(GNN_foraging_simple, self).__init__()
+        super(GNN_foraging_simplest, self).__init__()
         
         self.conv1 = GCNConv(input_dim, hidden_dim)
-        self.conv2 = GCNConv(hidden_dim, hidden_dim)
+        # self.conv2 = GCNConv(hidden_dim, hidden_dim)
         self.fc = Linear(hidden_dim, output_dim)
 
     def forward(self, x, edge_index):
         x = self.conv1(x, edge_index)
         x = ReLU()(x)
-        x = self.conv2(x, edge_index)
-        x = ReLU()(x)
+        # x = self.conv2(x, edge_index)
+        # x = ReLU()(x)
         x = self.fc(x)
         return x
 
@@ -171,11 +171,35 @@ class GNN_foraging_extended(Module):
         x = self.fc(x)
         return x
 
+class GNN_simpler(torch.nn.Module):
+    def __init__(self, input_dim, hidden_dim, output_dim):
+        super(GNN_simpler, self).__init__()
+
+        self.fc_in_hid = Linear(input_dim, hidden_dim)
+        self.fc_hid_out = Linear(hidden_dim, output_dim)
+        self.conv_hid_hid = GCNConv(hidden_dim, hidden_dim)
+        self.mpass = Linear(hidden_dim + input_dim, hidden_dim)
+
+    def forward(self, x, edge_index):
+        x1 = self.fc_in_hid(x)
+        x1 = ReLU()(x1)
+        x2 = self.mpass(torch.cat([x, x1], dim=1))
+        x2 = ReLU()(x2)
+        x3 = self.mpass(torch.cat([x, x2], dim=1))
+        x3 = ReLU()(x3)
+        x4 = self.conv_hid_hid(x3, edge_index)
+        x4 = ReLU()(x4)
+        x5 = self.fc_hid_out(x4)
+        x5 = ReLU()(x5)
+
+        return x5
+
+
 
 def train_GNN_model(dataset, hidden_dim=32, num_epochs=100, learning_rate=0.01, load_path=None, save_path=None):
     # inputs are positions and velocities, outputs are new velocities
     # Initialize the model and the optimizer
-    model = GNN_foraging_extended(input_dim=4, hidden_dim=hidden_dim, output_dim=2)  # 4 inputs (x, y, vx, vy), 2 outputs (vx, vy)
+    model = GNN_foraging_simplest(input_dim=4, hidden_dim=hidden_dim, output_dim=2)  # 4 inputs (x, y, vx, vy), 2 outputs (vx, vy)
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
     # If a path is provided, load model parameters

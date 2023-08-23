@@ -12,6 +12,9 @@ from matplotlib import colors
 import csv
 import os
 from datetime import datetime
+torch.device("mps")
+tensor = torch.rand(3,3)
+print(tensor.device)
 
 # make folder for gif outputs
 now = datetime.now()
@@ -22,15 +25,15 @@ os.makedirs(plots_dir, exist_ok=True)
 
 # Boids simulation parameters
 num_birds = 25
-num_steps_train = 150
+num_steps_train = 500
 num_sims_train = 150
-num_steps_test = 300
+num_steps_test = 500
 grid_size = 40
-neighbor_radius = 8
-close_radius = 5
+neighbor_radius = 5
+close_radius = 3
 alignment_weight = 0.1
 cohesion_weight = 0.05
-separation_weight = 0.1
+separation_weight = 0.05
 max_speed=.5
 
 # # Initial bird positions and velocities
@@ -53,12 +56,11 @@ def boid_model(positions, velocities):
 
 # Generate training dataset
 dataset = GNN_foraging_birds.generate_dataset_boid(num_birds, num_sims_train, num_steps_train, neighbor_radius, close_radius, alignment_weight, cohesion_weight, separation_weight, grid_size, max_speed)
-
 # Train GNN model
 for meta_epoch in range(20):
     print('Meta epoch: ', meta_epoch)
-    model = GNN_foraging_birds.train_GNN_model(dataset, hidden_dim=32, num_epochs=20, learning_rate=0.002, load_path='gnn_extended_params_boid.pth', save_path='gnn_extended_params_boid.pth')
-    torch.save(model.state_dict(), os.path.join(plots_dir, 'gnn_extended_params_boid_meta_epoch'+str(meta_epoch)+'.pth'))
+    model = GNN_foraging_birds.train_GNN_model(dataset, hidden_dim=32, num_epochs=20, learning_rate=0.002, load_path='gnn_params_boid.pth', save_path='gnn_params_boid.pth')
+    torch.save(model.state_dict(), os.path.join(plots_dir, 'gnn_params_boid_meta_epoch'+str(meta_epoch)+'.pth'))
 
     # Initial bird positions and velocities
     positions = np.random.rand(num_birds, 2) * grid_size

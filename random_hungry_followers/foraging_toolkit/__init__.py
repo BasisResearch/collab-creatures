@@ -29,3 +29,8 @@ from .derive import derive_predictors
 from .inference import summary, mcmc_training
 
 from .animate_birds import animate_birds, visualise_bird_predictors
+
+from .locust import (
+    load_and_clean_locust,
+    locust_object_from_data,
+)

@@ -4,7 +4,9 @@ from .utils import generate_grid
 from .trace import rewards_trace
 
 
-def generate_communicates(sim, info_time_decay=3, info_spatial_decay=0.15):
+def generate_communicates(
+    sim, info_time_decay=3, info_spatial_decay=0.15, finders_tolerance=2
+):
     communicates = []
 
     for b in range(1, sim.num_birds + 1):
@@ -14,16 +16,26 @@ def generate_communicates(sim, info_time_decay=3, info_spatial_decay=0.15):
 
         out_of_range_birds = []
         for t in range(1, len(sim.birds[0])):
-            myself_x = myself["x"][myself["time"] == t]
-            myself_y = myself["y"][myself["time"] == t]
+            x_series = myself["x"][myself["time"] == t]
+            y_series = myself["y"][myself["time"] == t]
+
+            if isinstance(x_series, pd.Series) and len(x_series) == 1:
+                myself_x = x_series.item()
+                myself_y = y_series.item()
+            else:
+                myself_x = x_series
+                myself_y = y_series
 
             others_now = other_birdsDF[other_birdsDF["time"] == t].copy()
 
             others_now["distance"] = np.sqrt(
-                (others_now["x"] - myself_x) ** 2 + (others_now["y"] - myself_y) ** 2
+                (others_now["x"] - myself_x) ** 2
+                + (others_now["y"] - myself_y) ** 2
             )
 
-            others_now["out_of_range"] = others_now["distance"] > sim.visibility_range
+            others_now["out_of_range"] = (
+                others_now["distance"] > sim.visibility_range
+            )
 
             others_now = others_now[others_now["out_of_range"]]
 
@@ -34,8 +46,20 @@ def generate_communicates(sim, info_time_decay=3, info_spatial_decay=0.15):
 
                 on_reward.append(
                     any(
-                        (others_x - sim.rewards[t - 1]["x"] == 0)
-                        & (others_y - sim.rewards[t - 1]["y"] == 0)
+                        # TODO most likely superceded, remove soon
+                        # (
+                        #     others_x - sim.rewards[t - 1]["x"]
+                        #     <= finders_tolerance
+                        # )
+                        # & (
+                        #     others_y - sim.rewards[t - 1]["y"]
+                        #     <= finders_tolerance
+                        # )
+                        np.sqrt(
+                            (others_x - sim.rewards[t - 1]["x"]) ** 2
+                            + (others_y - sim.rewards[t - 1]["y"]) ** 2
+                        )
+                        <= finders_tolerance
                     )
                 )
 

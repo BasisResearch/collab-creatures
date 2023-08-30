@@ -22,8 +22,12 @@ def add_how_far_squared_scaled(sim):
 
     for b in range(sim.num_birds):
         for t in range(sim.num_frames - 1):
-            x_new = int(birds[b]["x"][t + 1])
-            y_new = int(birds[b]["y"][t + 1])
+            try:
+                x_new = int(birds[b]["x"][t + 1])
+                y_new = int(birds[b]["y"][t + 1])
+            except (KeyError, AttributeError):
+                x_new = int(birds[b]["x"].iloc[t + 1])
+                y_new = int(birds[b]["y"].iloc[t + 1])
 
             # print(how_far[b][t].head(n=1))
             _hf = how_far[b][t]

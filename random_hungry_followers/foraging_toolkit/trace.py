@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+
 import foraging_toolkit as ft
 
 # from utils import generate_grid

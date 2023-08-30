@@ -5,7 +5,11 @@ from .trace import rewards_trace
 
 
 def generate_communicates(
-    sim, info_time_decay=3, info_spatial_decay=0.15, finders_tolerance=2
+    sim,
+    info_time_decay=3,
+    info_spatial_decay=0.15,
+    finders_tolerance=2,
+    time_shift=0,
 ):
     communicates = []
 
@@ -15,7 +19,8 @@ def generate_communicates(
         myself = sim.birdsDF[sim.birdsDF["bird"] == b]
 
         out_of_range_birds = []
-        for t in range(1, len(sim.birds[0])):
+        for t in range(time_shift + 1, (time_shift + len(sim.birds[0]))):
+            # for t in range(1, sim.num_frames + 1):
             x_series = myself["x"][myself["time"] == t]
             y_series = myself["y"][myself["time"] == t]
 
@@ -46,24 +51,18 @@ def generate_communicates(
 
                 on_reward.append(
                     any(
-                        # TODO most likely superceded, remove soon
-                        # (
-                        #     others_x - sim.rewards[t - 1]["x"]
-                        #     <= finders_tolerance
-                        # )
-                        # & (
-                        #     others_y - sim.rewards[t - 1]["y"]
-                        #     <= finders_tolerance
-                        # )
                         np.sqrt(
-                            (others_x - sim.rewards[t - 1]["x"]) ** 2
-                            + (others_y - sim.rewards[t - 1]["y"]) ** 2
+                            (others_x - sim.rewards[t - time_shift - 1]["x"])
+                            ** 2
+                            + (others_y - sim.rewards[t - time_shift - 1]["y"])
+                            ** 2
                         )
                         <= finders_tolerance
                     )
                 )
 
             others_now["on_reward"] = on_reward
+
             out_of_range_birds.append(others_now)
         out_of_range_birdsDF = pd.concat(out_of_range_birds)
         out_of_range_birdsDF = out_of_range_birdsDF[
@@ -81,8 +80,12 @@ def generate_communicates(
 
         grid = generate_grid(sim.grid_size)
         communicates_b = []
-        for t in range(1, sim.num_frames + 1):
+        # for t in range((time_shift + 1), (time_shift + len(sim.birds[0]))):
+        # for t in range(1, sim.num_frames + 1):
+
+        for t in range(time_shift + 1, (time_shift + len(sim.birds[0]))):
             slice = callingDF[callingDF["time"] == t]
+
             communicate = grid.copy()
             communicate["bird"] = b
             communicate["time"] = t
@@ -99,11 +102,12 @@ def generate_communicates(
                         info_spatial_decay,
                     )
 
-            communicate["communicate_standardized"] = (
-                communicate["communicate"] - communicate["communicate"].mean()
-            ) / communicate["communicate"].std()
+        # communicate["communicate_standardized"] = (
+        #     communicate["communicate"] - communicate["communicate"].mean()
+        # ) / communicate["communicate"].std()
 
-            communicates_b.append(communicate)
+        # communicate["time"] = communicate["time"] + time_shift
+        communicates_b.append(communicate)
 
         communicates_b_df = pd.concat(communicates_b)
         communicates.append(communicates_b_df)

@@ -12,7 +12,13 @@ def rewards_trace(distance, rewards_decay):
 
 
 def rewards_to_trace(
-    rewards, grid_size, num_frames, rewards_decay=0.5, start=None, end=None
+    rewards,
+    grid_size,
+    num_frames,
+    rewards_decay=0.5,
+    start=None,
+    end=None,
+    time_shift=0,
 ):
     if start is None:
         start = 0
@@ -43,6 +49,8 @@ def rewards_to_trace(
             trace["trace_standardized"] = (
                 trace["trace"] - trace["trace"].mean()
             ) / trace["trace"].std()
+
+            trace["time"] = trace["time"] + time_shift
 
         traces.append(trace)
 

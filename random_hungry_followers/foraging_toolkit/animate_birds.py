@@ -47,7 +47,8 @@ def animate_birds(
         df = pd.concat([df, prox])
 
     if plot_communicate > 0:
-        com = sim.communicatesDF.copy()
+        com = sim.derivedDF.copy()[sim.communicatesDF.columns]
+        print(com.head())
         com = com[com["bird"] == plot_communicate]
         com["who"] = com["bird"]
         com["bird"] = "communicate"

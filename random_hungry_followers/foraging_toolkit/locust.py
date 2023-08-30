@@ -55,7 +55,8 @@ def load_and_clean_locust(
     grid_size=45,
     rewards_x=[0.68074, -0.69292],
     rewards_y=[-0.03068, -0.03068],
-    initial_frames=150,
+    subset_starts=150,
+    subset_ends=200,
 ):
     # loading and column names
     locust = pd.read_csv(path)
@@ -112,21 +113,26 @@ def load_and_clean_locust(
     rewardsDF["x"] = rescale_to_grid(rewardsDF["x"], grid_size)
     rewardsDF["y"] = rescale_to_grid(rewardsDF["y"], grid_size)
 
-    locust_initial = locust[locust["time"] <= initial_frames]
-    rewards_initial = rewardsDF[rewardsDF["time"] <= initial_frames]
+    locust_subset = locust[
+        (locust["time"] >= subset_starts) & (locust["time"] <= subset_ends)
+    ]
+    rewards_subset = rewardsDF[
+        (rewardsDF["time"] >= subset_starts)
+        & (rewardsDF["time"] <= subset_ends)
+    ]
 
-    loc_initial = locust_object_from_data(
-        locust_initial,
-        rewards_initial,
+    loc_subset = locust_object_from_data(
+        locust_subset,
+        rewards_subset,
         grid_size=grid_size,
-        frames=initial_frames,
+        frames=subset_ends - subset_starts,
     )
 
     loc = locust_object_from_data(
         locust, rewardsDF, grid_size=grid_size, frames=desired_frames
     )
 
-    return {"initial_frames": loc_initial, "all_frames": loc}
+    return {"subset": loc_subset, "all_frames": loc}
 
 
 # most likely not needed after refactoring, remove soon:

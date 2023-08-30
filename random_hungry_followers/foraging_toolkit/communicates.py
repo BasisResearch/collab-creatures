@@ -102,12 +102,13 @@ def generate_communicates(
                         info_spatial_decay,
                     )
 
-        # communicate["communicate_standardized"] = (
-        #     communicate["communicate"] - communicate["communicate"].mean()
-        # ) / communicate["communicate"].std()
+            communicate["communicate_standardized"] = (
+                communicate["communicate"] - communicate["communicate"].mean()
+            ) / communicate["communicate"].std()
 
-        # communicate["time"] = communicate["time"] + time_shift
-        communicates_b.append(communicate)
+            communicate["time"] = communicate["time"]
+            print(communicate.head())
+            communicates_b.append(communicate)
 
         communicates_b_df = pd.concat(communicates_b)
         communicates.append(communicates_b_df)

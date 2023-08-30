@@ -97,12 +97,12 @@ def derive_predictors(
 
         sim.derivedDF["communicate"].fillna(0, inplace=True)
 
-        mean_communicate = sim.communicatesDF["communicate"].mean()
-        std_communicate = sim.communicatesDF["communicate"].std()
+        # mean_communicate = sim.communicatesDF["communicate"].mean()
+        # std_communicate = sim.communicatesDF["communicate"].std()
 
-        sim.derivedDF["communicate_standardized"] = (
-            sim.derivedDF["communicate"] - sim.derivedDF["communicate"].mean()
-        ) / sim.derivedDF["communicate"].std()
+        # sim.derivedDF["communicate_standardized"] = (
+        #     sim.derivedDF["communicate"] - sim.derivedDF["communicate"].mean()
+        # ) / sim.derivedDF["communicate"].std()
 
         derivation_logger.info("communicates done")
 

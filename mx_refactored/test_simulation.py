@@ -18,6 +18,7 @@ from scipy import stats
 # import figures 
 import utils as util
 from importlib import reload
+import foraging_toolkit as ft
 import time
 import imp 
 reload(util)
@@ -45,7 +46,9 @@ sim.run()
 print(sim.all_birdsDF)
 print(sim.all_rewardsDF) 
 
-
+communicators = ft.object_from_data(sim.all_birdsDF, sim.all_rewardsDF)
+ft.animate_birds(communicators, plot_rewards=True,
+                  width = 600, height = 600, point_size = 10)
 
 # c_food_self = 0.9
 # c_food_others = 0.1  # to what extent do the birds care about information from other birds?

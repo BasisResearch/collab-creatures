@@ -57,11 +57,10 @@ csv_file_path = os.path.join(current_dir, "15EQ20191202_tracked.csv")
 
 locust = ft.load_and_clean_locust(
     path=csv_file_path,
-    desired_frames=450,
+    desired_frames=1350,
     grid_size=45,
     rewards_x=[0.68074, -0.69292],
     rewards_y=[-0.03068, -0.03068],
-    initial_frames=50,
 )
 
 
@@ -70,15 +69,16 @@ loc = locust["all_frames"]
 start_time = time.time()
 loc = ft.derive_predictors(
     loc,
-    rewards_decay=0.1,
-    visibility_range=12,
+    rewards_decay=1,
+    visibility_range=8,
     getting_worse=0.3,
-    optimal=6,
+    optimal=4,
     proximity_decay=0.3,
     generate_communicates=True,
     info_time_decay=8,
-    info_spatial_decay=0.05,
+    info_spatial_decay=0.1,
     finders_tolerance=2,
+    time_shift=0,
 )
 end_time = time.time()
 elapsed_time = end_time - start_time

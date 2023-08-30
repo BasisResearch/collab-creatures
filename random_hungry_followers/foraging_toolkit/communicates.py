@@ -107,7 +107,7 @@ def generate_communicates(
             ) / communicate["communicate"].std()
 
             communicate["time"] = communicate["time"]
-            print(communicate.head())
+
             communicates_b.append(communicate)
 
         communicates_b_df = pd.concat(communicates_b)

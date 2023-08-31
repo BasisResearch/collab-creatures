@@ -116,8 +116,8 @@ class BirdAgent(object):
         self.exploration_bias = 0.005
         
         if agent_type == 'ignorer':
-            c_food_self = 0.9
-            c_food_others = 0.1  # to what extent do the birds care about information from other birds?
+            c_food_self = 1
+            c_food_others = 0  # to what extent do the birds care about information from other birds?
             c_otheragents = 0
             c_group = 0
         elif agent_type == 'communicator':

@@ -14,9 +14,9 @@ import pandas as pd
 reload(agents)
 reload(util)
 
-class Simulation(object):
+class SimulateCommunicators(object):
     
-    def __init__(self, env, N_agents=3, N_frames=50, doAnimation=False):
+    def __init__(self, env, N_frames, N_agents=3, c_trust=0.5, sight_radius=5, doAnimation=False):
         
         self.env = env 
         self.N_states = env.edge_size ** 2
@@ -49,7 +49,7 @@ class Simulation(object):
     
     def add_agents(self):
         for ai in range(self.N_agents):
-            new_agent = agents.BirdAgent(self.env, self.N_frames)
+            new_agent = agents.Communicators(c_trust, sight_radius=40)
             self.list_agents.append(new_agent)
 
             #assign the agent a random location 

@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import utils
 
-def compute_time_to_first_reward(singlebirdDF, rewardsDF):
+def compute_time_to_first_reward(singlebirdDF, rewardsDF, nframes):
     '''
     Compute the time it takes for a given agent to reach its first reward.
 
@@ -28,7 +28,7 @@ def compute_time_to_first_reward(singlebirdDF, rewardsDF):
 
     # for each time point in the bird's trajectory, check if the bird is at a reward location
     # # for t in range(nframes): 
-    for t in range(5): 
+    for t in range(nframes): 
         # extract the rows of the rewards table that correspond to time t 
         rewards_t = rewardsDF[rewardsDF['time'] == t]
         rewards_t_xlocs = rewards_t['x'].to_numpy()  # extract the x locations at each frame 

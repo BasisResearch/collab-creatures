@@ -87,7 +87,7 @@ class Simulation(object):
         time_to_first_food_all = np.zeros([self.N_agents, 1])
         
         for ti in range(self.N_frames - 1):
-            print(" time step " + str(ti))
+            # print(" time step " + str(ti))
             
             # ---- Update environment --------
             

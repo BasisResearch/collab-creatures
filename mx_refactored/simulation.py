@@ -13,16 +13,16 @@ from importlib import reload
 import pandas as pd
 reload(agents)
 reload(util)
+reload(environments)
 
 class SimulateCommunicators(object):
     
-    def __init__(self, env, N_frames, N_agents=3, c_trust=0.5, sight_radius=5, doAnimation=False):
+    def __init__(self, env, N_frames, N_agents=3, c_trust=0.5, sight_radius=5):
         
         self.env = env 
         self.N_states = env.edge_size ** 2
         self.N_agents = N_agents
         self.N_frames = N_frames
-        self.doAnimation = doAnimation
         
         # arrays for storing simulation data
         self.food_trajectory = np.zeros([self.N_states, N_frames])
@@ -42,14 +42,14 @@ class SimulateCommunicators(object):
         self.calories_total_mat = np.zeros([N_agents, N_frames])
         self.calories_cumulative_vec = np.zeros([N_agents, N_frames])
         
-        self.add_agents()
+        self.add_agents(c_trust, sight_radius)  ## TO DO: this can be made more general and robust 
         self.calories_acquired_per_unit_time = 5 # this is a property of the agent, putting it here for now
         
         return 
     
-    def add_agents(self):
+    def add_agents(self, c_trust, sight_radius):
         for ai in range(self.N_agents):
-            new_agent = agents.Communicators(c_trust, sight_radius=40)
+            new_agent = agents.Communicators(self.env, self.N_frames, c_trust, sight_radius)
             self.list_agents.append(new_agent)
 
             #assign the agent a random location 
@@ -87,7 +87,7 @@ class SimulateCommunicators(object):
         time_to_first_food_all = np.zeros([self.N_agents, 1])
         
         for ti in range(self.N_frames - 1):
-            print(" time step " + str(ti))
+            # print(" time step " + str(ti))
             
             # ---- Update environment --------
             
@@ -100,7 +100,7 @@ class SimulateCommunicators(object):
             phi_food = self.env.food_calories_by_loc > 0.01 # update indicator  vector for food locations
             
             # if phi_food is empty, generate new food 
-            if np.sum(phi_food) <= 1:
+            if np.sum(phi_food) <= 2:
                 self.env.add_food_patches()
             
             # if food_statistics_type == "regular_intervals":
@@ -151,37 +151,13 @@ class SimulateCommunicators(object):
                     self.loc_1D_allagents, self.env.edge_size
                 )
                 xloc_self, yloc_self = util.loc1Dto2D(prev_loc_1d, self.env.edge_size)
-                # only include locations of agents outside of current location
-                xloc_neighbors, yloc_neighbors = util.loc1Dto2D(
-                    self.loc_1D_allagents[self.loc_1D_allagents != prev_loc_1d], self.env.edge_size
-                )
-
-                # expected reward at each location based on proximity to other agents
-                w_otheragents_2d = agent.reward_function_otheragents(
-                    xloc_neighbors, yloc_neighbors, xloc_self, yloc_self, self.env.edge_size
-                )
-                w_otheragents_1d = np.reshape(w_otheragents_2d, (self.N_states, 1))
 
                 # EXPECTED REWARD RELATED TO CENTER OF MASS
                 xloc_otheragents = np.delete(
                     xloc_allagents, ai
                 )  # remove this agent's own location from the list
                 yloc_otheragents = np.delete(yloc_allagents, ai)  #
-                if self.N_agents > 1:
-                    xloc_centerofmass, yloc_centerofmass = util.center_of_mass(
-                        xloc_otheragents, yloc_otheragents
-                    )
-                else:
-                    xloc_centerofmass, yloc_centerofmass = xloc_self, yloc_self
 
-                # expected reward of each location based on this agent's distance from center of mass of the group
-                w_groupcenterofmass = np.zeros([self.env.edge_size, self.env.edge_size])
-                w_groupcenterofmass[
-                    int(yloc_centerofmass), int(xloc_centerofmass)
-                ] = 0.5
-                w_groupcenterofmass = np.reshape(
-                    w_groupcenterofmass, (self.N_states, 1)
-                )
                 
                 # VISIBILITY CONSTRAINTS
                 phi_visible_mat = agent.compute_visible_locations(
@@ -189,18 +165,18 @@ class SimulateCommunicators(object):
                 )
                 phi_visible = np.reshape(phi_visible_mat, (self.N_states, 1))
 
-                # EXPECTED REWARD RELATED TO FOOD
-                w_food = (
+                # EXPECTED FOOD REWARD AT EACH LOCATION 
+                # information from self
+                w_food_self = (
                     self.env.phi_food * phi_visible
-                )  # expected food reward at each location
+                )  
+                # information from other birds
                 w_food_others = (
                     self.env.phi_food * self.phi_agents
-                )  # making food info from other agents a separate feature with separate weights
-        
-
+                )   
                 
                 # VALUE
-                value = agent.value_update([w_food, w_food_others, w_otheragents_1d, w_groupcenterofmass])
+                value = agent.value_update(w_food_self, w_food_others)
     
                 # POLICY: select next action using the value and eligible states
                 next_loc_1d = agent.policy_update(prev_loc_1d, value)
@@ -272,7 +248,7 @@ class SimulateCommunicators(object):
                     "y": y_agents_all[ai, :],
                     "time": range(1, self.N_frames + 1),
                     "bird": ai + 1,
-                    "type": "random",
+                    "type": "communicators",
                 }
             )
     

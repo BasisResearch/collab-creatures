@@ -43,17 +43,10 @@ class Communicators(object):
         
         return phi_visible_mat
         
-    def value_update(self, reward_vec_list):
-        #weights_list is a list of scalar weights for each of the vectors in 
-        #reward_vec_list. 
-        #reward_vec_list is a list of N_states-length vectors predicting the 
-        # amount of a partiular source of reward at each state\
-        # weights_list must be the same length as reward_vec_list
-        sum_weighted_features = np.zeros([len(reward_vec_list[0]), 1])
-        
-        for i in range(len(self.weights_list)):
-            sum_weighted_features += self.weights_list[i] * reward_vec_list[i]
-            
+    def value_update(self, w_food_self, w_food_others):
+         # w_food_others -- information from other birds about locations of food rewards
+        # w_food_self -- my own information about locations of food rewards
+        sum_weighted_features = (1 - self.c_trust) * w_food_self + self.c_trust * w_food_others 
         value = self.SR @ sum_weighted_features  # (N_states, 1) vector
         
         return value

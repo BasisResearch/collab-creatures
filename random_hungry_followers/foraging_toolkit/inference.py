@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import pyro
 import pyro.distributions as dist
 from pyro.infer import MCMC, NUTS
@@ -55,6 +56,42 @@ def prep_data_for__communicators_inference(sim_derived):
     print(str(len(proximity)) + " data points prepared for inference.")
 
     return trace, proximity, visibility, communicate, how_far
+
+
+def prep_data_for_robust_inference(sim, gridsize=11):
+    def bin(vector, gridsize=11):
+        vector_max = max(vector)
+        vector_min = min(vector)
+        step_size = (vector_max - vector_min) / gridsize
+        vector_bin_edges = np.linspace(vector_min, vector_max, gridsize + 1)
+        # vector_bin_edges = pd.interval_range(start=vector_min, end=vector_max, freq=step_size)
+        vector_bin_labels = [f"{i}" for i in range(1, gridsize + 1)]
+        vector_binned = pd.cut(
+            vector,
+            bins=vector_bin_edges,
+            labels=vector_bin_labels,
+            include_lowest=True,
+        )
+
+        return vector_binned
+
+    sim.derivedDF["proximity_cat"] = bin(
+        sim.derivedDF["proximity_standardized"], gridsize=gridsize
+    )
+
+    sim.derivedDF["trace_cat"] = bin(
+        sim.derivedDF["trace_standardized"], gridsize=gridsize
+    )
+
+    sim.derivedDF["visibility_cat"] = bin(
+        sim.derivedDF["visibility"], gridsize=gridsize
+    )
+
+    sim.derivedDF["communicate_cat"] = bin(
+        sim.derivedDF["communicate_standardized"], gridsize=gridsize
+    )
+
+    return sim
 
 
 def model_sigmavar_com(

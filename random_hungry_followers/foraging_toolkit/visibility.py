@@ -30,7 +30,13 @@ def visibility_vs_distance(distance, visibility_range):
 
 
 def construct_visibility(
-    birds, grid_size, visibility_range, start=None, end=None, time_shift=0
+    birds,
+    grid_size,
+    visibility_range,
+    start=None,
+    end=None,
+    time_shift=0,
+    grid=None,
 ):
     num_birds = len(birds)
     if start is None:
@@ -42,10 +48,14 @@ def construct_visibility(
     visibility = []
 
     for bird in range(num_birds):
-        gridb = []
+        # gridb = [] #probably can be removed soon
         ranges = []
         for frame in range(start, end):
-            g = generate_grid(grid_size)
+            if grid is None:
+                g = generate_grid(grid_size)
+            else:
+                g = grid.copy()
+
             g["distance"] = (
                 (g["x"] - birds[bird]["x"].iloc[frame]) ** 2
                 + (g["y"] - birds[bird]["y"].iloc[frame]) ** 2

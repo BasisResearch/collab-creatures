@@ -19,6 +19,7 @@ def rewards_to_trace(
     start=None,
     end=None,
     time_shift=0,
+    grid=None,
 ):
     if start is None:
         start = 0
@@ -26,7 +27,9 @@ def rewards_to_trace(
     if end is None:
         end = num_frames
 
-    grid = ft.generate_grid(grid_size)
+    if grid is None:
+        grid = ft.generate_grid(grid_size)
+
     traces = []
 
     for t in range(start, end):

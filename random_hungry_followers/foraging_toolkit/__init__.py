@@ -26,7 +26,14 @@ from .how_far import add_how_far_squared_scaled
 
 from .derive import derive_predictors
 
-from .inference import summary, mcmc_training
+from .inference import (
+    prep_data_for__communicators_inference,
+    model_sigmavar_com,
+    svi_training,
+    svi_prediction,
+    summary,
+    mcmc_training,
+)
 
 from .animate_birds import animate_birds, visualise_bird_predictors
 

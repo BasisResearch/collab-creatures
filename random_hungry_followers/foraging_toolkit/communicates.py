@@ -10,6 +10,8 @@ def generate_communicates(
     info_spatial_decay=0.15,
     finders_tolerance=2,
     time_shift=0,
+    grid=None,
+    restrict_to_invisible=True,
 ):
     communicates = []
 
@@ -42,7 +44,8 @@ def generate_communicates(
                 others_now["distance"] > sim.visibility_range
             )
 
-            others_now = others_now[others_now["out_of_range"]]
+            if restrict_to_invisible:
+                others_now = others_now[others_now["out_of_range"]]
 
             on_reward = []
             for index, row in others_now.iterrows():
@@ -78,7 +81,9 @@ def generate_communicates(
 
         callingDF = pd.concat([out_of_range_birdsDF, expansion_df])
 
-        grid = generate_grid(sim.grid_size)
+        if grid is None:
+            grid = generate_grid(sim.grid_size)
+
         communicates_b = []
         # for t in range((time_shift + 1), (time_shift + len(sim.birds[0]))):
         # for t in range(1, sim.num_frames + 1):

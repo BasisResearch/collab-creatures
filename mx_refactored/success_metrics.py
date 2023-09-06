@@ -18,13 +18,9 @@ def compute_time_to_first_reward(singlebirdDF, rewardsDF, nframes):
     bird_xlocs = singlebirdDF['x'].to_numpy()  # extract the x locations at each frame 
     bird_ylocs = singlebirdDF['y'].to_numpy()
 
-    time_to_first_reward = -1
+    time_to_first_reward = nframes
 
-    # print(ylocs)
-
-    # birdlocs1D_alltimes_arr = utils.loc2Dto1D(xlocs, ylocs, edge_size)
-
-    # print(birdlocs1D_alltimes_arr)
+    found_food = False
 
     # for each time point in the bird's trajectory, check if the bird is at a reward location
     # # for t in range(nframes): 
@@ -40,11 +36,13 @@ def compute_time_to_first_reward(singlebirdDF, rewardsDF, nframes):
         # for each reward item at time t, check if the bird's location matches the location of that reward 
         for id in range(len(rewards_t)):
             # if birdlocs1D_alltimes_arr[t] == rewards_t_loc1D_arr[id]:
-            if bird_xlocs[t] == rewards_t_xlocs[id] and bird_ylocs[t] == rewards_t_ylocs[id]:
+            
+            if (not found_food) and bird_xlocs[t] == rewards_t_xlocs[id] and bird_ylocs[t] == rewards_t_ylocs[id]:
                 time_to_first_reward = t 
+                found_food = True
                 break
 
-        if time_to_first_reward > 0:
+        if found_food:
             break
 
     return time_to_first_reward

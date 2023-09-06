@@ -2,6 +2,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 def animate_birds(
@@ -181,19 +182,38 @@ def animate_birds(
     fig.show()
 
 
-def visualise_bird_predictors(tr, prox, hf, com=None):
+def visualise_bird_predictors(tr, prox, hf, com=None,
+                              vis_sampling_rate = 1):
+    
+    def sample_tensor(tensor, vis_sampling_rate):
+        sample_size = int(vis_sampling_rate * len(tensor))
+        return np.random.choice(tensor, size=sample_size, replace=False)
+
+    if vis_sampling_rate != 1:
+        tr_sub = sample_tensor(tr, vis_sampling_rate)
+        prox_sub = sample_tensor(prox, vis_sampling_rate)
+        hf_sub = sample_tensor(hf, vis_sampling_rate)
+        if com is not None:
+            com_sub = sample_tensor(com, vis_sampling_rate)
+    else:
+        tr_sub = tr.copy()
+        prox_sub = prox.copy()
+        hf_sub = hf.copy()
+        com_sub = com.copy() 
+
+
     if com is not None:
         df = pd.DataFrame(
             {
-                "trace": tr,
-                "proximity": prox,
-                "communicate": com,
-                "how_far_score": hf,
+                "trace": tr_sub,
+                "proximity": prox_sub,
+                "communicate": com_sub,
+                "how_far_score": hf_sub,
             }
         )
     else:
         df = pd.DataFrame(
-            {"trace": tr, "proximity": prox, "how_far_score": hf}
+            {"trace": tr_sub, "proximity": prox_sub, "how_far_score": hf_sub}
         )
 
     fig = px.scatter(

@@ -1,5 +1,10 @@
 import pandas as pd
 import numpy as np
+import numpyro
+import copy
+
+import plotly.express as px
+import plotly.graph_objects as go
 import pyro
 import pyro.distributions as dist
 from pyro.infer import MCMC, NUTS
@@ -18,6 +23,20 @@ from pyro.optim import Adam
 from pyro.infer import Predictive
 from pyro.infer import MCMC, NUTS
 import torch.nn.functional as F
+
+import jax.numpy as jnp
+from jax import random
+import numpyro
+import numpyro.distributions as dist
+import numpyro.optim as optim
+from numpyro.diagnostics import print_summary
+from numpyro.infer import Predictive, SVI, Trace_ELBO
+from numpyro.infer.autoguide import AutoLaplaceApproximation
+
+
+from sklearn.preprocessing import LabelEncoder
+from sklearn.linear_model import LinearRegression
+from sklearn.utils import resample
 
 
 import logging
@@ -58,11 +77,13 @@ def prep_data_for_communicators_inference(sim_derived):
     return trace, proximity, visibility, communicate, how_far
 
 
-def prep_data_for_robust_inference(sim, gridsize=11):
+def prep_data_for_robust_inference(sim_old, gridsize=11):
+    sim_new = copy.copy(sim_old)
+
     def bin(vector, gridsize=11):
         vector_max = max(vector)
         vector_min = min(vector)
-        step_size = (vector_max - vector_min) / gridsize
+        # step_size = (vector_max - vector_min) / gridsize
         vector_bin_edges = np.linspace(vector_min, vector_max, gridsize + 1)
         # vector_bin_edges = pd.interval_range(start=vector_min, end=vector_max, freq=step_size)
         vector_bin_labels = [f"{i}" for i in range(1, gridsize + 1)]
@@ -78,21 +99,21 @@ def prep_data_for_robust_inference(sim, gridsize=11):
     def normalize(column):
         return (column - column.min()) / (column.max() - column.min())
 
-    sim.derivedDF = sim.derivedDF.dropna(inplace=True)
-    sim.derivedDF["proximity_cat"] = bin(
-        sim.derivedDF["proximity_standardized"], gridsize=gridsize
+    sim_new.derivedDF.dropna(inplace=True)
+    sim_new.derivedDF["proximity_cat"] = bin(
+        sim_new.derivedDF["proximity_standardized"], gridsize=gridsize
     )
 
-    sim.derivedDF["trace_cat"] = bin(
-        sim.derivedDF["trace_standardized"], gridsize=gridsize
+    sim_new.derivedDF["trace_cat"] = bin(
+        sim_new.derivedDF["trace_standardized"], gridsize=gridsize
     )
 
-    sim.derivedDF["visibility_cat"] = bin(
-        sim.derivedDF["visibility"], gridsize=gridsize
+    sim_new.derivedDF["visibility_cat"] = bin(
+        sim_new.derivedDF["visibility"], gridsize=gridsize
     )
 
-    sim.derivedDF["communicate_cat"] = bin(
-        sim.derivedDF["communicate_standardized"], gridsize=gridsize
+    sim_new.derivedDF["communicate_cat"] = bin(
+        sim_new.derivedDF["communicate_standardized"], gridsize=gridsize
     )
 
     columns_to_normalize = [
@@ -104,9 +125,9 @@ def prep_data_for_robust_inference(sim, gridsize=11):
     ]
 
     for column in columns_to_normalize:
-        sim.derivedDF[column] = normalize(sim.derivedDF[column])
+        sim_new.derivedDF[column] = normalize(sim_new.derivedDF[column])
 
-    return sim
+    return sim_new
 
 
 def get_tensorized_data(sim_derived):
@@ -149,6 +170,89 @@ def get_tensorized_data(sim_derived):
     }
 
     return data
+
+
+def get_svi_results(df):
+    def discretized_p(proximity_id, how_far):
+        p = numpyro.sample("p", dist.Normal(0, 0.5).expand([len(set(proximity_id))]))
+        sigma = numpyro.sample("sigma", dist.Exponential(1))
+        mu = p[proximity_id]
+        numpyro.sample("how_far", dist.Normal(mu, sigma), obs=how_far)
+
+    def discretized_t(trace_id, how_far):
+        t = numpyro.sample("t", dist.Normal(0, 0.5).expand([len(set(trace_id))]))
+        sigma = numpyro.sample("sigma", dist.Exponential(1))
+        mu = t[trace_id]
+        numpyro.sample("how_far", dist.Normal(mu, sigma), obs=how_far)
+
+    def discretized_c(communicate_id, how_far):
+        c = numpyro.sample("c", dist.Normal(0, 0.5).expand([len(set(communicate_id))]))
+        sigma = numpyro.sample("sigma", dist.Exponential(1))
+        mu = c[communicate_id]
+        numpyro.sample("how_far", dist.Normal(mu, sigma), obs=how_far)
+
+    guide_p = AutoLaplaceApproximation(discretized_p)
+    guide_t = AutoLaplaceApproximation(discretized_t)
+    guide_c = AutoLaplaceApproximation(discretized_c)
+
+    svi_p = SVI(
+        discretized_p,
+        guide_p,
+        optim.Adam(1),
+        Trace_ELBO(),
+        proximity_id=df.proximity_id.values,
+        how_far=df.how_far.values,
+    )
+    svi_t = SVI(
+        discretized_t,
+        guide_t,
+        optim.Adam(1),
+        Trace_ELBO(),
+        trace_id=df.trace_id.values,
+        how_far=df.how_far.values,
+    )
+    svi_c = SVI(
+        discretized_c,
+        guide_c,
+        optim.Adam(1),
+        Trace_ELBO(),
+        communicate_id=df.communicate_id.values,
+        how_far=df.how_far.values,
+    )
+
+    svi_result_p = svi_p.run(random.PRNGKey(0), 2000)
+    svi_result_t = svi_t.run(random.PRNGKey(0), 2000)
+    svi_result_c = svi_c.run(random.PRNGKey(0), 2000)
+
+    return svi_result_p, svi_result_t, svi_result_c
+
+
+def sample_and_plot_coef(coef, input, model):
+    coef_samples = []
+    for _ in range(1000):
+        X_resampled, y_resampled = resample(
+            input, summary[f"params_{coef}"], random_state=np.random.randint(1000)
+        )
+
+        model.fit(X_resampled, y_resampled)
+        coef_samples.append(model.coef_[0])
+
+    histogram_trace = go.Histogram(
+        x=coef_samples,
+        marker=dict(color="blue"),
+    )
+
+    layout = go.Layout(
+        title=f"Histogram of coef_samples_{coef}",
+        xaxis=dict(title="Coefficient Value"),
+        yaxis=dict(title="Frequency"),
+        paper_bgcolor="black",
+        plot_bgcolor="black",
+        font=dict(color="white"),
+    )
+
+    fig = go.Figure(data=[histogram_trace], layout=layout)
+    fig.show()
 
 
 def model_sigmavar_com(proximity, trace, visibility, communicate, how_far_score):

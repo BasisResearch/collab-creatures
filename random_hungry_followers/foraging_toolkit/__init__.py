@@ -30,6 +30,8 @@ from .inference import (
     prep_data_for_communicators_inference,
     prep_data_for_robust_inference,
     get_tensorized_data,
+    get_svi_results,
+    sample_and_plot_coef,
     model_sigmavar_com,
     svi_training,
     svi_prediction,

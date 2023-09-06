@@ -128,6 +128,10 @@ dmypy.json
 # Pyre type checker
 .pyre/
 .vscode/settings.json
-loc_derived.pkl
+
+
+# Picked datasets
+
+
 random_hungry_followers/rhf_docs/locust_data/derived_all.pkl
-random_hungry_followers/rhf_docs/locust_data/derived_all.pkl
+random_hungry_followers/rhf_docs/locust_data/svi_results.pkl

@@ -128,3 +128,9 @@ dmypy.json
 # Pyre type checker
 .pyre/
 .vscode/settings.json
+
+# client secrets google api
+client_secrets.json
+
+# folder to temporarily store files
+tmp_files/

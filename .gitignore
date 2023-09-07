@@ -134,3 +134,6 @@ client_secrets.json
 
 # folder to temporarily store files
 tmp_files/
+
+# .DS_store
+.DS_Store

@@ -10,7 +10,7 @@ import utils as util
 
 #put this in a different file?
 class Communicators(object):
-    def __init__(self, env, N_timesteps, c_trust=0.5, sight_radius=40, discount_factor=0.8, energy_init=50):
+    def __init__(self, env, N_timesteps, c_trust=0.5, sight_radius=5, discount_factor=0.9, energy_init=50):
         self.env = env
         self.c_trust = c_trust # how much the agent trusts information about rewards from other agents 
         self.discount_factor = discount_factor # scalar between 0 and 1 
@@ -28,7 +28,7 @@ class Communicators(object):
         self.caloric_cost_per_unit_dist = 1
         self.doProbabilisticPolicy = True
         self.doSoftmaxPolicy = True
-        self.exploration_bias = 0.005
+        self.exploration_bias = 0.001
 
         self.weights_list = [c_trust]
 
@@ -89,7 +89,7 @@ class Communicators(object):
 
 
 class BirdAgent(object):
-    def __init__(self, env, N_timesteps, agent_type='ignorer', discount_factor=0.8, energy_init=50, sight_radius=40): 
+    def __init__(self, env, N_timesteps, agent_type='ignorer', discount_factor=0.9, energy_init=50, sight_radius=5): 
         self.env = env
         self.discount_factor = discount_factor # scalar between 0 and 1 
         self.SR = np.linalg.pinv(np.eye(env.N_states) - discount_factor * env.T_prob) # (N_states, N_states) matrix 
@@ -106,7 +106,7 @@ class BirdAgent(object):
         self.caloric_cost_per_unit_dist = 1
         self.doProbabilisticPolicy = True
         self.doSoftmaxPolicy = True
-        self.exploration_bias = 0.005
+        self.exploration_bias = 0.001
         
         if agent_type == 'ignorer':
             c_food_self = 1
@@ -118,11 +118,11 @@ class BirdAgent(object):
             c_food_others = 0.5  # to what extent do the birds care about information from other birds?
             c_otheragents = 0
             c_group = 0
-        elif agent_type == 'follower':
-            c_food_self = 0.1
-            c_food_others = 0.9  # to what extent do the birds care about information from other birds?
-            c_otheragents = 0
-            c_group = 0
+        # elif agent_type == 'follower':
+        #     c_food_self = 0.1
+        #     c_food_others = 0.9  # to what extent do the birds care about information from other birds?
+        #     c_otheragents = 0
+        #     c_group = 0
                 
         self.weights_list = [c_food_self, c_food_others]
         

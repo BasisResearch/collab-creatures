@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Jul 28 17:44:48 2023
-
-@author: admin
-"""
 import numpy as np
 import utils as util
 

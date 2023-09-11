@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Jul 28 11:03:32 2023
-
-@author: admin
-"""
-
 import numpy as np
 import environments
 import agents
@@ -29,7 +22,6 @@ class SimulateCommunicators(object):
         
         
         # agents
-        
         self.list_agents = []
         self.loc_1D_allagents = np.zeros(N_agents, dtype=int) # list of locations occupied by an agent
         self.phi_agents = np.zeros([self.N_states, 1]) # how many agents in each location?

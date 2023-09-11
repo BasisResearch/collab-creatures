@@ -71,8 +71,8 @@ class Environment(object):
             list_newfood_loc_1d = util.loc2Dto1D(x_locs.flatten(), y_locs.flatten(), self.edge_size)
             
             # update food tracking variables 
-            self.phi_food[list_newfood_loc_1d] = 1  # boolean
-            self.phi_food_init[list_newfood_loc_1d] = 1  # boolean
+            self.phi_food[list_newfood_loc_1d] = 1  
+            self.phi_food_init[list_newfood_loc_1d] = 1  
             self.food_calories_by_loc[list_newfood_loc_1d] = 20 # add a fixed number of calories to each new food location 
 
         return 

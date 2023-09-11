@@ -37,13 +37,15 @@ class SimulateCommunicators(object):
         self.all_birdsDF = pd.DataFrame()
         self.all_rewardsDF = pd.DataFrame()
         
+        # calorie counting, not actually used in current analyses. 
         self.calories_acquired_mat = np.zeros([N_agents, N_frames])
         self.calories_expended_mat = np.zeros([N_agents, N_frames])
         self.calories_total_mat = np.zeros([N_agents, N_frames])
         self.calories_cumulative_vec = np.zeros([N_agents, N_frames])
-        
+
+        self.calories_acquired_per_unit_time = 5 # TO DO: make this a property of the agent, putting it here for now
+
         self.add_agents(c_trust, sight_radius)  ## TO DO: this can be made more general and robust 
-        self.calories_acquired_per_unit_time = 5 # this is a property of the agent, putting it here for now
         
         return 
     
@@ -86,21 +88,24 @@ class SimulateCommunicators(object):
         calories_acquired_all = np.zeros([self.N_agents, self.N_frames])
         time_to_first_food_all = np.zeros([self.N_agents, 1])
         
-        for ti in range(self.N_frames - 1):
-            # print(" time step " + str(ti))
-            
+        for ti in range(self.N_frames - 1):            
             # ---- Update environment --------
-            
+            # vector of how much food agents can eat at each location
             delta_food_cal = self.calories_acquired_per_unit_time * self.phi_agents    
-            # rectify the calorie count for the food locations that will hit negative calories
-            is_overdepleted =  delta_food_cal > self.env.food_calories_by_loc
-            # find locations where the calorie count will hit negative values (we'll set the calorie count to 0)
-            delta_food_cal[is_overdepleted] = self.env.food_calories_by_loc[is_overdepleted]
+
+            # old version, bug, food never depletes fully
+            # # rectify the calorie count for the food locations that will hit negative calories
+            # is_overdepleted =  delta_food_cal > self.env.food_calories_by_loc
+            # # find locations where the calorie count will hit negative values (we'll set the calorie count to 0)
+            # delta_food_cal[is_overdepleted] = self.env.food_calories_by_loc[is_overdepleted]
+
+            # eat the food
             self.env.food_calories_by_loc -= delta_food_cal
-            phi_food = self.env.food_calories_by_loc > 0.01 # update indicator  vector for food locations
+            self.env.food_calories_by_loc[self.env.food_calories_by_loc < 0] = 0 # set negative values to 0
+            self.env.phi_food = self.env.food_calories_by_loc 
             
-            # if phi_food is empty, generate new food 
-            if np.sum(phi_food) <= 2:
+            # if phi_food is low, generate new food 
+            if np.sum(self.env.food_calories_by_loc) <= 2:
                 self.env.add_food_patches()
             
             # if food_statistics_type == "regular_intervals":
@@ -131,16 +136,13 @@ class SimulateCommunicators(object):
                 )[0]
                 # RU: added [0] to ensure its a scalar; otherwise deprecation warning
                 # RU: make sure that this is in line with your intentions
+                # ELM: not currently using agent calorie counts, consider removing these variables. Or, check that they are correct. 
                 
                 #   # if there were N agents at that location, it gets 1/N portion of the calories
                 agent.energy_total += self.calories_acquired_mat[ai, ti]
                 self.calories_cumulative_vec[ai, ti + 1] = (
                     self.calories_cumulative_vec[ai, ti] + self.calories_acquired_mat[ai, ti]
                 )  # only tracks calories acquired?
-
-                # # remove this agent from the list of surviving agents if it's energy reaches zero
-                # if agent.energy_total <= 0:
-                #     list_deceased_agents = list_surviving_agents.pop(ai)  # be careful b/c the rest of this for loop assumes all the agents are alive
 
                 # -------------- Compute expected rewards, values, and make a decision --------------------------------
 
@@ -168,11 +170,11 @@ class SimulateCommunicators(object):
                 # EXPECTED FOOD REWARD AT EACH LOCATION 
                 # information from self
                 w_food_self = (
-                    self.env.phi_food * phi_visible
+                    self.env.food_calories_by_loc * phi_visible
                 )  
                 # information from other birds
                 w_food_others = (
-                    self.env.phi_food * self.phi_agents
+                    self.env.food_calories_by_loc * self.phi_agents
                 )   
                 
                 # VALUE
@@ -213,10 +215,10 @@ class SimulateCommunicators(object):
                     ai, ti
                 ]
     
-                if self.env.phi_food[next_loc_1d][0]:
-                    agent.times_at_food.append(
-                        ti + 1
-                    )  # add this frame to the list of frames where agent is at a food location
+                # if self.env.food_calories_by_loc[next_loc_1d][0]:
+                #     agent.times_at_food.append(
+                #         ti + 1
+                #     )  # add this frame to the list of frames where agent is at a food location
     
                 # -------------------------------------------------------------------
     

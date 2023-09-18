@@ -137,3 +137,12 @@ random_hungry_followers/rhf_docs/communicators_data/*
 random_hungry_followers/rhf_docs/locust_data/derived_all.pkl
 random_hungry_followers/rhf_docs/locust_data/svi_results.pkl
 
+
+# client secrets google api
+client_secrets.json
+
+# folder to temporarily store files
+tmp_files/
+
+# .DS_store
+.DS_Store

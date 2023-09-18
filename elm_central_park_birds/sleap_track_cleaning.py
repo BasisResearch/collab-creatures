@@ -58,7 +58,7 @@ def remove_jumps(tracks, instance_scores, point_scores, track_names, track_occup
             new_tracking_scores.append(tracking_scores[track])
             new_occupancy.append((~np.isnan(new_track[:, 0, 0])).astype(int))
           
-    display('removing jumps resulted in ' + str(np.shape(Y)[3]) + ' tracks')
+    print('removing jumps resulted in ' + str(np.shape(Y)[3]) + ' tracks')
     if new_instance_scores: # if track_names is not empty
         # update other variables
         # Y = np.concatenate([Y, np.array(new_tracks).transpose(1,2,3,0)], axis=3)
@@ -137,7 +137,7 @@ def combine_next_adjacent_tracks(tracks, instance_scores, point_scores, track_na
     track_names = np.delete(np.array(track_names), tracks_to_remove).tolist()
     track_occupancy = np.delete(track_occupancy, tracks_to_remove, axis=1)
     tracking_scores = np.delete(tracking_scores, tracks_to_remove, axis=0)
-    display('merging in ' + str(len(tracks_to_remove)) + ' tracks')
+    print('merging in ' + str(len(tracks_to_remove)) + ' tracks')
 
     return tracks, instance_scores, point_scores, track_names, track_occupancy, tracking_scores
 
@@ -157,7 +157,7 @@ def remove_short_tracks(tracks, instance_scores, point_scores, track_names, trac
         # If the track is shorter than the threshold, mark it for deletion
         if len(track_indices) < min_length:
             retain_mask[track] = False
-    display('removing '+str(np.sum(~retain_mask))+ ' tracks, out of ' + str(num_tracks))
+    print('removing '+str(np.sum(~retain_mask))+ ' tracks, out of ' + str(num_tracks))
     # Use the retain_mask to filter out short tracks from all variables
     tracks = tracks[retain_mask]
     instance_scores = instance_scores[retain_mask]
@@ -203,7 +203,7 @@ def fill_missing(tracks, kind="linear"):
     Y = Y.reshape(initial_shape)
 
     tracks = Y.T
-    display('interpolated missing points')
+    print('interpolated missing points')
     return tracks
 
 # smooth tracks
@@ -211,7 +211,7 @@ def smooth_tracks(tracks, smooth_win=25, smooth_poly=3):
     """Smooths tracks using a Savitzky-Golay filter."""
     # Ensure the window size is odd
     if smooth_win % 2 == 0:
-        display('warning: window should be odd')
+        print('warning: window should be odd')
         smooth_win += 1
     
     Y = tracks.T
@@ -228,7 +228,7 @@ def smooth_tracks(tracks, smooth_win=25, smooth_poly=3):
                     smooth_poly_use = np.min([smooth_poly, smooth_win_use-1, len(valid_data)-1])
                     # Apply the filter
                     Y[valid_indices, part, dim, track] = savgol_filter(valid_data, smooth_win_use, smooth_poly_use)
-    display('smoothed tracks')
+    print('smoothed tracks')
     return Y.T
 
 
@@ -254,25 +254,25 @@ def generate_cleaned_analysis_file(filename, max_jump = 50, merge_max_distance =
         tracking_scores = f["tracking_scores"][:]
 
         # # Clean data....
-        display('Total of '+str(len(track_names))+ ' tracks')
+        print('Pre-cleaning, total of ' + str(len(track_names)) + ' tracks')
         # # remove big jumps
         tracks, instance_scores, point_scores, track_names, track_occupancy, tracking_scores = remove_jumps(tracks, instance_scores, point_scores, track_names, track_occupancy, tracking_scores, max_jump=max_jump)
-        display('Total of '+str(len(track_names))+ ' tracks')
+
         # interpolate missing values
         tracks = fill_missing(tracks)
-        display('Total of '+str(len(track_names))+ ' tracks')
+
         # merge tracks that are close together in time and space
         tracks, instance_scores, point_scores, track_names, track_occupancy, tracking_scores = combine_all_adjacent_tracks(tracks, instance_scores, point_scores, track_names, track_occupancy, tracking_scores, max_distance=merge_max_distance, max_time=merge_max_time)
-        display('Total of '+str(len(track_names))+ ' tracks')
+
         # interpolate missing values
         tracks = fill_missing(tracks)
-        display('Total of '+str(len(track_names))+ ' tracks')
+
         # remove tracks that are too short
         tracks, instance_scores, point_scores, track_names, track_occupancy, tracking_scores = remove_short_tracks(tracks, instance_scores, point_scores, track_names, track_occupancy, tracking_scores, min_length=min_length)
-        display('Total of '+str(len(track_names))+ ' tracks')
+
         # smooth tracks
         tracks = smooth_tracks(tracks, smooth_win=smooth_win, smooth_poly=smooth_poly)
-        display('Total of '+str(len(track_names))+ ' tracks')
+        print('Total of '+ str(len(track_names)) + ' tracks')
         # Delete old datasets in new file
         del g["tracks"]
         del g["instance_scores"]
@@ -288,6 +288,5 @@ def generate_cleaned_analysis_file(filename, max_jump = 50, merge_max_distance =
         g.create_dataset("track_names", data=track_names, dtype=h5py.string_dtype(encoding='utf-8'))
         g.create_dataset("track_occupancy", data=track_occupancy)
         g.create_dataset("tracking_scores", data=tracking_scores)
-        display('saved a total of '+str(len(track_names))+ ' tracks')
-        display('file saved as '+new_filename)
-        display(tracks.shape)
+        print('Saved a total of ' + str(len(track_names)) + ' tracks')
+        print('File saved as ' + new_filename)

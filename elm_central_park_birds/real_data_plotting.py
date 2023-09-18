@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
 def generate_bird_trajectories_video(data, output_path, fps=30, frames=None, max_history=100):
-    display('hello')
     # Sorting data
     sorted_data = data.sort_values(by="time")
     

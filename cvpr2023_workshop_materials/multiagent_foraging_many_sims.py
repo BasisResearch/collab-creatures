@@ -7,6 +7,8 @@ building off of multiagent_foraging_mvp.py
 @author: admin
 """
 
+# same as CVPR sims but some post-cvpr edits to communicator bird simulations
+
 import TreeWorld
 import seaborn as sns
 import numpy as np

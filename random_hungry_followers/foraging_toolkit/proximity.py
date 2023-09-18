@@ -11,10 +11,14 @@ import numpy as np
 
 def proximity_score(distance, getting_worse=1.5, optimal=4, proximity_decay=1):
     if distance <= getting_worse:
-        return math.sin(math.pi / (2 * getting_worse) * (distance + 3 * getting_worse))
+        return math.sin(
+            math.pi / (2 * getting_worse) * (distance + 3 * getting_worse)
+        )
     elif distance <= getting_worse + 1.5 * (optimal - getting_worse):
         return math.sin(
-            math.pi / (2 * (optimal - getting_worse)) * (distance - getting_worse)
+            math.pi
+            / (2 * (optimal - getting_worse))
+            * (distance - getting_worse)
         )
     else:
         return math.sin(
@@ -22,7 +26,8 @@ def proximity_score(distance, getting_worse=1.5, optimal=4, proximity_decay=1):
             / (2 * (optimal - getting_worse))
             * (1.5 * (optimal - getting_worse))
         ) * math.exp(1) ** (
-            -proximity_decay * (distance - optimal - 0.5 * (optimal - getting_worse))
+            -proximity_decay
+            * (distance - optimal - 0.5 * (optimal - getting_worse))
         )
 
 
@@ -55,6 +60,7 @@ def generate_proximity_score(
     proximity_decay=1,
     start=0,
     end=None,
+    time_shift=0,
 ):
     if end is None:
         end = len(birds[0])
@@ -76,7 +82,9 @@ def generate_proximity_score(
                     o_y = birds[visible_birds[vb] - 1]["y"].iloc[t]
 
                     proximity[b][t]["proximity"] += [
-                        proximity_score(s, getting_worse, optimal, proximity_decay)
+                        proximity_score(
+                            s, getting_worse, optimal, proximity_decay
+                        )
                         for s in np.sqrt(
                             (proximity[b][t]["x"] - o_x) ** 2
                             + (proximity[b][t]["y"] - o_y) ** 2
@@ -94,13 +102,14 @@ def generate_proximity_score(
                     # )
 
             proximity[b][t]["proximity_standardized"] = (
-                proximity[b][t]["proximity"] - proximity[b][t]["proximity"].mean()
+                proximity[b][t]["proximity"]
+                - proximity[b][t]["proximity"].mean()
             ) / proximity[b][t]["proximity"].std()
 
             proximity[b][t]["proximity_standardized"].fillna(0, inplace=True)
 
             proximity[b][t]["bird"] = b + 1
-            proximity[b][t]["time"] = t + 1
+            proximity[b][t]["time"] = t + 1 + time_shift
 
     proximityDF = pd.concat([pd.concat(p) for p in proximity])
 

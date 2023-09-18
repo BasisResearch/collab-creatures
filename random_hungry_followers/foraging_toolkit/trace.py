@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+
 import foraging_toolkit as ft
 
 # from utils import generate_grid
@@ -11,7 +12,14 @@ def rewards_trace(distance, rewards_decay):
 
 
 def rewards_to_trace(
-    rewards, grid_size, num_frames, rewards_decay=0.5, start=None, end=None
+    rewards,
+    grid_size,
+    num_frames,
+    rewards_decay=0.5,
+    start=None,
+    end=None,
+    time_shift=0,
+    grid=None,
 ):
     if start is None:
         start = 0
@@ -19,7 +27,9 @@ def rewards_to_trace(
     if end is None:
         end = num_frames
 
-    grid = ft.generate_grid(grid_size)
+    if grid is None:
+        grid = ft.generate_grid(grid_size)
+
     traces = []
 
     for t in range(start, end):
@@ -42,6 +52,8 @@ def rewards_to_trace(
             trace["trace_standardized"] = (
                 trace["trace"] - trace["trace"].mean()
             ) / trace["trace"].std()
+
+            trace["time"] = trace["time"] + time_shift
 
         traces.append(trace)
 

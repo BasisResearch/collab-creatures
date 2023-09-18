@@ -26,6 +26,22 @@ from .how_far import add_how_far_squared_scaled
 
 from .derive import derive_predictors
 
-from .inference import summary, mcmc_training
+from .inference import (
+    prep_data_for_communicators_inference,
+    prep_data_for_robust_inference,
+    get_tensorized_data,
+    get_svi_results,
+    sample_and_plot_coef,
+    model_sigmavar_com,
+    svi_training,
+    svi_prediction,
+    summary,
+    mcmc_training,
+)
 
 from .animate_birds import animate_birds, visualise_bird_predictors
+
+from .locust import (
+    load_and_clean_locust,
+    locust_object_from_data,
+)

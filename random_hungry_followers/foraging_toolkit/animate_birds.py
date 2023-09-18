@@ -2,6 +2,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
+import torch
 
 
 def animate_birds(
@@ -53,9 +55,7 @@ def animate_birds(
         com["bird"] = "communicate"
         com = com.reset_index(drop=True)
         df = df.reset_index(drop=True)
-        df = pd.concat(
-            [com, df], axis=0, ignore_index=True, verify_integrity=True
-        )
+        df = pd.concat([com, df], axis=0, ignore_index=True, verify_integrity=True)
 
     fig = px.scatter(df, x="x", y="y", animation_frame="time", color="bird")
 
@@ -133,9 +133,7 @@ def animate_birds(
                     trace.marker.symbol = "circle"
                     trace.marker.color = "orange"
                     trace.showlegend = False
-                    trace.marker.size = (
-                        selected_rows["trace"] * trace_multiplier
-                    )
+                    trace.marker.size = selected_rows["trace"] * trace_multiplier
                     trace.marker.opacity = 0.3
 
     if plot_visibility > 0:
@@ -181,19 +179,41 @@ def animate_birds(
     fig.show()
 
 
-def visualise_bird_predictors(tr, prox, hf, com=None):
+def visualise_bird_predictors(tr, prox, hf, com=None, vis_sampling_rate=1):
+    def sample_tensor(tensor, vis_sampling_rate):
+        sample_size = int(vis_sampling_rate * len(tensor))
+        return np.random.choice(tensor, size=sample_size, replace=False)
+
+    def custom_copy(tr):
+        if isinstance(tr, torch.Tensor):
+            return tr.clone()
+        else:
+            return tr.copy()
+
+    if vis_sampling_rate != 1:
+        tr_sub = sample_tensor(tr, vis_sampling_rate)
+        prox_sub = sample_tensor(prox, vis_sampling_rate)
+        hf_sub = sample_tensor(hf, vis_sampling_rate)
+        if com is not None:
+            com_sub = sample_tensor(com, vis_sampling_rate)
+    else:
+        tr_sub = custom_copy(tr)
+        prox_sub = custom_copy(prox)
+        hf_sub = custom_copy(hf)
+        com_sub = custom_copy(com)
+
     if com is not None:
         df = pd.DataFrame(
             {
-                "trace": tr,
-                "proximity": prox,
-                "communicate": com,
-                "how_far_score": hf,
+                "trace": tr_sub,
+                "proximity": prox_sub,
+                "communicate": com_sub,
+                "how_far_score": hf_sub,
             }
         )
     else:
         df = pd.DataFrame(
-            {"trace": tr, "proximity": prox, "how_far_score": hf}
+            {"trace": tr_sub, "proximity": prox_sub, "how_far_score": hf_sub}
         )
 
     fig = px.scatter(
@@ -204,7 +224,7 @@ def visualise_bird_predictors(tr, prox, hf, com=None):
         template="plotly_dark",
     )
     fig.update_layout(
-        title="Trace (standardized)",
+        title="Trace",
         xaxis_title="trace",
         yaxis_title="how far score",
     )
@@ -217,7 +237,7 @@ def visualise_bird_predictors(tr, prox, hf, com=None):
         template="plotly_dark",
     )
     fig2.update_layout(
-        title="Proximity (standardized)",
+        title="Proximity",
         xaxis_title="proximity",
         yaxis_title="how far score",
     )
@@ -236,6 +256,7 @@ def visualise_bird_predictors(tr, prox, hf, com=None):
     if com is not None:
         fig3 = px.scatter(
             df,
+            title="Communication",
             x="communicate",
             y="how_far_score",
             opacity=0.3,

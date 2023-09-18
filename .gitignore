@@ -146,3 +146,9 @@ tmp_files/
 
 # .DS_store
 .DS_Store
+
+# folder to temporarily store files
+data/user_data/*
+
+data/communicators_strong/*
+data/communicators_data/*

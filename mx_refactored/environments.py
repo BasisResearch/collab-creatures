@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Jul 28 17:44:48 2023
-
-@author: admin
-"""
 import numpy as np
 import utils as util
 
@@ -53,26 +47,26 @@ class Environment(object):
     #     self.T_eligible = T_eligible
     #     return
     
-    def add_food_patches(self, food_statistics_type="drop_food_once"):
+    def add_food_patches(self): #, food_statistics_type="drop_food_once"):
         # returns the x and y locations of the new food locations 
         N_units_per_patch = self.patch_dim ** 2
         N_patches = np.ceil(self.N_total_food_units / N_units_per_patch).astype(int)
 
-        if food_statistics_type == "drop_food_once":
+        #if food_statistics_type == "drop_food_once":
             
-            for pi in range(N_patches): 
+        for pi in range(N_patches): 
 
-                x_start = np.random.randint(0, self.edge_size - self.patch_dim)
-                y_start = np.random.randint(0, self.edge_size - self.patch_dim)
-                # generate (x,y) coordinates for each food unit in the patch 
-                x_range, y_range = np.arange(x_start, x_start + self.patch_dim), np.arange(y_start, y_start + self.patch_dim)
-                x_locs, y_locs = np.meshgrid(x_range, y_range, indexing='xy') 
-                # convert to 1D locations 
-                list_newfood_loc_1d = util.loc2Dto1D(x_locs.flatten(), y_locs.flatten(), self.edge_size)
-                
-                # update food tracking variables 
-                self.phi_food[list_newfood_loc_1d] = 1  # boolean
-                self.phi_food_init[list_newfood_loc_1d] = 1  # boolean
-                self.food_calories_by_loc[list_newfood_loc_1d] = 20 # add a fixed number of calories to each new food location 
+            x_start = np.random.randint(0, self.edge_size - self.patch_dim)
+            y_start = np.random.randint(0, self.edge_size - self.patch_dim)
+            # generate (x,y) coordinates for each food unit in the patch 
+            x_range, y_range = np.arange(x_start, x_start + self.patch_dim), np.arange(y_start, y_start + self.patch_dim)
+            x_locs, y_locs = np.meshgrid(x_range, y_range, indexing='xy') 
+            # convert to 1D locations 
+            list_newfood_loc_1d = util.loc2Dto1D(x_locs.flatten(), y_locs.flatten(), self.edge_size)
+            
+            # update food tracking variables 
+            self.phi_food[list_newfood_loc_1d] = 1  
+            self.phi_food_init[list_newfood_loc_1d] = 1  
+            self.food_calories_by_loc[list_newfood_loc_1d] = 20 # add a fixed number of calories to each new food location 
 
         return 

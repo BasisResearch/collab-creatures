@@ -49,7 +49,7 @@ plt.close('all')
 
 # ---------------------- Simulation parameters ------------------------------
 N_sims = 1
-N_timesteps = 2
+N_timesteps = 2 # ELM: I'm guessing 50 or 100 is what MX used -- obviously not 2, that must be from debugging. 
 N_agents = 9
 
 # Food and environment parameters 

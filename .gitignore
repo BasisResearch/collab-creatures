@@ -129,6 +129,15 @@ dmypy.json
 .pyre/
 .vscode/settings.json
 
+
+# Picked datasets
+
+random_hungry_followers/rhf_docs/communicators_strong/*
+random_hungry_followers/rhf_docs/communicators_data/*
+random_hungry_followers/rhf_docs/locust_data/derived_all.pkl
+random_hungry_followers/rhf_docs/locust_data/svi_results.pkl
+
+
 # client secrets google api
 client_secrets.json
 
@@ -137,7 +146,9 @@ tmp_files/
 
 # .DS_store
 .DS_Store
-random_hungry_followers/rhf_docs/communicators_data/*
-random_hungry_followers/rhf_docs/communicators_strong/*
-random_hungry_followers/rhf_docs/locust_data/derived_all.pkl
-random_hungry_followers/rhf_docs/locust_data/svi_results.pkl
+
+# folder to temporarily store files
+data/user_data/*
+
+data/communicators_strong/*
+data/communicators_data/*

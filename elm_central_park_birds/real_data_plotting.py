@@ -57,9 +57,9 @@ def generate_bird_trajectories_video(data, output_path, fps=30, frames=None, max
                 continue
 
             # Compute sizes based on how old the point is
-            sizes = np.linspace(1, 10, len(bird_data)) ** 2.5
+            sizes = np.linspace(1, 5, len(bird_data)) ** 2.5
             # Create new scatter for this bird
-            ax.scatter(bird_data['x'], bird_data['y'], color=colors[idx], s=sizes, alpha=0.25, edgecolor='none')
+            ax.scatter(bird_data['x'], bird_data['y'], color=colors[idx], s=sizes, alpha=0.1, edgecolor='none')
             # Plot lines
             ax.plot(bird_data['x'], bird_data['y'], color=colors[idx], alpha=0.25, linewidth=1)
 

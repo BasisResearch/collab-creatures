@@ -44,6 +44,10 @@ import logging
 logging.basicConfig(format="%(message)s", level=logging.INFO)
 
 
+def normalize(column):
+    return (column - column.min()) / (column.max() - column.min())
+
+
 def prep_data_for_communicators_inference(sim_derived):
     print("Initial dataset size:", sim_derived.derivedDF.shape[0])
     # df = sim_derived.derivedDF.copy().dropna()
@@ -96,25 +100,14 @@ def prep_data_for_robust_inference(sim_old, gridsize=11):
 
         return vector_binned
 
-    def normalize(column):
-        return (column - column.min()) / (column.max() - column.min())
-
     sim_new.derivedDF.dropna(inplace=True)
-    sim_new.derivedDF["proximity_cat"] = bin(
-        sim_new.derivedDF["proximity_standardized"], gridsize=gridsize
-    )
+    sim_new.derivedDF["proximity_cat"] = bin(sim_new.derivedDF["proximity_standardized"], gridsize=gridsize)
 
-    sim_new.derivedDF["trace_cat"] = bin(
-        sim_new.derivedDF["trace_standardized"], gridsize=gridsize
-    )
+    sim_new.derivedDF["trace_cat"] = bin(sim_new.derivedDF["trace_standardized"], gridsize=gridsize)
 
-    sim_new.derivedDF["visibility_cat"] = bin(
-        sim_new.derivedDF["visibility"], gridsize=gridsize
-    )
+    sim_new.derivedDF["visibility_cat"] = bin(sim_new.derivedDF["visibility"], gridsize=gridsize)
 
-    sim_new.derivedDF["communicate_cat"] = bin(
-        sim_new.derivedDF["communicate_standardized"], gridsize=gridsize
-    )
+    sim_new.derivedDF["communicate_cat"] = bin(sim_new.derivedDF["communicate_standardized"], gridsize=gridsize)
 
     columns_to_normalize = [
         "trace_standardized",
@@ -139,23 +132,15 @@ def get_tensorized_data(sim_derived):
         if column.dtype.name == "category":
             df[column_name] = column.cat.codes
 
-    trace_standardized = torch.tensor(
-        df["trace_standardized"].values, dtype=torch.float32
-    )
+    trace_standardized = torch.tensor(df["trace_standardized"].values, dtype=torch.float32)
     trace_cat = torch.tensor(df["trace_cat"].values, dtype=torch.int8)
-    proximity_standardized = torch.tensor(
-        df["proximity_standardized"].values, dtype=torch.float32
-    )
+    proximity_standardized = torch.tensor(df["proximity_standardized"].values, dtype=torch.float32)
     proximity_cat = torch.tensor(df["proximity_cat"].values, dtype=torch.int8)
     visibility = torch.tensor(df["visibility"].values, dtype=torch.float32)
     visibility_cat = torch.tensor(df["visibility_cat"].values, dtype=torch.int8)
-    communicate_standardized = torch.tensor(
-        df["communicate_standardized"].values, dtype=torch.float32
-    )
+    communicate_standardized = torch.tensor(df["communicate_standardized"].values, dtype=torch.float32)
     communicate_cat = torch.tensor(df["communicate_cat"].values, dtype=torch.int8)
-    how_far_squared_scaled = torch.tensor(
-        df["how_far_squared_scaled"].values, dtype=torch.float32
-    )
+    how_far_squared_scaled = torch.tensor(df["how_far_squared_scaled"].values, dtype=torch.float32)
 
     data = {
         "trace_standardized": trace_standardized,
@@ -230,9 +215,7 @@ def get_svi_results(df):
 def sample_and_plot_coef(coef, input, model):
     coef_samples = []
     for _ in range(1000):
-        X_resampled, y_resampled = resample(
-            input, summary[f"params_{coef}"], random_state=np.random.randint(1000)
-        )
+        X_resampled, y_resampled = resample(input, summary[f"params_{coef}"], random_state=np.random.randint(1000))
 
         model.fit(X_resampled, y_resampled)
         coef_samples.append(model.coef_[0])
@@ -303,12 +286,8 @@ def summary(samples, sites=None):
     for site_name, values in samples.items():
         if site_name in sites:
             marginal_site = pd.DataFrame(values)
-            describe = marginal_site.describe(
-                percentiles=[0.05, 0.25, 0.5, 0.75, 0.95]
-            ).transpose()
-            site_stats[site_name] = describe[
-                ["mean", "std", "5%", "25%", "50%", "75%", "95%"]
-            ]
+            describe = marginal_site.describe(percentiles=[0.05, 0.25, 0.5, 0.75, 0.95]).transpose()
+            site_stats[site_name] = describe[["mean", "std", "5%", "25%", "50%", "75%", "95%"]]
     return site_stats
 
 
@@ -331,9 +310,7 @@ def svi_prediction(
 
     communicate_sigmavar = {
         k: v.flatten().reshape(num_samples, -1).detach().cpu().numpy()
-        for k, v in predictive(
-            proximity, trace, visibility, communicate, how_far_score
-        ).items()
+        for k, v in predictive(proximity, trace, visibility, communicate, how_far_score).items()
         if k != "obs"
     }
 

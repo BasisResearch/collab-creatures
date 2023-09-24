@@ -37,6 +37,7 @@ from .inference import (
     svi_prediction,
     summary,
     mcmc_training,
+    normalize,
 )
 
 from .animate_birds import animate_birds, visualise_bird_predictors

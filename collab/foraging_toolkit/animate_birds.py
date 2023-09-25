@@ -118,9 +118,7 @@ def animate_birds(
                     trace.marker.symbol = "circle"
                     trace.marker.color = "red"
                     trace.showlegend = False
-                    trace.marker.size = (
-                        selected_rows["communicate"] * communicate_multiplier
-                    )
+                    trace.marker.size = selected_rows["communicate"] * communicate_multiplier
                     trace.marker.opacity = 0.3
 
     if plot_traces:
@@ -146,9 +144,7 @@ def animate_birds(
                     trace.marker.symbol = "circle"
                     trace.marker.color = "gray"
                     trace.showlegend = False
-                    trace.marker.size = (
-                        selected_rows["visibility"] * visibility_multiplier
-                    )
+                    trace.marker.size = selected_rows["visibility"] * visibility_multiplier
                     trace.marker.opacity = 0.3
 
     if plot_proximity > 0:
@@ -163,9 +159,7 @@ def animate_birds(
                     trace.marker.symbol = "circle"
                     # trace.marker.color = "red"
                     trace.showlegend = False
-                    trace.marker.color = (
-                        selected_rows["proximity"] * proximity_multiplier
-                    )
+                    trace.marker.color = selected_rows["proximity"] * proximity_multiplier
                     trace.marker.colorscale = color_scale
                     trace.marker.size = 5
                     trace.marker.opacity = 0.6
@@ -212,30 +206,16 @@ def visualise_bird_predictors(tr, prox, hf, com=None, vis_sampling_rate=1):
             }
         )
     else:
-        df = pd.DataFrame(
-            {"trace": tr_sub, "proximity": prox_sub, "how_far_score": hf_sub}
-        )
+        df = pd.DataFrame({"trace": tr_sub, "proximity": prox_sub, "how_far_score": hf_sub})
 
-    fig = px.scatter(
-        df,
-        x="trace",
-        y="how_far_score",
-        opacity=0.3,
-        template="plotly_dark",
-    )
+    fig = px.scatter(df, x="trace", y="how_far_score", opacity=0.3, template="presentation", width=700)
     fig.update_layout(
         title="Trace",
         xaxis_title="trace",
         yaxis_title="how far score",
     )
 
-    fig2 = px.scatter(
-        df,
-        x="proximity",
-        y="how_far_score",
-        opacity=0.3,
-        template="plotly_dark",
-    )
+    fig2 = px.scatter(df, x="proximity", y="how_far_score", opacity=0.3, template="presentation", width=700)
     fig2.update_layout(
         title="Proximity",
         xaxis_title="proximity",
@@ -260,7 +240,12 @@ def visualise_bird_predictors(tr, prox, hf, com=None, vis_sampling_rate=1):
             x="communicate",
             y="how_far_score",
             opacity=0.3,
-            template="plotly_dark",
+            template="presentation",
+            width=700,
+        )
+
+        fig3.update_layout(
+            yaxis_title="how far score",
         )
         fig3.update_traces(marker={"size": 4})
         fig3.update_xaxes(showgrid=False)

@@ -120,7 +120,15 @@ def prep_data_for_robust_inference(sim_old, gridsize=11):
     for column in columns_to_normalize:
         sim_new.derivedDF[column] = normalize(sim_new.derivedDF[column])
 
-    return sim_new
+    sim_new_DF = sim_new.derivedDF
+
+    # TODO work this in with debugging
+    # sim_new_DF["proximity_id"] = sim_new_DF.proximity_cat.astype("category").cat.codes
+    # sim_new_DF["trace_id"] = sim_new_DF.trace_cat.astype("category").cat.codes
+    # sim_new_DF["communicate_id"] = sim_new_DF.communicate_cat.astype("category").cat.codes
+    # sim_new_DF["how_far"] = sim_newDF.how_far_squared_scaled
+
+    return sim_new_DF
 
 
 def get_tensorized_data(sim_derived):

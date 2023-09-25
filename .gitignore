@@ -150,5 +150,5 @@ tmp_files/
 # folder to temporarily store files
 data/user_data/*
 
-data/communicators_strong/*
-data/communicators_data/*
+data/communicators/communicators_strong/*
+data/communicators/communicators_data/*

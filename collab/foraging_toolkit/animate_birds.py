@@ -20,6 +20,7 @@ def animate_birds(
     visibility_multiplier=10,
     proximity_multiplier=10,
     communicate_multiplier=10,
+    produce_object=False,
 ):
     if plot_rewards:
         rew = sim.rewardsDF.copy()
@@ -60,7 +61,7 @@ def animate_birds(
     fig = px.scatter(df, x="x", y="y", animation_frame="time", color="bird")
 
     fig.update_layout(
-        template="plotly_dark",
+        template="presentation",
         xaxis=dict(
             range=[-1, sim.grid_size + 1],
             showgrid=False,
@@ -148,7 +149,7 @@ def animate_birds(
                     trace.marker.opacity = 0.3
 
     if plot_proximity > 0:
-        color_scale = "Purples"
+        color_scale = "Greys"
 
         fig.update_traces(showlegend=False, selector=dict(name="proximity"))
 
@@ -170,7 +171,10 @@ def animate_birds(
         layout=fig.layout,
     )
 
-    fig.show()
+    if produce_object:
+        return fig
+    else:
+        fig.show()
 
 
 def visualise_bird_predictors(tr, prox, hf, com=None, vis_sampling_rate=1):
@@ -194,7 +198,8 @@ def visualise_bird_predictors(tr, prox, hf, com=None, vis_sampling_rate=1):
         tr_sub = custom_copy(tr)
         prox_sub = custom_copy(prox)
         hf_sub = custom_copy(hf)
-        com_sub = custom_copy(com)
+        if com is not None:
+            com_sub = custom_copy(com)
 
     if com is not None:
         df = pd.DataFrame(

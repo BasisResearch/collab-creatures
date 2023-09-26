@@ -77,6 +77,7 @@ def animate_birds(
             ticks="",
             showticklabels=False,
             title="",
+             scaleanchor="x",  # This makes the y-axis scale to match the x-axis
         ),
         autosize=False,
         width=width,

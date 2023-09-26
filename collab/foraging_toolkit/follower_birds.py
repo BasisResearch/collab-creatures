@@ -4,6 +4,10 @@ import logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s:  %(message)s")
 
 
+from .visibility import construct_visibility
+from .proximity import generate_proximity_score
+from .utils import update_rewards
+
 import pandas as pd
 import numpy as np
 import warnings
@@ -49,7 +53,7 @@ def add_follower_birds(
         if t > 0 and t % 10 == 0:
             logging.info(f"Generating frame {t}/{sim.num_frames} ")
         # change to num frames
-        _vis = ft.construct_visibility(
+        _vis = construct_visibility(
             new_birds,
             sim.grid_size,
             visibility_range=visibility_range,
@@ -57,7 +61,7 @@ def add_follower_birds(
             end=t + 1,
         )["visibility"]
 
-        _prox = ft.generate_proximity_score(
+        _prox = generate_proximity_score(
             new_birds,
             _vis,
             visibility_range=visibility_range,
@@ -67,17 +71,6 @@ def add_follower_birds(
             start=0,
             end=1,
         )["proximity"]
-
-        # sim.rewards = ft.update_rewards(
-        #     sim, sim.rewards, new_birds, start=t, end=t + 1
-        # )["rewards"]
-
-        # sim.traces = ft.rewards_to_trace(
-        #     sim.rewards,
-        #     sim.grid_size,
-        #     sim.num_frames,
-        #     rewards_decay,
-        # )["traces"]
 
         for b in range(num_follower_birds):
             options = _vis[b][0].copy()
@@ -104,16 +97,9 @@ def add_follower_birds(
     sim.birds.extend(new_birds)
     sim.birdsDF = pd.concat(sim.birds)
 
-    rew = ft.update_rewards(sim, sim.rewards, sim.birds, start=1)
+    rew = update_rewards(sim, sim.rewards, sim.birds, start=1)
 
     sim.rewards = rew["rewards"]
     sim.rewardsDF = rew["rewardsDF"]
-
-    # vis = ft.construct_visibility(
-    #     sim.birds, sim.grid_size, visibility_range=visibility_range
-    # )
-
-    # sim.visibility = vis["visibility"]
-    # sim.visibilityDF = vis["visibilityDF"]
 
     return sim

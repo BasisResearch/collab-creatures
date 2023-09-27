@@ -4,38 +4,83 @@ import pandas as pd
 import numpy as np
 
 
-def object_from_data(birdsDF, rewardsDF):
-    grid_max = max(max(birdsDF["x"]), max(birdsDF["y"]))
-    maxes = [max(birdsDF["time"]), max(rewardsDF["time"])]
-    limit = min(maxes)
-    birdsDF = birdsDF[birdsDF["time"] <= limit]
-    rewardsDF = rewardsDF[rewardsDF["time"] <= limit]
-
+def object_from_data(birdsDF, grid_size, frames, rewardsDF=None):
     class EmptyObject:
         pass
 
     sim = EmptyObject()
 
-    sim.grid_size = int(grid_max)
-    sim.num_frames = int(limit)
+    sim.grid_size = grid_size
+    sim.num_frames = frames
     sim.birdsDF = birdsDF
-    sim.rewardsDF = rewardsDF
     sim.birds = [group for _, group in birdsDF.groupby("bird")]
-    sim.rewards = [group for _, group in rewardsDF.groupby("time")]
+
+    if rewardsDF is not None:
+        sim.rewardsDF = rewardsDF
+        sim.rewards = [group for _, group in rewardsDF.groupby("time")]
+
+    if sim.birdsDF["bird"].min() == 0:
+        sim.birdsDF["bird"] = sim.birdsDF["bird"] + 1
+
     sim.num_birds = len(sim.birds)
 
-    step_maxes = []
-    for b in range(len(sim.birds)):
-        step_maxes.append(
-            max(
-                max([abs(sim.birds[b]["x"][t + 1] - sim.birds[b]["x"][t]) for t in range(sim.num_frames - 1)]),
-                max([abs(sim.birds[b]["y"][t + 1] - sim.birds[b]["y"][t]) for t in range(sim.num_frames - 1)]),
-            )
-        )
+    # TODO add step maxes, maybe
 
-    sim.step_size_max = max(step_maxes)
+    # step_maxes = []
+
+    # for b in range(len(sim.birds)):
+    #     step_maxes.append(
+    #         max(
+    #             max(
+    #                 [abs(sim.birds[b]["x"].iloc[t + 1] - sim.birds[b]["x"].iloc[t]) for t in range(sim.num_frames - 1)]
+    #             ),
+    #             max(
+    #                 [abs(sim.birds[b]["y"].iloc[t + 1] - sim.birds[b]["y"].iloc[t]) for t in range(sim.num_frames - 1)]
+    #             ),
+    #         )
+    #     )
+
+    # sim.step_size_max = max(step_maxes)
 
     return sim
+
+
+# this is possibly outdated
+# delete after testing the new version
+# on rhf birds
+
+# def object_from_data(birdsDF, rewardsDF):
+#     grid_max = max(max(birdsDF["x"]), max(birdsDF["y"]))
+#     maxes = [max(birdsDF["time"]), max(rewardsDF["time"])]
+#     limit = min(maxes)
+#     birdsDF = birdsDF[birdsDF["time"] <= limit]
+#     rewardsDF = rewardsDF[rewardsDF["time"] <= limit]
+
+#     class EmptyObject:
+#         pass
+
+#     sim = EmptyObject()
+
+#     sim.grid_size = int(grid_max)
+#     sim.num_frames = int(limit)
+#     sim.birdsDF = birdsDF
+#     sim.rewardsDF = rewardsDF
+#     sim.birds = [group for _, group in birdsDF.groupby("bird")]
+#     sim.rewards = [group for _, group in rewardsDF.groupby("time")]
+#     sim.num_birds = len(sim.birds)
+
+#     step_maxes = []
+#     for b in range(len(sim.birds)):
+#         step_maxes.append(
+#             max(
+#                 max([abs(sim.birds[b]["x"][t + 1] - sim.birds[b]["x"][t]) for t in range(sim.num_frames - 1)]),
+#                 max([abs(sim.birds[b]["y"][t + 1] - sim.birds[b]["y"][t]) for t in range(sim.num_frames - 1)]),
+#             )
+#         )
+
+#     sim.step_size_max = max(step_maxes)
+
+#     return sim
 
 
 # generating grid

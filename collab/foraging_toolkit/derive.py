@@ -28,6 +28,7 @@ def derive_predictors(
     optimal=4,
     proximity_decay=1,
     generate_communicates=True,
+    generate_trace=True,
     info_time_decay=3,
     info_spatial_decay=0.15,
     finders_tolerance=2,
@@ -45,18 +46,19 @@ def derive_predictors(
 
     sim.grid = grid
 
-    tr = ft.rewards_to_trace(
-        sim.rewards,
-        sim.grid_size,
-        sim.num_frames,
-        rewards_decay,
-        time_shift=time_shift,
-        grid=grid,
-    )
+    if generate_trace:
+        tr = ft.rewards_to_trace(
+            sim.rewards,
+            sim.grid_size,
+            sim.num_frames,
+            rewards_decay,
+            time_shift=time_shift,
+            grid=grid,
+        )
 
-    sim.traces = tr["traces"]
-    sim.tracesDF = tr["tracesDF"]
-    derivation_logger.info("traces done")
+        sim.traces = tr["traces"]
+        sim.tracesDF = tr["tracesDF"]
+        derivation_logger.info("traces done")
 
     vis = ft.construct_visibility(
         sim.birds,
@@ -90,12 +92,14 @@ def derive_predictors(
     ft.add_how_far_squared_scaled(sim)
     derivation_logger.info("how_far done")
 
-    sim.derivedDF = (
-        sim.tracesDF.merge(sim.visibilityDF, how="inner")
-        .merge(sim.proximityDF, how="inner")
-        .merge(sim.how_farDF, how="inner")
-    )
-    derivation_logger.info("derivedDF done")
+    if generate_trace:
+        sim.derivedDF = (
+            sim.tracesDF.merge(sim.visibilityDF, how="inner")
+            .merge(sim.proximityDF, how="inner")
+            .merge(sim.how_farDF, how="inner")
+        )
+    else:
+        sim.derivedDF = sim.visibilityDF.merge(sim.proximityDF, how="inner").merge(sim.how_farDF, how="inner")
 
     if generate_communicates:
         derivation_logger.info("starting to generate communicates")
@@ -115,16 +119,21 @@ def derive_predictors(
 
         sim.derivedDF["communicate"].fillna(0, inplace=True)
 
-        derivation_logger.info("communicates done")
+        derivation_logger.info("derivedDF done")
 
     pd.set_option("mode.chained_assignment", None)
-    sim.rewardsDF.loc[:, "time"] = sim.rewardsDF["time"] - time_shift
+
+    if generate_trace:
+        sim.rewardsDF.loc[:, "time"] = sim.rewardsDF["time"] - time_shift
+        sim.tracesDF.loc[:, "time"] = sim.tracesDF["time"] - time_shift
+
+    if generate_communicates:
+        sim.communicatesDF.loc[:, "time"] = sim.communicatesDF["time"] - time_shift
+
     sim.birdsDF.loc[:, "time"] = sim.birdsDF["time"] - time_shift
-    sim.tracesDF.loc[:, "time"] = sim.tracesDF["time"] - time_shift
     sim.visibilityDF.loc[:, "time"] = sim.visibilityDF["time"] - time_shift
     sim.proximityDF.loc[:, "time"] = sim.proximityDF["time"] - time_shift
     sim.how_farDF.loc[:, "time"] = sim.how_farDF["time"] - time_shift
-    sim.communicatesDF.loc[:, "time"] = sim.communicatesDF["time"] - time_shift
     sim.derivedDF.loc[:, "time"] = sim.derivedDF["time"] - time_shift
 
     if dropna:

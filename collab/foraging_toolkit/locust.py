@@ -10,7 +10,7 @@ def locust_object_from_data(locustDF, rewardsDF, grid_size, frames):
 
     sim = EmptyObject()
 
-    sim.grid_size = 45
+    sim.grid_size = grid_size
     sim.num_frames = frames
     sim.birdsDF = locustDF
     sim.rewardsDF = rewardsDF

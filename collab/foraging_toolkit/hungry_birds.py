@@ -4,6 +4,11 @@ import logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s:  %(message)s")
 
 
+from .visibility import construct_visibility
+from .utils import update_rewards
+from .trace import rewards_to_trace
+
+
 import pandas as pd
 import numpy as np
 import warnings
@@ -47,7 +52,7 @@ def add_hungry_birds(
         if t > 0 and t % 10 == 0:
             logging.info(f"Generating frame {t}/{sim.num_frames} ")
         # change to num frames
-        _vis = ft.construct_visibility(
+        _vis = construct_visibility(
             new_birds,
             sim.grid_size,
             visibility_range=visibility_range,
@@ -55,9 +60,9 @@ def add_hungry_birds(
             end=t + 1,
         )["visibility"]
 
-        sim.rewards = ft.update_rewards(sim, sim.rewards, new_birds, start=t, end=t + 1)["rewards"]
+        sim.rewards = update_rewards(sim, sim.rewards, new_birds, start=t, end=t + 1)["rewards"]
 
-        sim.traces = ft.rewards_to_trace(
+        sim.traces = rewards_to_trace(
             sim.rewards,
             sim.grid_size,
             sim.num_frames,
@@ -89,12 +94,12 @@ def add_hungry_birds(
     sim.birds.extend(new_birds)
     sim.birdsDF = pd.concat(sim.birds)
 
-    rew = ft.update_rewards(sim, sim.rewards, sim.birds, start=1)
+    rew = update_rewards(sim, sim.rewards, sim.birds, start=1)
 
     sim.rewards = rew["rewards"]
     sim.rewardsDF = rew["rewardsDF"]
 
-    tr = ft.rewards_to_trace(
+    tr = rewards_to_trace(
         sim.rewards,
         sim.grid_size,
         sim.num_frames,
@@ -104,7 +109,7 @@ def add_hungry_birds(
     sim.traces = tr["traces"]
     sim.tracesDF = pd.concat(sim.traces)
 
-    vis = ft.construct_visibility(sim.birds, sim.grid_size, visibility_range=visibility_range)
+    vis = construct_visibility(sim.birds, sim.grid_size, visibility_range=visibility_range)
 
     sim.visibility = vis["visibility"]
     sim.visibilityDF = vis["visibilityDF"]

@@ -35,6 +35,7 @@ def derive_predictors(
     sampling_rate=1,
     random_seed=42,
     restrict_to_invisible=True,
+    dropna=True,
 ):
     sim.restrict_to_invisible = restrict_to_invisible
 
@@ -126,7 +127,8 @@ def derive_predictors(
     sim.communicatesDF.loc[:, "time"] = sim.communicatesDF["time"] - time_shift
     sim.derivedDF.loc[:, "time"] = sim.derivedDF["time"] - time_shift
 
-    sim.derivedDF.dropna(inplace=True)
+    if dropna:
+        sim.derivedDF.dropna(inplace=True)
 
     return sim
 

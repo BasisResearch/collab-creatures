@@ -24,22 +24,10 @@ def locust_object_from_data(locustDF, rewardsDF, grid_size, frames):
         step_maxes.append(
             max(
                 max(
-                    [
-                        abs(
-                            sim.birds[b]["x"].iloc[t + 1]
-                            - sim.birds[b]["x"].iloc[t]
-                        )
-                        for t in range(sim.num_frames - 1)
-                    ]
+                    [abs(sim.birds[b]["x"].iloc[t + 1] - sim.birds[b]["x"].iloc[t]) for t in range(sim.num_frames - 1)]
                 ),
                 max(
-                    [
-                        abs(
-                            sim.birds[b]["y"].iloc[t + 1]
-                            - sim.birds[b]["y"].iloc[t]
-                        )
-                        for t in range(sim.num_frames - 1)
-                    ]
+                    [abs(sim.birds[b]["y"].iloc[t + 1] - sim.birds[b]["y"].iloc[t]) for t in range(sim.num_frames - 1)]
                 ),
             )
         )
@@ -47,6 +35,9 @@ def locust_object_from_data(locustDF, rewardsDF, grid_size, frames):
     sim.step_size_max = max(step_maxes)
 
     return sim
+
+
+# TODO factor out loading and thinning
 
 
 def load_and_clean_locust(
@@ -74,9 +65,7 @@ def load_and_clean_locust(
     print("original_frames:", locust["time"].max())
     print("original_shape:", locust.shape)
 
-    locust["time"] = (
-        np.round(locust["time"] / (45000 / desired_frames)).astype(int) + 1
-    )
+    locust["time"] = np.round(locust["time"] / (45000 / desired_frames)).astype(int) + 1
     locust = locust.drop_duplicates(subset=["time", "bird"], keep="first")
     locust = locust[locust["time"] <= desired_frames]
     print("resulting_frames:", locust["time"].max())
@@ -87,6 +76,8 @@ def load_and_clean_locust(
 
     # grid thinning half body size (4/2cm) = 2cm
     # the arena is 90cm diameter
+
+    # TODO make sure size and grid size are aligned
 
     def rescale_to_grid(column, size):
         mapped = (column + 1) / 2
@@ -113,13 +104,8 @@ def load_and_clean_locust(
     rewardsDF["x"] = rescale_to_grid(rewardsDF["x"], grid_size)
     rewardsDF["y"] = rescale_to_grid(rewardsDF["y"], grid_size)
 
-    locust_subset = locust[
-        (locust["time"] >= subset_starts) & (locust["time"] <= subset_ends)
-    ]
-    rewards_subset = rewardsDF[
-        (rewardsDF["time"] >= subset_starts)
-        & (rewardsDF["time"] <= subset_ends)
-    ]
+    locust_subset = locust[(locust["time"] >= subset_starts) & (locust["time"] <= subset_ends)]
+    rewards_subset = rewardsDF[(rewardsDF["time"] >= subset_starts) & (rewardsDF["time"] <= subset_ends)]
 
     loc_subset = locust_object_from_data(
         locust_subset,
@@ -128,8 +114,6 @@ def load_and_clean_locust(
         frames=subset_ends - subset_starts,
     )
 
-    loc = locust_object_from_data(
-        locust, rewardsDF, grid_size=grid_size, frames=desired_frames
-    )
+    loc = locust_object_from_data(locust, rewardsDF, grid_size=grid_size, frames=desired_frames)
 
     return {"subset": loc_subset, "all_frames": loc}

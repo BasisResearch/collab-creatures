@@ -13,11 +13,7 @@ from .follower_birds import add_follower_birds
 
 from .visibility import visibility_vs_distance, construct_visibility
 
-from .proximity import (
-    proximity_score,
-    birds_to_bird_distances,
-    generate_proximity_score,
-)
+from .proximity import proximity_score, birds_to_bird_distances, generate_proximity_score, distances_and_peaks
 
 from .communicates import generate_communicates
 
@@ -46,3 +42,5 @@ from .locust import (
     load_and_clean_locust,
     locust_object_from_data,
 )
+
+from .subsampling import subsample_frames_evenly_spaced, rescale_to_grid, sample_time_slices

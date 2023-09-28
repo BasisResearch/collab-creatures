@@ -50,6 +50,10 @@ from .subsampling import subsample_frames_evenly_spaced, rescale_to_grid, sample
 
 from .central_park import (
     cp_birds_to_bird_distances,
+    cp_birds_to_bird_distances_sps,
     cp_distances_and_peaks,
     cp_generate_visibility,
+    cp_add_how_far_squared_scaled,
+    cp_generate_proximity_score,
+    cp_generate_proximity_score_sps,
 )

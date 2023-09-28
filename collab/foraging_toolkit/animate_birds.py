@@ -178,7 +178,7 @@ def animate_birds(
         fig.show()
 
 
-def visualise_bird_predictors(tr, prox, hf, com=None, vis_sampling_rate=1, titles=None):
+def visualise_bird_predictors(tr, prox, hf, com=None, vis_sampling_rate=1, titles=None, x_axis_labels=None):
     def sample_tensor(tensor, vis_sampling_rate):
         sample_size = int(vis_sampling_rate * len(tensor))
         return np.random.choice(tensor, size=sample_size, replace=False)
@@ -225,7 +225,7 @@ def visualise_bird_predictors(tr, prox, hf, com=None, vis_sampling_rate=1, title
     else:
         fig.update_layout(
             title=titles[0],
-            xaxis_title=titles[0].lower(),
+            xaxis_title=x_axis_labels[0].lower(),
             yaxis_title="how far score",
         )
 
@@ -240,7 +240,7 @@ def visualise_bird_predictors(tr, prox, hf, com=None, vis_sampling_rate=1, title
     else:
         fig2.update_layout(
             title=titles[1],
-            xaxis_title=titles[1].lower(),
+            xaxis_title=x_axis_labels[1].lower(),
             yaxis_title="how far score",
         )
 

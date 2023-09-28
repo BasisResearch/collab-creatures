@@ -153,3 +153,4 @@ data/user_data/*
 data/communicators/communicators_strong/*
 data/communicators/communicators_data/*
 data/central_park_birds_2022/*
+data/central_park_birds_cleaned_2022/central_park_objects.pkl

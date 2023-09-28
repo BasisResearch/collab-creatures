@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 
 
-def object_from_data(birdsDF, grid_size, frames, rewardsDF=None):
+def object_from_data(birdsDF, grid_size, frames, rewardsDF=None, calculate_step_size_max=False):
     class EmptyObject:
         pass
 
@@ -24,23 +24,39 @@ def object_from_data(birdsDF, grid_size, frames, rewardsDF=None):
 
     sim.num_birds = len(sim.birds)
 
-    # TODO add step maxes, maybe
+    # TODO: this doesn't work for birds that run away
+    if calculate_step_size_max:
+        step_maxes = []
 
-    # step_maxes = []
+        for b in range(len(sim.birds)):
+            df = sim.birds[b]
+            step_maxes.append(
+                max(
+                    max([abs(df["x"].iloc[t + 1] - df["x"].iloc[t]) for t in range(len(df) - 1)]),
+                    max([abs(df["y"].iloc[t + 1] - df["y"].iloc[t]) for t in range(len(df) - 1)]),
+                )
+            )
 
-    # for b in range(len(sim.birds)):
-    #     step_maxes.append(
-    #         max(
-    #             max(
-    #                 [abs(sim.birds[b]["x"].iloc[t + 1] - sim.birds[b]["x"].iloc[t]) for t in range(sim.num_frames - 1)]
-    #             ),
-    #             max(
-    #                 [abs(sim.birds[b]["y"].iloc[t + 1] - sim.birds[b]["y"].iloc[t]) for t in range(sim.num_frames - 1)]
-    #             ),
-    #         )
-    #     )
+            # most likely outdated, remove soon
+            # after a few different tests
+            # step_maxes.append(
+            #     max(
+            #         max(
+            #             [
+            #                 abs(sim.birds[b]["x"].iloc[t + 1] - sim.birds[b]["x"].iloc[t])
+            #                 for t in range(sim.num_frames - 1)
+            #             ]
+            #         ),
+            #         max(
+            #             [
+            #                 abs(sim.birds[b]["y"].iloc[t + 1] - sim.birds[b]["y"].iloc[t])
+            #                 for t in range(sim.num_frames - 1)
+            #             ]
+            #         ),
+            #     )
+            # )
 
-    # sim.step_size_max = max(step_maxes)
+        sim.step_size_max = max(step_maxes)
 
     return sim
 

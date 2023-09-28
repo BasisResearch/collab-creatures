@@ -77,7 +77,7 @@ def animate_birds(
             ticks="",
             showticklabels=False,
             title="",
-             scaleanchor="x",  # This makes the y-axis scale to match the x-axis
+            scaleanchor="x",  # This makes the y-axis scale to match the x-axis
         ),
         autosize=False,
         width=width,
@@ -178,7 +178,7 @@ def animate_birds(
         fig.show()
 
 
-def visualise_bird_predictors(tr, prox, hf, com=None, vis_sampling_rate=1):
+def visualise_bird_predictors(tr, prox, hf, com=None, vis_sampling_rate=1, titles=None):
     def sample_tensor(tensor, vis_sampling_rate):
         sample_size = int(vis_sampling_rate * len(tensor))
         return np.random.choice(tensor, size=sample_size, replace=False)
@@ -215,18 +215,34 @@ def visualise_bird_predictors(tr, prox, hf, com=None, vis_sampling_rate=1):
         df = pd.DataFrame({"trace": tr_sub, "proximity": prox_sub, "how_far_score": hf_sub})
 
     fig = px.scatter(df, x="trace", y="how_far_score", opacity=0.3, template="presentation", width=700)
-    fig.update_layout(
-        title="Trace",
-        xaxis_title="trace",
-        yaxis_title="how far score",
-    )
+
+    if titles == None:
+        fig.update_layout(
+            title="Trace",
+            xaxis_title="trace",
+            yaxis_title="how far score",
+        )
+    else:
+        fig.update_layout(
+            title=titles[0],
+            xaxis_title=titles[0].lower(),
+            yaxis_title="how far score",
+        )
 
     fig2 = px.scatter(df, x="proximity", y="how_far_score", opacity=0.3, template="presentation", width=700)
-    fig2.update_layout(
-        title="Proximity",
-        xaxis_title="proximity",
-        yaxis_title="how far score",
-    )
+
+    if titles == None:
+        fig2.update_layout(
+            title="Proximity",
+            xaxis_title="proximity",
+            yaxis_title="how far score",
+        )
+    else:
+        fig2.update_layout(
+            title=titles[1],
+            xaxis_title=titles[1].lower(),
+            yaxis_title="how far score",
+        )
 
     fig.update_traces(marker={"size": 4})
     fig2.update_traces(marker={"size": 4})

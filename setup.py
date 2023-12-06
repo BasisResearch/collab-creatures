@@ -30,7 +30,6 @@ setup(
         "pyro-ppl>=1.8.5",
     ],
     extras_require={
-        "dynamical": DYNAMICAL_REQUIRE,
         "extras": EXTRAS_REQUIRE,
         "test": EXTRAS_REQUIRE
         + [

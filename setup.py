@@ -43,7 +43,7 @@ setup(
             "nbval",
         ],
     },
-    python_requires=">=3.8",
+    python_requires=">=3.10",
     keywords="animal behavior, bayesian modeling, probabilistic programming, dynamical systems",
     license="Apache 2.0",
 )

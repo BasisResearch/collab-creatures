@@ -1,1 +1,1 @@
-from .file_structure import find_repo_root # noqa: E402
+from .file_structure import find_repo_root  # noqa: F401

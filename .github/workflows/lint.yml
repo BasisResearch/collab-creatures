@@ -3,8 +3,12 @@ name: Lint
 on:
   push:
     branches: [ master, staging-* ]
+    paths:
+      - '**/*'
   pull_request:
     branches: [ master, staging-* ]
+    paths:
+      - '**/*'
   workflow_dispatch: 
 
 jobs:

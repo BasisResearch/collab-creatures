@@ -1,38 +1,14 @@
 import copy
-import logging
 
-import jax.numpy as jnp
 import numpy as np
 import numpyro
 import numpyro.distributions as dist
 import numpyro.optim as optim
 import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
-import pyro
-import pyro.distributions as dist
-import pyro.optim as optim
 import torch
-import torch.nn.functional as F
 from jax import random
-from numpyro.diagnostics import print_summary
-from numpyro.infer import SVI, Predictive, Trace_ELBO
+from numpyro.infer import SVI, Trace_ELBO
 from numpyro.infer.autoguide import AutoLaplaceApproximation
-from pyro.infer import MCMC, NUTS, SVI, Predictive, Trace_ELBO
-from pyro.infer.autoguide import (
-    AutoDiagonalNormal,
-    AutoMultivariateNormal,
-    AutoNormal,
-    init_to_mean,
-    init_to_value,
-)
-from pyro.nn import PyroModule
-from pyro.optim import Adam
-from sklearn.linear_model import LinearRegression
-from sklearn.preprocessing import LabelEncoder
-from sklearn.utils import resample
-
-logging.basicConfig(format="%(message)s", level=logging.INFO)
 
 
 def normalize(column):
@@ -42,7 +18,7 @@ def normalize(column):
 def prep_data_for_robust_inference(sim_old, gridsize=11):
     sim_new = copy.copy(sim_old)
 
-    def bin(vector, gridsize=11):
+    def bin_vector(vector, gridsize=11):
         vector_max = max(vector)
         vector_min = min(vector)
         # step_size = (vector_max - vector_min) / gridsize
@@ -59,19 +35,19 @@ def prep_data_for_robust_inference(sim_old, gridsize=11):
         return vector_binned
 
     sim_new.derivedDF.dropna(inplace=True)
-    sim_new.derivedDF["proximity_cat"] = bin(
+    sim_new.derivedDF["proximity_cat"] = bin_vector(
         sim_new.derivedDF["proximity_standardized"], gridsize=gridsize
     )
 
-    sim_new.derivedDF["trace_cat"] = bin(
+    sim_new.derivedDF["trace_cat"] = bin_vector(
         sim_new.derivedDF["trace_standardized"], gridsize=gridsize
     )
 
-    sim_new.derivedDF["visibility_cat"] = bin(
+    sim_new.derivedDF["visibility_cat"] = bin_vector(
         sim_new.derivedDF["visibility"], gridsize=gridsize
     )
 
-    sim_new.derivedDF["communicate_cat"] = bin(
+    sim_new.derivedDF["communicate_cat"] = bin_vector(
         sim_new.derivedDF["communicate_standardized"], gridsize=gridsize
     )
 
@@ -86,18 +62,17 @@ def prep_data_for_robust_inference(sim_old, gridsize=11):
     for column in columns_to_normalize:
         sim_new.derivedDF[column] = normalize(sim_new.derivedDF[column])
 
-    sim_new_DF = sim_new.derivedDF
+    sim_new_df = sim_new.derivedDF
 
-    # TODO work this in with debugging
-    sim_new_DF["proximity_id"] = sim_new_DF.proximity_cat.astype("category").cat.codes
-    sim_new_DF["trace_id"] = sim_new_DF.trace_cat.astype("category").cat.codes
-    sim_new_DF["communicate_id"] = sim_new_DF.communicate_cat.astype(
+    sim_new_df["proximity_id"] = sim_new_df.proximity_cat.astype("category").cat.codes
+    sim_new_df["trace_id"] = sim_new_df.trace_cat.astype("category").cat.codes
+    sim_new_df["communicate_id"] = sim_new_df.communicate_cat.astype(
         "category"
     ).cat.codes
-    sim_new_DF["how_far"] = sim_new_DF.how_far_squared_scaled
+    sim_new_df["how_far"] = sim_new_df.how_far_squared_scaled
 
-    sim_new.derivedDF = sim_new_DF
-    return sim_new_DF
+    sim_new.derivedDF = sim_new_df
+    return sim_new_df
 
 
 def get_tensorized_data(sim_derived):
@@ -142,7 +117,9 @@ def get_tensorized_data(sim_derived):
     return data
 
 
-def get_svi_results(df):
+def get_svi_results(df, num_iterations=2000):
+    numpyro.set_platform("cpu")
+
     def discretized_p(proximity_id, how_far):
         p = numpyro.sample("p", dist.Normal(0, 0.5).expand([len(set(proximity_id))]))
         sigma = numpyro.sample("sigma", dist.Exponential(1))
@@ -190,8 +167,8 @@ def get_svi_results(df):
         how_far=df.how_far.values,
     )
 
-    svi_result_p = svi_p.run(random.PRNGKey(0), 2000)
-    svi_result_t = svi_t.run(random.PRNGKey(0), 2000)
-    svi_result_c = svi_c.run(random.PRNGKey(0), 2000)
+    svi_result_p = svi_p.run(random.PRNGKey(0), num_iterations)
+    svi_result_t = svi_t.run(random.PRNGKey(0), num_iterations)
+    svi_result_c = svi_c.run(random.PRNGKey(0), num_iterations)
 
     return svi_result_p, svi_result_t, svi_result_c

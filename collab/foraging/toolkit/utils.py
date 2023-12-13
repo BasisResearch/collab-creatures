@@ -3,11 +3,11 @@ from itertools import product
 import pandas as pd
 
 
-def object_from_data(birdsDF, rewardsDF):
-    grid_max = max(max(birdsDF["x"]), max(birdsDF["y"]))  # TODO remove nested max
-    maxes = [max(birdsDF["time"]), max(rewardsDF["time"])]
+def object_from_data(foragersDF, rewardsDF):
+    grid_max = max(max(foragersDF["x"]), max(foragersDF["y"]))  # TODO remove nested max
+    maxes = [max(foragersDF["time"]), max(rewardsDF["time"])]
     limit = min(maxes)
-    birdsDF = birdsDF[birdsDF["time"] <= limit]
+    foragersDF = foragersDF[foragersDF["time"] <= limit]
     rewardsDF = rewardsDF[rewardsDF["time"] <= limit]
 
     class EmptyObject:
@@ -17,25 +17,25 @@ def object_from_data(birdsDF, rewardsDF):
 
     sim.grid_size = int(grid_max)
     sim.num_frames = int(limit)
-    sim.birdsDF = birdsDF
+    sim.foragersDF = foragersDF
     sim.rewardsDF = rewardsDF
-    sim.birds = [group for _, group in birdsDF.groupby("bird")]
+    sim.foragers = [group for _, group in foragersDF.groupby("forager")]
     sim.rewards = [group for _, group in rewardsDF.groupby("time")]
-    sim.num_birds = len(sim.birds)
+    sim.num_foragers = len(sim.foragers)
 
     step_maxes = []
-    for b in range(len(sim.birds)):
+    for b in range(len(sim.foragers)):
         step_maxes.append(
             max(
                 max(
                     [
-                        abs(sim.birds[b]["x"][t + 1] - sim.birds[b]["x"][t])
+                        abs(sim.foragers[b]["x"][t + 1] - sim.foragers[b]["x"][t])
                         for t in range(sim.num_frames - 1)
                     ]
                 ),
                 max(
                     [
-                        abs(sim.birds[b]["y"][t + 1] - sim.birds[b]["y"][t])
+                        abs(sim.foragers[b]["y"][t + 1] - sim.foragers[b]["y"][t])
                         for t in range(sim.num_frames - 1)
                     ]
                 ),

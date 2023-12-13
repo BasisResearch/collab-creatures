@@ -1,12 +1,9 @@
 import numpy as np
 import pandas as pd
 
-# from collab import foraging_toolkit as ft
-
-# from utils import generate_grid
+from collab.foraging.toolkit.utils import generate_grid
 
 
-# adding trace of rewards
 def rewards_trace(distance, rewards_decay):
     return np.exp(-rewards_decay * distance)
 
@@ -28,7 +25,7 @@ def rewards_to_trace(
         end = num_frames
 
     if grid is None:
-        grid = ft.generate_grid(grid_size)
+        grid = generate_grid(grid_size)
 
     traces = []
 

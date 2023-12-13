@@ -2,9 +2,12 @@ import logging
 
 import pandas as pd
 
-from collab.foraging.toolkit.trace import rewards_to_trace, rewards_trace
-from collab.foraging.toolkit.visibility import (visibility_vs_distance,construct_visibility)
+from collab.foraging.toolkit.communicates import generate_communicates
+from collab.foraging.toolkit.how_far import add_how_far_squared_scaled
+from collab.foraging.toolkit.proximity import generate_proximity_score
+from collab.foraging.toolkit.trace import rewards_to_trace
 from collab.foraging.toolkit.utils import generate_grid
+from collab.foraging.toolkit.visibility import construct_visibility
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
 derivation_logger = logging.getLogger(__name__)
@@ -20,7 +23,7 @@ def derive_predictors(
     getting_worse=1.5,
     optimal=4,
     proximity_decay=1,
-    generate_communicates=True,
+    generate_communicates_indicator=True,
     info_time_decay=3,
     info_spatial_decay=0.15,
     finders_tolerance=2,
@@ -52,7 +55,7 @@ def derive_predictors(
     derivation_logger.info("traces done")
 
     vis = construct_visibility(
-        sim.birds,
+        sim.foragers,
         sim.grid_size,
         visibility_range=visibility_range,
         time_shift=time_shift,
@@ -63,8 +66,8 @@ def derive_predictors(
     sim.visibilityDF = vis["visibilityDF"]
     derivation_logger.info("visibility done")
 
-    prox = ft.generate_proximity_score(
-        sim.birds,
+    prox = generate_proximity_score(
+        sim.foragers,
         sim.visibility,
         visibility_range=visibility_range,
         getting_worse=getting_worse,
@@ -80,7 +83,7 @@ def derive_predictors(
     sim.proximityDF = prox["proximityDF"]
     derivation_logger.info("proximity done")
 
-    ft.add_how_far_squared_scaled(sim)
+    add_how_far_squared_scaled(sim)
     derivation_logger.info("how_far done")
 
     sim.derivedDF = (
@@ -90,9 +93,9 @@ def derive_predictors(
     )
     derivation_logger.info("derivedDF done")
 
-    if generate_communicates:
+    if generate_communicates_indicator:
         derivation_logger.info("starting to generate communicates")
-        com = ft.generate_communicates(
+        com = generate_communicates(
             sim,
             info_time_decay,
             info_spatial_decay,
@@ -112,7 +115,7 @@ def derive_predictors(
 
     pd.set_option("mode.chained_assignment", None)
     sim.rewardsDF.loc[:, "time"] = sim.rewardsDF["time"] - time_shift
-    sim.birdsDF.loc[:, "time"] = sim.birdsDF["time"] - time_shift
+    sim.foragersDF.loc[:, "time"] = sim.foragersDF["time"] - time_shift
     sim.tracesDF.loc[:, "time"] = sim.tracesDF["time"] - time_shift
     sim.visibilityDF.loc[:, "time"] = sim.visibilityDF["time"] - time_shift
     sim.proximityDF.loc[:, "time"] = sim.proximityDF["time"] - time_shift

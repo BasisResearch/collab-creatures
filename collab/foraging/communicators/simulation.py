@@ -24,7 +24,7 @@ class SimulateCommunicators(object):
             [self.N_states, 1]
         )  # how many agents in each location?
 
-        self.all_birdsDF = pd.DataFrame()
+        self.all_foragersDF = pd.DataFrame()
         self.all_rewardsDF = pd.DataFrame()
 
         # calorie counting, not actually used in current analyses.
@@ -158,7 +158,7 @@ class SimulateCommunicators(object):
                 # EXPECTED FOOD REWARD AT EACH LOCATION
                 # information from self
                 w_food_self = self.env.food_calories_by_loc * phi_visible
-                # information from other birds
+                # information from other foragers
                 w_food_others = self.env.food_calories_by_loc * self.phi_agents
 
                 # VALUE
@@ -215,27 +215,27 @@ class SimulateCommunicators(object):
                 self.loc_1D_allagents[ai] = next_loc_1d
 
         # -------Save locations of each agent and reward in data frames-----------
-        # all_birdsDF:
+        # all_foragersDF:
         # all_rewardsDF:
 
-        # Bird locations
-        birds_all = []
+        # forager locations
+        foragers_all = []
         for ai in range(self.N_agents):
             single_agent = pd.DataFrame(
                 {
                     "x": x_agents_all[ai, :],
                     "y": y_agents_all[ai, :],
                     "time": range(1, self.N_frames + 1),
-                    "bird": ai + 1,
+                    "forager": ai + 1,
                     "type": "communicators",
                 }
             )
 
-            birds_all.append(single_agent)
+            foragers_all.append(single_agent)
 
-        self.all_birdsDF = pd.concat(birds_all)
+        self.all_foragersDF = pd.concat(foragers_all)
 
-        # all_birdsDF.head()
+        # all_foragersDF.head()
 
         # Reward locations
         rewards_all = []

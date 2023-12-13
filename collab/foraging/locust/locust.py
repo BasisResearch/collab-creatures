@@ -11,26 +11,32 @@ def locust_object_from_data(locustDF, rewardsDF, grid_size, frames):
 
     sim.grid_size = 45
     sim.num_frames = frames
-    sim.birdsDF = locustDF
+    sim.foragersDF = locustDF
     sim.rewardsDF = rewardsDF
-    sim.birds = [group for _, group in locustDF.groupby("bird")]
+    sim.foragers = [group for _, group in locustDF.groupby("forager")]
     sim.rewards = [group for _, group in rewardsDF.groupby("time")]
-    sim.num_birds = len(sim.birds)
+    sim.num_foragers = len(sim.foragers)
 
     step_maxes = []
 
-    for b in range(len(sim.birds)):
+    for b in range(len(sim.foragers)):
         step_maxes.append(
             max(
                 max(
                     [
-                        abs(sim.birds[b]["x"].iloc[t + 1] - sim.birds[b]["x"].iloc[t])
+                        abs(
+                            sim.foragers[b]["x"].iloc[t + 1]
+                            - sim.foragers[b]["x"].iloc[t]
+                        )
                         for t in range(sim.num_frames - 1)
                     ]
                 ),
                 max(
                     [
-                        abs(sim.birds[b]["y"].iloc[t + 1] - sim.birds[b]["y"].iloc[t])
+                        abs(
+                            sim.foragers[b]["y"].iloc[t + 1]
+                            - sim.foragers[b]["y"].iloc[t]
+                        )
                         for t in range(sim.num_frames - 1)
                     ]
                 ),
@@ -55,20 +61,20 @@ def load_and_clean_locust(
     locust = pd.read_csv(path)
     locust.drop("cnt", axis=1, inplace=True)
     locust.rename(
-        columns={"pos_x": "x", "pos_y": "y", "id": "bird", "frame": "time"},
+        columns={"pos_x": "x", "pos_y": "y", "id": "forager", "frame": "time"},
         inplace=True,
     )
-    locust = locust[["x", "y", "time", "bird"]]
+    locust = locust[["x", "y", "time", "forager"]]
     encoder = LabelEncoder()
-    locust["bird"] = encoder.fit_transform(locust["bird"])
-    locust["bird"] = locust["bird"] + 1
+    locust["forager"] = encoder.fit_transform(locust["forager"])
+    locust["forager"] = locust["forager"] + 1
 
     # frame thinning
     print("original_frames:", locust["time"].max())
     print("original_shape:", locust.shape)
 
     locust["time"] = np.round(locust["time"] / (45000 / desired_frames)).astype(int) + 1
-    locust = locust.drop_duplicates(subset=["time", "bird"], keep="first")
+    locust = locust.drop_duplicates(subset=["time", "forager"], keep="first")
     locust = locust[locust["time"] <= desired_frames]
     print("resulting_frames:", locust["time"].max())
     print("resulting_shape:", locust.shape)

@@ -24,7 +24,7 @@ def prep_data_for__communicators_inference(sim_derived):
     print("Initial dataset size:", sim_derived.derivedDF.shape[0])
     df = sim_derived.derivedDF.copy().dropna()
     print("Complete cases:", df.shape[0])
-    # large drop expected as we only care about points within birds' visibility range
+    # large drop expected as we only care about points within foragers' visibility range
     # and many communicates are outside of it
 
     data = torch.tensor(

@@ -16,5 +16,5 @@ from .proximity import (  # noqa: F401
     proximity_score,
 )
 from .trace import rewards_to_trace, rewards_trace  # noqa: F401
-from .utils import generate_grid, object_from_data  # noqa: F401
+from .utils import generate_grid, object_from_data, update_rewards  # noqa: F401
 from .visibility import construct_visibility, visibility_vs_distance  # noqa: F401

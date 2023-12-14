@@ -35,8 +35,8 @@ Before submitting a pull request, please autoformat code and ensure that unit te
 
 ```sh
 make lint              # linting
-make format            # runs black and isort
-make tests             # linting and unit tests
+make format            # runs black and isort, including on notebooks in the docs/ folder
+make tests             # linting, unit and notebook tests
 ```
 
 ## Getting started

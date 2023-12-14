@@ -30,7 +30,7 @@ setup(
     install_requires=[
         "pyro-ppl>=1.8.5", "pandas", "plotly", "plotly.express", 
         "torch", "scipy", "scikit-learn",
-        "matplotlib>=3.8.2"
+        "matplotlib>=3.8.2", "numpyro"
     ],
     extras_require={
         "extras": EXTRAS_REQUIRE,
@@ -44,6 +44,8 @@ setup(
             "flake8",
             "isort",
             "nbval",
+            "nbqa",
+            "autoflake",
         ],
     },
     python_requires=">=3.10",

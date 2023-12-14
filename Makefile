@@ -6,5 +6,6 @@ format:
 
 tests: lint FORCE
 	pytest -v tests
+	./scripts/test_notebooks.sh
 
 FORCE:

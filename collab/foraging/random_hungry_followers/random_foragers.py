@@ -6,19 +6,19 @@ import pandas as pd
 from collab.foraging.toolkit import generate_grid, update_rewards
 
 
-class fForagers:
+class Foragers:
     def __init__(
         self,
         grid_size=30,
         probabilities=[1, 2, 3, 2, 1, 2, 3, 2, 1],
-        num_birds=3,
+        num_foragers=3,
         num_frames=10,
         num_rewards=8,
         grab_range=2,
-        include_random_birds=False,
+        include_random_foragers=False,
     ):
         """
-            A class representing a simulation of random bird movements (as placeholders)
+            A class representing a simulation of random forager movements (as placeholders)
             and rewards in a grid-based environment.
 
         Args (included among the attributes):
@@ -33,34 +33,34 @@ class fForagers:
                 `[- step_size_max, + step_size_max]`.
                 Will be normalized in the computation.
 
-            num_birds (int): The number of (randomly moving) birds.
+            num_foragers (int): The number of (randomly moving) foragers.
 
             num_frames (int): The number of frames in the simulation.
 
             num_rewards (int): The number of rewards initially
-                            in the environment. Will disappear as birds
+                            in the environment. Will disappear as foragers
                             grab them by being within the `grab_range`.
 
             grab_range (int): The range within which rewards can be grabbed.
 
-            include_random_birds (bool): Whether to include random birds in
+            include_random_foragers (bool): Whether to include random foragers in
                             the final output (if you only use the sim as
                             a starting point for another foragint strategy,
                             you might want to set this to False).
 
         Other attributes:
-            step_size_max (int): The maximum step size for bird movements
+            step_size_max (int): The maximum step size for forager movements
                 (determined by the length of `probabilities`)
             steps (ndarray): An array of integers representing the possible
-                step sizes for bird movements.
+                step sizes for forager movements.
             grid (ndarray): A 2D array representing the grid-based environment.
 
-            birds (ndarray): An array of DataFrames representing the birds'
-                positions. Each DataFramecorresponds to a bird, each row to a
-                time frame, (x, y) are the cooridnates of a given bird
+            foragers (ndarray): An array of DataFrames representing the foragers'
+                positions. Each DataFramecorresponds to a forager, each row to a
+                time frame, (x, y) are the cooridnates of a given forager
                 at that time.
 
-            birdsDF (ndarray): A DataFrame representing the same information
+            foragersDF (ndarray): A DataFrame representing the same information
                 in a single DataFrame.
 
             rewards (ndarray): An a list of DataFrames representing
@@ -72,20 +72,20 @@ class fForagers:
 
 
         Methods:
-            __call__(): Executes the random bird movement and rewards generation.
-            generate_random_birds(): Generates random bird movements for the simulation.
+            __call__(): Executes the random forager movement and rewards generation.
+            generate_random_foragers(): Generates random forager movements for the simulation.
             generate_random_rewards(): Generates random rewards in the environment.
 
         Remarks:
-            - The generated bird movements and rewards are stored in the class
-              attributes `birdsDF` and `rewardsDF` respectively.
-            - The simulation assumes a grid-based environment with birds and rewards
+            - The generated forager movements and rewards are stored in the class
+              attributes `foragersDF` and `rewardsDF` respectively.
+            - The simulation assumes a grid-based environment with foragers and rewards
               represented as coordinates (x, y) within the grid.
-            - The bird movements are generated using the given probabilities for
+            - The forager movements are generated using the given probabilities for
               each step size, and their coordinates are bounded within the grid.
             - The rewards are randomly distributed within the grid and have a time
               value of 1 (indicating they are available from the beginning).
-            - The class allows for easy simulation and analysis of bird behaviors
+            - The class allows for easy simulation and analysis of forager behaviors
               and reward distributions in the specified environment.
         """
 
@@ -94,43 +94,43 @@ class fForagers:
         if len(probabilities) % 2 == 0:
             raise ValueError("The length of 'probabilities' must be odd.")
         self.probabilities = np.array(probabilities) / sum(probabilities)
-        self.num_birds = num_birds
+        self.num_foragers = num_foragers
         self.num_frames = num_frames
         self.num_rewards = num_rewards
         self.grab_range = grab_range
         self.steps = np.arange(-self.step_size_max, self.step_size_max + 1)
-        self.include_random_birds = include_random_birds
+        self.include_random_foragers = include_random_foragers
 
         self.grid = generate_grid(self.grid_size)
 
     def __call__(self):
-        rb = self.generate_random_birds(self.num_birds)
-        self.random_birds = rb["random_birds"]
-        self.random_birdsDF = rb["random_birdsDF"]
+        rb = self.generate_random_foragers(self.num_foragers)
+        self.random_foragers = rb["random_foragers"]
+        self.random_foragersDF = rb["random_foragersDF"]
         rr = self.generate_random_rewards()
         self.rewards = rr["rewards"]
         self.rewardsDF = rr["rewardsDF"]
 
-        self.birds = []
+        self.foragers = []
 
-        if self.include_random_birds:
-            self.birds.extend(self.random_birds)
-            self.birdsDF = pd.concat(self.birds)
+        if self.include_random_foragers:
+            self.foragers.extend(self.random_foragers)
+            self.foragersDF = pd.concat(self.foragers)
 
-        if self.birds:
-            rew = update_rewards(self, self.rewards, self.birds, start=1)
+        if self.foragers:
+            rew = update_rewards(self, self.rewards, self.foragers, start=1)
             self.rewards = rew["rewards"]
             self.rewardsDF = rew["rewardsDF"]
 
-    def generate_random_birds(self, num_birds, size=None):
+    def generate_random_foragers(self, num_foragers, size=None):
         if size is None:
             size = self.num_frames
-        random_birds = []
+        random_foragers = []
 
         size_warning_flag = False
 
-        for bird in range(num_birds):
-            bird_x = np.cumsum(
+        for forager in range(num_foragers):
+            forager_x = np.cumsum(
                 np.random.choice(
                     self.steps,
                     size=size,
@@ -141,12 +141,12 @@ class fForagers:
                 self.grid_size / 2
             )  # make centered
 
-            if any(bird_x < 0) or any(bird_x > self.grid_size):
+            if any(forager_x < 0) or any(forager_x > self.grid_size):
                 size_warning_flag = True
-                bird_x[bird_x < 0] = 0
-                bird_x[bird_x > self.grid_size] = self.grid_size
+                forager_x[forager_x < 0] = 0
+                forager_x[forager_x > self.grid_size] = self.grid_size
 
-            bird_y = np.cumsum(
+            forager_y = np.cumsum(
                 np.random.choice(
                     self.steps,
                     size=size,
@@ -155,31 +155,34 @@ class fForagers:
                 )
             ) + (self.grid_size / 2)
 
-            if any(bird_y < 0) or any(bird_y > self.grid_size):
-                bird_y[bird_y < 0] = 0
-                bird_y[bird_y > self.grid_size] = self.grid_size
+            if any(forager_y < 0) or any(forager_y > self.grid_size):
+                forager_y[forager_y < 0] = 0
+                forager_y[forager_y > self.grid_size] = self.grid_size
 
             if size_warning_flag:
                 warnings.warn(
-                    "Warning: bird movements truncated to grid size. "
+                    "Warning: forager movements truncated to grid size. "
                     "Try running again, or increase grid size.",
                     UserWarning,
                 )
 
-            bird = pd.DataFrame(
+            forager = pd.DataFrame(
                 {
-                    "x": bird_x,
-                    "y": bird_y,
+                    "x": forager_x,
+                    "y": forager_y,
                     "time": range(1, size + 1),
-                    "bird": bird + 1,
+                    "forager": forager + 1,
                     "type": "random",
                 }
             )
-            random_birds.append(bird)
+            random_foragers.append(forager)
 
-        random_birds_data = pd.concat(random_birds)
+        random_foragers_data = pd.concat(random_foragers)
 
-        return {"random_birds": random_birds, "random_birdsDF": random_birds_data}
+        return {
+            "random_foragers": random_foragers,
+            "random_foragersDF": random_foragers_data,
+        }
 
     def generate_random_rewards(self, size=None):
         if size is None:
@@ -194,23 +197,23 @@ class fForagers:
         return {"rewards": rewards, "rewardsDF": pd.concat(rewards)}
 
 
-class RandomBirds(Birds):
+class RandomForagers(Foragers):
     def __init__(
         self,
         grid_size=30,
         probabilities=[1, 2, 3, 2, 1, 2, 3, 2, 1],
-        num_birds=3,
+        num_foragers=3,
         num_frames=10,
         num_rewards=8,
         grab_range=2,
-        include_random_birds=True,
+        include_random_foragers=True,
     ):
         super().__init__(
             grid_size=grid_size,
             probabilities=probabilities,
-            num_birds=num_birds,
+            num_foragers=num_foragers,
             num_frames=num_frames,
             num_rewards=num_rewards,
             grab_range=grab_range,
-            include_random_birds=include_random_birds,
+            include_random_foragers=include_random_foragers,
         )

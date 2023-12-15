@@ -8,7 +8,7 @@ import pandas as pd
 import torch
 from jax import random
 from numpyro.infer import SVI, Trace_ELBO
-from numpyro.infer.autoguide import AutoLaplaceApproximation, AutoNormal
+from numpyro.infer.autoguide import AutoNormal
 
 
 def normalize(column):
@@ -122,9 +122,13 @@ def get_svi_results(df, num_iterations=2000):
 
     def discretized_p(proximity_id, how_far):
         p = numpyro.sample("p", dist.Uniform(0, 1).expand([len(set(proximity_id))]))
-        sigma = numpyro.sample("sigma", dist.Exponential(7).expand([len(set(proximity_id))]))
-        #mu = p[proximity_id]
-        numpyro.sample("how_far", dist.Normal(p[proximity_id], sigma[proximity_id]), obs=how_far)
+        sigma = numpyro.sample(
+            "sigma", dist.Exponential(7).expand([len(set(proximity_id))])
+        )
+        # mu = p[proximity_id]
+        numpyro.sample(
+            "how_far", dist.Normal(p[proximity_id], sigma[proximity_id]), obs=how_far
+        )
 
     def discretized_t(trace_id, how_far):
         t = numpyro.sample("t", dist.Beta(1, 1).expand([len(set(trace_id))]))

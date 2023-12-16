@@ -13,7 +13,7 @@ EXTRAS_REQUIRE = [
     "matplotlib",
     "pandas",
     "seaborn",
-    "nbqa"
+    "kaleido",
 ]
 
 setup(

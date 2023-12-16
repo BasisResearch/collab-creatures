@@ -6,6 +6,7 @@ from .communicates import generate_communicates  # noqa: F401
 from .derive import derive_predictors  # noqa: F401
 from .how_far import add_how_far_squared_scaled  # noqa: F401
 from .inference import (  # noqa: F401
+    normalize,
     get_svi_results,
     get_tensorized_data,
     prep_data_for_robust_inference,

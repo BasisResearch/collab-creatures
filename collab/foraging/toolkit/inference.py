@@ -115,4 +115,3 @@ def get_tensorized_data(sim_derived):
     }
 
     return data
-

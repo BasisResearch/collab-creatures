@@ -111,7 +111,7 @@ def derive_predictors(
 
         sim.derivedDF["communicate"].fillna(0, inplace=True)
         sim.communicatesDF.loc[:, "time"] = sim.communicatesDF["time"] - time_shift
-    
+
         derivation_logger.info("communicates done")
 
     pd.set_option("mode.chained_assignment", None)

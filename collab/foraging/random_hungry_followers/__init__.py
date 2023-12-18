@@ -1,1 +1,1 @@
-from .random_foragers import RandomForagers  # noqa F401
+from .random_foragers import RandomForagers, Foragers # noqa F401

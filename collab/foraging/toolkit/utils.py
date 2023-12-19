@@ -1,3 +1,4 @@
+import math
 from itertools import product
 
 import pandas as pd
@@ -5,18 +6,16 @@ import pandas as pd
 
 def object_from_data(
     foragersDF,
-    grid_size = None,
+    grid_size=None,
     rewardsDF=None,
     frames=None,
-    
     calculate_step_size_max=False,
 ):
     if frames is None:
         frames = foragersDF["time"].nunique()
-        
+
     if grid_size is None:
         grid_size = int(max(max(foragersDF["x"]), max(foragersDF["y"])))
-        
 
     class EmptyObject:
         pass
@@ -107,6 +106,125 @@ def object_from_data(
 #     sim.step_size_max = max(step_maxes)
 
 #     return sim
+
+
+def foragers_to_forager_distances(obj):
+    distances = []
+    foragers = obj.foragers
+    foragersDF = obj.foragersDF
+    forager_map = [foragers[k]["forager"].unique().item() for k in range(len(foragers))]
+
+    for forager in range(len(foragers)):
+        forager_distances = []
+
+        times_b = foragers[forager]["time"].unique()
+        #forager_name = foragers[forager]["forager"].unique().item()
+
+        for frame in times_b:
+            foragers_at_frameDF = foragersDF[foragersDF["time"] == frame]
+            foragers_at_frameDF.sort_values(by="forager", inplace=True)
+
+            foragers_at_frame = foragers_at_frameDF["forager"].unique()
+            foragers_at_frame.sort()
+
+            forager_x = foragers[forager][foragers[forager]["time"] == frame][
+                "x"
+            ].item()
+
+            forager_y = foragers[forager][foragers[forager]["time"] == frame][
+                "y"
+            ].item()
+
+            assert isinstance(forager_x, float) and isinstance(forager_y, float)
+
+            distances_now = []
+            for other in foragers_at_frame:
+                other_location = forager_map.index(other)
+
+                df = foragers[other_location]
+                other_x = df[df["time"] == frame]["x"].item()
+                other_y = df[df["time"] == frame]["y"].item()
+
+                assert isinstance(other_x, float) and isinstance(other_y, float)
+
+                distances_now.append(
+                    math.sqrt((forager_x - other_x) ** 2 + (forager_y - other_y) ** 2)
+                )
+
+            distances_now_df = pd.DataFrame(
+                {"distance": distances_now, "foragers_at_frame": foragers_at_frame}
+            )
+
+            forager_distances.append(distances_now_df)
+
+        distances.append(forager_distances)
+
+    return distances
+
+
+# TODO consider revised version from central park notebook
+def cp_foragers_to_forager_distances(obj):
+    distances = []
+    foragers = obj.foragers
+    foragersDF = obj.foragersDF
+
+    for forager in range(len(foragers)):
+        forager_distances = []
+
+        times_b = foragers[forager]["time"].unique()
+
+        for frame in times_b:
+            # frame_index = np.where(times_b == frame)[0][0]
+
+            foragers_at_frameDF = foragersDF[foragersDF["time"] == frame]
+            foragers_at_frameDF.sort_values(by="forager", inplace=True)
+            # foragers_at_frame = [group for _, group in foragers_at_frameDF.groupby("forager")]
+
+            foragers_at_frame = foragers_at_frameDF["forager"].unique()
+            foragers_at_frame.sort()
+
+            forager_x = foragers[forager][foragers[forager]["time"] == frame][
+                "x"
+            ].item()
+
+            forager_y = foragers[forager][foragers[forager]["time"] == frame][
+                "y"
+            ].item()
+
+            assert isinstance(forager_x, float) and isinstance(forager_y, float)
+
+            distances_now = []
+            for other in foragers_at_frame:
+                other_x_raw = foragers[other - 1][foragers[other - 1]["time"] == frame][
+                    "x"
+                ] 
+                
+                other_x = foragers[other - 1][foragers[other - 1]["time"] == frame][
+                    "x"
+                ].item()
+                other_y = foragers[other - 1][foragers[other - 1]["time"] == frame][
+                    "y"
+                ].item()
+                
+                print("otherx,othery", other_x, other_y)
+                
+                assert isinstance(other_x, float) and isinstance(other_y, float)
+
+                distances_now.append(
+                    math.sqrt((forager_x - other_x) ** 2 + (forager_y - other_y) ** 2)
+                )
+
+            assert len(distances_now) == len(foragers_at_frame)
+
+            distances_now_df = pd.DataFrame(
+                {"distance": distances_now, "foragers_at_frame": foragers_at_frame}
+            )
+
+            forager_distances.append(distances_now_df)
+
+        distances.append(forager_distances)
+
+    return distances
 
 
 def generate_grid(grid_size):

@@ -26,7 +26,7 @@ Installation
 To install dev dependencies for Collab, run the following command:
 
 ```sh
-pip install -e .[test]
+pip install -e ".[test]"
 ```
 
 ** Contributing: **

@@ -5,13 +5,18 @@ import pandas as pd
 
 def object_from_data(
     foragersDF,
-    grid_size,
-    frames=None,
+    grid_size = None,
     rewardsDF=None,
+    frames=None,
+    
     calculate_step_size_max=False,
 ):
     if frames is None:
         frames = foragersDF["time"].nunique()
+        
+    if grid_size is None:
+        grid_size = int(max(max(foragersDF["x"]), max(foragersDF["y"])))
+        
 
     class EmptyObject:
         pass

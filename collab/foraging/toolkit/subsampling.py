@@ -9,7 +9,7 @@ def subset_frames_evenly_spaced(df_raw, desired_frames=300):
     num_frames = df["time"].max()
     print("original_shape:", df.shape)
     df["time"] = np.round(df["time"] / (num_frames / desired_frames)).astype(int) + 1
-    df = df.drop_duplicates(subset=["time", "bird"], keep="first")
+    df = df.drop_duplicates(subset=["time", "forager"], keep="first")
     df = df[df["time"] <= desired_frames]
     print("resulting_frames:", df["time"].max())
     print("resulting_shape:", df.shape)

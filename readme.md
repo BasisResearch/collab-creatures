@@ -34,9 +34,9 @@ pip install -e ".[test]"
 Before submitting a pull request, please autoformat code and ensure that unit tests pass locally
 
 ```sh
-make lint              # linting
 make format            # runs black and isort
-make tests             # linting and unit tests
+make lint              # linting
+make tests             # notebook and unit tests
 ```
 
 ## Getting started

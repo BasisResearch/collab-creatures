@@ -1,14 +1,8 @@
 import copy
 
 import numpy as np
-import numpyro
-import numpyro.distributions as dist
-import numpyro.optim as optim
 import pandas as pd
 import torch
-from jax import random
-from numpyro.infer import SVI, Trace_ELBO
-from numpyro.infer.autoguide import AutoNormal
 
 
 def normalize(column):

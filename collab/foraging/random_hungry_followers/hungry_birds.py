@@ -1,11 +1,4 @@
 import logging
-import sys
-
-logging.basicConfig(level=logging.INFO, format="%(asctime)s:  %(message)s")
-
-
-import warnings
-from itertools import product
 
 import numpy as np
 import pandas as pd
@@ -16,7 +9,7 @@ from collab.foraging.toolkit import (
     update_rewards,
 )
 
-# import foraging_toolkit as ft
+logging.basicConfig(level=logging.INFO, format="%(asctime)s:  %(message)s")
 
 
 def add_hungry_birds(

@@ -12,48 +12,50 @@ from collab.foraging.toolkit import (
 logging.basicConfig(level=logging.INFO, format="%(asctime)s:  %(message)s")
 
 
-def add_hungry_birds(
+def add_hungry_foragers(
     sim,
-    num_hungry_birds=3,
+    num_hungry_foragers=3,
     rewards_decay=0.5,
     visibility_range=10,
 ):
     """
-        A function to add hungry birds to a simulation.
+        A function to add hungry foragers to a simulation.
 
     Args:
-        sim (Birds): A Birds object.
+        sim (foragers): A foragers object.
 
     Returns:
-        sim (Birds): The same Birds object, but with hungry birds added.
+        sim (foragers): The same foragers object, but with hungry foragers added.
     """
 
-    old_birds = sim.birds.copy()
+    old_foragers = sim.foragers.copy()
 
-    # TODO Check if different bird types mix well
-    how_many_birds_already = len(old_birds)
+    # TODO Check if different forager types mix well
+    how_many_foragers_already = len(old_foragers)
 
-    new_birds = sim.generate_random_birds(num_hungry_birds, size=1)["random_birds"]
+    new_foragers = sim.generate_random_foragers(num_hungry_foragers, size=1)[
+        "random_foragers"
+    ]
 
-    for new_bird in new_birds:
-        new_bird["bird"] = new_bird["bird"] + how_many_birds_already
-        new_bird["type"] = "hungry"
+    for new_forager in new_foragers:
+        new_forager["forager"] = new_forager["forager"] + how_many_foragers_already
+        new_forager["type"] = "hungry"
 
     for t in range(0, sim.num_frames):
         if t > 0 and t % 10 == 0:
             logging.info(f"Generating frame {t}/{sim.num_frames} ")
         # change to num frames
         _vis = construct_visibility(
-            new_birds,
+            new_foragers,
             sim.grid_size,
             visibility_range=visibility_range,
             start=t,
             end=t + 1,
         )["visibility"]
 
-        sim.rewards = update_rewards(sim, sim.rewards, new_birds, start=t, end=t + 1)[
-            "rewards"
-        ]
+        sim.rewards = update_rewards(
+            sim, sim.rewards, new_foragers, start=t, end=t + 1
+        )["rewards"]
 
         sim.traces = rewards_to_trace(
             sim.rewards,
@@ -62,7 +64,7 @@ def add_hungry_birds(
             rewards_decay,
         )["traces"]
 
-        for b in range(num_hungry_birds):
+        for b in range(num_hungry_foragers):
             options = _vis[b][0].copy()
             options = options.merge(sim.traces[t], how="inner")
             options.sort_values(by="trace", ascending=False, inplace=True)
@@ -78,16 +80,16 @@ def add_hungry_birds(
                     "x": new_x,
                     "y": new_y,
                     "time": t + 2,
-                    "bird": b + 1,
+                    "forager": b + 1,
                     "type": "hungry",
                 }
 
-                new_birds[b].loc[len(new_birds[b])] = new_row
+                new_foragers[b].loc[len(new_foragers[b])] = new_row
 
-    sim.birds.extend(new_birds)
-    sim.birdsDF = pd.concat(sim.birds)
+    sim.foragers.extend(new_foragers)
+    sim.foragersDF = pd.concat(sim.foragers)
 
-    rew = update_rewards(sim, sim.rewards, sim.birds, start=1)
+    rew = update_rewards(sim, sim.rewards, sim.foragers, start=1)
 
     sim.rewards = rew["rewards"]
     sim.rewardsDF = rew["rewardsDF"]
@@ -103,7 +105,7 @@ def add_hungry_birds(
     sim.tracesDF = pd.concat(sim.traces)
 
     vis = construct_visibility(
-        sim.birds, sim.grid_size, visibility_range=visibility_range
+        sim.foragers, sim.grid_size, visibility_range=visibility_range
     )
 
     sim.visibility = vis["visibility"]

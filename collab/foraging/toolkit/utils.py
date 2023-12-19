@@ -13,6 +13,8 @@ def object_from_data(
 ):
     if frames is None:
         frames = foragersDF["time"].nunique()
+        print("frames", frames)
+
 
     if grid_size is None:
         grid_size = int(max(max(foragersDF["x"]), max(foragersDF["y"])))
@@ -113,15 +115,16 @@ def foragers_to_forager_distances(obj):
     foragers = obj.foragers
     foragersDF = obj.foragersDF
     forager_map = [foragers[k]["forager"].unique().item() for k in range(len(foragers))]
-
+    print("forager map", forager_map)
     for forager in range(len(foragers)):
         forager_distances = []
 
         times_b = foragers[forager]["time"].unique()
+        print("times_b", times_b)
         #forager_name = foragers[forager]["forager"].unique().item()
 
         for frame in times_b:
-            foragers_at_frameDF = foragersDF[foragersDF["time"] == frame]
+            foragers_at_frameDF = foragersDF[foragersDF["time"] == frame].copy()
             foragers_at_frameDF.sort_values(by="forager", inplace=True)
 
             foragers_at_frame = foragers_at_frameDF["forager"].unique()
@@ -136,15 +139,19 @@ def foragers_to_forager_distances(obj):
             ].item()
 
             assert isinstance(forager_x, float) and isinstance(forager_y, float)
-
+            print("foragers at frame", foragers_at_frame)
             distances_now = []
             for other in foragers_at_frame:
                 other_location = forager_map.index(other)
-
-                df = foragers[other_location]
+                print("other location", other_location)
+                df = foragers[other_location].copy()
+                print("frame", frame)
+                display(df) 
+                print("xs to pick", df[df["time"] == frame]["x"])
                 other_x = df[df["time"] == frame]["x"].item()
                 other_y = df[df["time"] == frame]["y"].item()
 
+                print("other x y", other_x, other_y)
                 assert isinstance(other_x, float) and isinstance(other_y, float)
 
                 distances_now.append(

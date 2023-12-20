@@ -28,3 +28,6 @@ from .utils import (  # noqa: F401
     update_rewards,
 )
 from .visibility import construct_visibility, visibility_vs_distance  # noqa: F401
+
+
+from .central_park import cp_generate_visibility  # noqa: F401

@@ -1,5 +1,7 @@
 from .animate_foragers import (  # noqa: F401
     animate_foragers,
+    plot_distances,
+    plot_trajectories,
     visualise_forager_predictors,
 )
 from .communicates import generate_communicates  # noqa: F401
@@ -28,6 +30,3 @@ from .utils import (  # noqa: F401
     update_rewards,
 )
 from .visibility import construct_visibility, visibility_vs_distance  # noqa: F401
-
-
-from .central_park import cp_generate_visibility  # noqa: F401

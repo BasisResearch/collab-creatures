@@ -1,8 +1,46 @@
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import torch
+
+
+def plot_trajectories(df, title):
+    unique_foragers = df["forager"].unique()
+    plt.figure()
+
+    for forager in unique_foragers:
+        df_forager = df[df["forager"] == forager]
+        plt.plot(df_forager["x"], df_forager["y"])
+    plt.axis("equal")
+    plt.gca().invert_yaxis()
+    plt.axis("off")
+    plt.suptitle(f"Trajectories: {title}", fontsize=16)
+    return plt
+
+
+def plot_distances(distances, title=""):
+    distances_list = [
+        distance
+        for sublist in distances
+        for df in sublist
+        for distance in df["distance"].tolist()
+    ]
+
+    distances_list = list(filter(lambda x: x != 0, distances_list))
+    fig = px.histogram(
+        distances_list,
+        template="presentation",
+        width=700,
+        title=f"Distances: {title}",
+        labels={"value": "inter-bird distance (grid units)"},
+        opacity=0.4,
+        nbins=60,
+    )
+
+    fig.update_layout(showlegend=False)
+    return fig
 
 
 def animate_foragers(

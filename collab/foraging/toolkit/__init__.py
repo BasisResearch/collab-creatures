@@ -21,6 +21,7 @@ from .subsampling import (  # noqa: F401
 )
 from .trace import rewards_to_trace, rewards_trace  # noqa: F401
 from .utils import (  # noqa: F401
+    distances_and_peaks,
     foragers_to_forager_distances,
     generate_grid,
     object_from_data,

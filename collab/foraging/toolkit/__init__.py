@@ -10,8 +10,7 @@ from .inference import (  # noqa: F401
     normalize,
     prep_data_for_robust_inference,
 )
-from .proximity import (  # noqa: F401
-    foragers_to_forager_distances,
+from .proximity import (  # noqa: F401; foragers_to_forager_distances,
     generate_proximity_score,
     proximity_score,
 )
@@ -21,10 +20,10 @@ from .subsampling import (  # noqa: F401
     subset_frames_evenly_spaced,
 )
 from .trace import rewards_to_trace, rewards_trace  # noqa: F401
-from .utils import (foragers_to_forager_distances, 
-                    object_from_data,
-                    cp_foragers_to_forager_distances,
-                    generate_grid,
-                    update_rewards
-                    )  # noqa: F401
+from .utils import (  # noqa: F401
+    foragers_to_forager_distances,
+    generate_grid,
+    object_from_data,
+    update_rewards,
+)
 from .visibility import construct_visibility, visibility_vs_distance  # noqa: F401

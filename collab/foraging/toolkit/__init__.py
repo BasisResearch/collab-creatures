@@ -11,6 +11,7 @@ from .inference import (  # noqa: F401
     get_tensorized_data,
     normalize,
     prep_data_for_robust_inference,
+    summary,
 )
 from .proximity import (  # noqa: F401; foragers_to_forager_distances,
     generate_proximity_score,

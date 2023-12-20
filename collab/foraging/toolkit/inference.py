@@ -109,3 +109,20 @@ def get_tensorized_data(sim_derived):
     }
 
     return data
+
+
+def summary(samples, sites=None):
+    if sites is None:
+        sites = [site_name for site_name in samples.keys()]
+
+    site_stats = {}
+    for site_name, values in samples.items():
+        if site_name in sites:
+            marginal_site = pd.DataFrame(values)
+            describe = marginal_site.describe(
+                percentiles=[0.05, 0.25, 0.5, 0.75, 0.95]
+            ).transpose()
+            site_stats[site_name] = describe[
+                ["mean", "std", "5%", "25%", "50%", "75%", "95%"]
+            ]
+    return site_stats

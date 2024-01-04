@@ -57,7 +57,7 @@ def animate_foragers(
     visibility_multiplier=10,
     proximity_multiplier=10,
     communicate_multiplier=10,
-    color_by_state = False,
+    color_by_state=False,
     produce_object=False,
     grid_size=None,
 ):
@@ -216,7 +216,6 @@ def animate_foragers(
                     trace.marker.colorscale = color_scale
                     trace.marker.size = 5
                     trace.marker.opacity = 0.6
-
 
     fig = go.Figure(
         data=fig["frames"][0]["data"],

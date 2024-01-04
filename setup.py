@@ -40,7 +40,7 @@ setup(
             "pytest-cov",
             "pytest-xdist",
             "mypy",
-            "black",
+            "black>=23.12.1",
             "flake8",
             "isort",
             "nbval",

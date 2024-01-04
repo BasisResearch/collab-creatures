@@ -57,8 +57,13 @@ def animate_foragers(
     visibility_multiplier=10,
     proximity_multiplier=10,
     communicate_multiplier=10,
+    color_by_state = False,
     produce_object=False,
+    grid_size=None,
 ):
+    if grid_size is None:
+        grid_size = sim.grid_size
+
     if plot_rewards:
         rew = sim.rewardsDF.copy()
         rew["forager"] = "reward"
@@ -95,12 +100,15 @@ def animate_foragers(
         df = df.reset_index(drop=True)
         df = pd.concat([com, df], axis=0, ignore_index=True, verify_integrity=True)
 
-    fig = px.scatter(df, x="x", y="y", animation_frame="time", color="forager")
+    if not color_by_state:
+        fig = px.scatter(df, x="x", y="y", animation_frame="time", color="forager")
+    else:
+        fig = px.scatter(df, x="x", y="y", animation_frame="time", color="state")
 
     fig.update_layout(
         template="presentation",
         xaxis=dict(
-            range=[-1, sim.grid_size + 1],
+            range=[-1, grid_size + 1],
             showgrid=False,
             zeroline=False,
             ticks="",
@@ -108,7 +116,7 @@ def animate_foragers(
             title="",
         ),
         yaxis=dict(
-            range=[-1, sim.grid_size + 1],
+            range=[-1, grid_size + 1],
             showgrid=False,
             zeroline=False,
             ticks="",
@@ -208,6 +216,7 @@ def animate_foragers(
                     trace.marker.colorscale = color_scale
                     trace.marker.size = 5
                     trace.marker.opacity = 0.6
+
 
     fig = go.Figure(
         data=fig["frames"][0]["data"],

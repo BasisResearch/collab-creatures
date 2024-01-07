@@ -102,9 +102,12 @@ def generate_communicates(
                         info_spatial_decay,
                     )
 
-            communicate["communicate_standardized"] = (
-                communicate["communicate"] - communicate["communicate"].mean()
-            ) / communicate["communicate"].std()
+            if communicate["communicate"].std() != 0:
+                communicate["communicate_standardized"] = (
+                    communicate["communicate"] - communicate["communicate"].mean()
+                ) / communicate["communicate"].std()
+            else:
+                communicate["communicate_standardized"] = 0
 
             communicate["time"] = communicate["time"]
 

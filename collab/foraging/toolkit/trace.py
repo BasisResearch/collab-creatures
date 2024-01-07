@@ -29,7 +29,7 @@ def rewards_to_trace(
 
     traces = []
 
-    for t in range(start, end):
+    for t in range(start, end - 1):
         rewt = rewards[t]
         trace = grid.copy()
         trace["trace"] = 0

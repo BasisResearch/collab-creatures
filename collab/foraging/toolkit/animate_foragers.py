@@ -66,7 +66,10 @@ def animate_foragers(
 
     if plot_rewards:
         rew = sim.rewardsDF.copy()
-        rew["forager"] = "reward"
+        if color_by_state:
+            rew["state"] = "reward"
+        else:
+            rew["forager"] = "reward"
         df = pd.concat([sim.foragersDF, rew])
 
     else:
@@ -137,8 +140,8 @@ def animate_foragers(
         for trace in fig.frames[t].data:
             if trace.name.isdigit():
                 trace.marker.symbol = "square"
-                trace.marker.size = 14
-                trace.marker.line = dict(width=3)
+                trace.marker.size = 10
+                trace.marker.line = dict(width=1)
                 trace.marker.opacity = 0.8
 
     if plot_rewards:
@@ -216,6 +219,8 @@ def animate_foragers(
                     trace.marker.colorscale = color_scale
                     trace.marker.size = 5
                     trace.marker.opacity = 0.6
+
+    fig.update_layout(legend_tracegroupgap=5)
 
     fig = go.Figure(
         data=fig["frames"][0]["data"],

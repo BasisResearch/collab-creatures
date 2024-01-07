@@ -18,13 +18,16 @@ def prep_data_for_robust_inference(sim_old, gridsize=11):
         # step_size = (vector_max - vector_min) / gridsize
         vector_bin_edges = np.linspace(vector_min, vector_max, gridsize + 1)
         # vector_bin_edges = pd.interval_range(start=vector_min, end=vector_max, freq=step_size)
-        vector_bin_labels = [f"{i}" for i in range(1, gridsize + 1)]
-        vector_binned = pd.cut(
-            vector,
-            bins=vector_bin_edges,
-            labels=vector_bin_labels,
-            include_lowest=True,
-        )
+        if not np.all(vector_bin_edges == vector_bin_edges[0]):
+            vector_bin_labels = [f"{i}" for i in range(1, gridsize + 1)]
+            vector_binned = pd.cut(
+                vector,
+                bins=vector_bin_edges,
+                labels=vector_bin_labels,
+                include_lowest=True,
+            )
+        else:
+            vector_binned = np.zeros_like(vector)
 
         return vector_binned
 

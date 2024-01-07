@@ -19,9 +19,9 @@ class ProgressSaverContext:
             return dill.load(f)
 
 
-def progress_saver(name, subfolder, filename=None, properties=None,
-                    property_names = None, code_f=None):
-
+def progress_saver(
+    name, subfolder, filename=None, properties=None, property_names=None, code_f=None
+):
     properties_string = "_".join(
         [f"{var_name}_{var}" for var_name, var in zip(property_names, properties)]
     )
@@ -34,7 +34,6 @@ def progress_saver(name, subfolder, filename=None, properties=None,
 
     progress_context = ProgressSaverContext(file_path)
 
-    
     if not os.path.exists(file_path):
         print("path missing, executing code")
         try:

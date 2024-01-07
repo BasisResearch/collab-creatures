@@ -52,7 +52,9 @@ def derive_predictors(
 
     sim.traces = tr["traces"]
     sim.tracesDF = tr["tracesDF"]
+    sim.tracesDF["time"] = sim.tracesDF["time"] - time_shift
     derivation_logger.info("traces done")
+
 
     vis = construct_visibility(
         sim.foragers,
@@ -64,6 +66,7 @@ def derive_predictors(
     sim.visibility_range = visibility_range
     sim.visibility = vis["visibility"]
     sim.visibilityDF = vis["visibilityDF"]
+    sim.visibilityDF["time"] = sim.visibilityDF["time"] - time_shift
     derivation_logger.info("visibility done")
 
     prox = generate_proximity_score(
@@ -81,9 +84,11 @@ def derive_predictors(
 
     sim.proximity = prox["proximity"]
     sim.proximityDF = prox["proximityDF"]
+    sim.proximityDF["time"] = sim.proximityDF["time"] - time_shift
     derivation_logger.info("proximity done")
 
     add_how_far_squared_scaled(sim)
+    sim.how_farDF["time"] = sim.how_farDF["time"] - time_shift
     derivation_logger.info("how_far done")
 
     sim.derivedDF = (

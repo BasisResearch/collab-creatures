@@ -7,7 +7,7 @@ def add_how_far_squared_scaled(sim):
     how_far = sim.visibility.copy()
 
     for b in range(sim.num_foragers):
-        for t in range(sim.num_frames - 1):
+        for t in range(sim.num_frames - 2):
             try:
                 x_new = int(foragers[b]["x"][t + 1])
                 y_new = int(foragers[b]["y"][t + 1])
@@ -24,8 +24,9 @@ def add_how_far_squared_scaled(sim):
                 + 1
             )
 
-        how_far[b][sim.num_frames - 1]["how_far_squared"] = np.nan
-        how_far[b][sim.num_frames - 1]["how_far_squared_scaled"] = np.nan
+        if len(how_far[b]) > (sim.num_frames - 1):
+            how_far[b][sim.num_frames - 1]["how_far_squared"] = np.nan
+            how_far[b][sim.num_frames - 1]["how_far_squared_scaled"] = np.nan
 
     sim.how_far = how_far
 

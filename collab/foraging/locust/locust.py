@@ -73,7 +73,10 @@ def load_and_clean_locust(
     print("original_frames:", locust["time"].max())
     print("original_shape:", locust.shape)
 
-    locust["time"] = np.round(locust["time"] / (locust["time"].max()/ desired_frames)).astype(int) + 1
+    locust["time"] = (
+        np.round(locust["time"] / (locust["time"].max() / desired_frames)).astype(int)
+        + 1
+    )
     locust = locust.drop_duplicates(subset=["time", "forager"], keep="first")
     locust = locust[locust["time"] <= desired_frames]
     print("resulting_frames:", locust["time"].max())
@@ -124,8 +127,8 @@ def load_and_clean_locust(
         locust_subset,
         rewards_subset,
         grid_size=grid_size,
-#        frames=subset_ends - subset_starts,
-        frames = desired_frames
+        #        frames=subset_ends - subset_starts,
+        frames=desired_frames,
     )
 
     loc = locust_object_from_data(

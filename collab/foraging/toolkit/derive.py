@@ -55,7 +55,6 @@ def derive_predictors(
     sim.tracesDF["time"] = sim.tracesDF["time"] - time_shift
     derivation_logger.info("traces done")
 
-
     vis = construct_visibility(
         sim.foragers,
         sim.grid_size,

@@ -6,7 +6,7 @@ from .animate_foragers import (  # noqa: F401
 )
 from .communicates import generate_communicates  # noqa: F401
 from .derive import derive_predictors  # noqa: F401
-from .dynamical_utils import add_ring  # noqa: F401
+from .dynamical_utils import add_ring, plot_ds_trajectories, run_svi_inference  # noqa: F401
 from .how_far import add_how_far_squared_scaled  # noqa: F401
 from .inference import (  # noqa: F401
     get_tensorized_data,

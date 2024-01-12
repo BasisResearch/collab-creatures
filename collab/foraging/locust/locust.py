@@ -103,20 +103,16 @@ def load_and_clean_locust(
 
     time = list(range(1, locust["time"].max() + 1))
 
-
     data = {
         "x": np.repeat(rewards_x, len(time)),
         "y": np.repeat(rewards_y, len(time)),
-        "time": [t for t in time for _ in range(len(rewards_x))]
+        "time": [t for t in time for _ in range(len(rewards_x))],
     }
-
-
 
     rewardsDF = pd.DataFrame(data)
     rewardsDF["x"] = rescale_to_grid(rewardsDF["x"], grid_size)
     rewardsDF["y"] = rescale_to_grid(rewardsDF["y"], grid_size)
 
-    
     locust_subset = locust[
         (locust["time"] >= subset_starts) & (locust["time"] <= subset_ends)
     ]

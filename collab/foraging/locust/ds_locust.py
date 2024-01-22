@@ -36,6 +36,63 @@ from collab.foraging import toolkit as ft
 from collab.utils import find_repo_root, progress_saver
 
 
+def compartmentalize_locust_data(rewards, foragers, center = 50,
+                                 feeding_radius = 10, edge_ring_width = 4):
+    left_idx = rewards["x"].idxmin()
+    right_idx = rewards["x"].idxmax()
+    x_left = rewards.iloc[left_idx, 0]
+    y_left = rewards.iloc[left_idx, 1]
+
+    x_right = rewards.iloc[right_idx, 0]
+    y_right = rewards.iloc[right_idx, 1]
+
+    x_center = center
+    y_center = center
+
+
+    df_cat = ft.add_ring(
+        foragers, "feed_l", x0=x_left, y0=y_left,
+        outside_radius=feeding_radius, inside_radius=0
+    )
+
+    df_cat = ft.add_ring(
+        df_cat, "feed_r", x0=x_right, y0=y_right, 
+        outside_radius=feeding_radius, inside_radius=0
+    )
+
+    df_cat = ft.add_ring(
+        df_cat,
+        "edge",
+        x0=x_center,
+        y0=y_center,
+        outside_radius=center + 1,
+        inside_radius=center + 1 - edge_ring_width,
+        divide_by_side=True,
+    )
+
+    df_cat = ft.add_ring(
+        df_cat,
+        "search",
+        x0=x_center,
+        y0=y_center,
+        outside_radius=center,
+        inside_radius=0,
+        divide_by_side=True,
+    )
+
+
+    df_cat.drop(["type"], inplace=True, axis=1)
+
+    return df_cat
+
+    
+
+
+
+
+
+
+
 class LocustDynamics(pyro.nn.PyroModule):
     def __init__(self, attraction, wander):
         super().__init__()

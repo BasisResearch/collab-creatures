@@ -196,7 +196,7 @@ def bayesian_locust(base_model=LocustDynamics) -> Dynamics[torch.Tensor]:
 
 
 def simulated_bayesian_locust(
-    init_state, start_time, logging_times, base_model=LocustDynamics
+    init_state, start_time, logging_times, base_model=LocustDynamics,
 ) -> State[torch.Tensor]:
     locust_model = bayesian_locust(base_model)
     with TorchDiffEq(), LogTrajectory(logging_times, is_traced=True) as lt:
@@ -204,13 +204,13 @@ def simulated_bayesian_locust(
     return lt.trajectory
 
 
-def conditioned_locust(
+def conditioned_locust_model(
     obs_times, data, init_state, start_time, base_model=LocustDynamics
 ) -> None:
-    sir = bayesian_locust(base_model)
+    bayesian = bayesian_locust(base_model)
     obs = condition(data=data)(locust_noisy_model)
     with TorchDiffEq(), StaticBatchObservation(obs_times, observation=obs):
-        simulate(sir, init_state, start_time, obs_times[-1])
+        simulate(bayesian, init_state, start_time, obs_times[-1])
 
 
 def get_locust_posterior_samples(

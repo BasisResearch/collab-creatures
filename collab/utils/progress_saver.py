@@ -20,7 +20,7 @@ class ProgressSaverContext:
 
 
 def progress_saver(
-    name, subfolder, filename=None, properties=None, property_names=None, code_f=None
+    name, subfolder, filename=None, properties=None, property_names=None, code_f=None, force_rerun=False
 ):
     properties_string = "_".join(
         [f"{var_name}_{var}" for var_name, var in zip(property_names, properties)]
@@ -34,8 +34,8 @@ def progress_saver(
 
     progress_context = ProgressSaverContext(file_path)
 
-    if not os.path.exists(file_path):
-        print("path missing, executing code")
+    if not os.path.exists(file_path) or force_rerun:
+        print("executing code")
         try:
             result = code_f()
             progress_context.save_progress(result)

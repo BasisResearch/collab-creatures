@@ -156,6 +156,93 @@ def plot_ds_trajectories(
     sns.despine()
 
 
+
+def ds_predictive_plot(state_pred = None, time = None, ylabel = None,
+                        color = None, ax = None, mean_label="posterior mean"):
+
+    sns.lineplot(
+        x=time,
+        y=state_pred.mean(dim=0).squeeze().tolist(),
+        color=color,
+        label=mean_label,
+        ax=ax,
+    )
+    ax.fill_between(
+        time,
+        torch.quantile(state_pred, 0.025, dim=0).squeeze(),
+        torch.quantile(state_pred, 0.975, dim=0).squeeze(),
+        alpha=0.2,
+        color=color,
+        label="95% credible interval",
+    )
+
+    ax.set_xlabel("time")
+    ax.set_ylabel(ylabel)
+
+
+def ds_intervention_plot(time, intervention, ax):
+    sns.lineplot(
+        x=time,
+        y=intervention.mean(dim=0).squeeze().tolist(),
+        color="grey",
+        label="intervened posterior prediction",
+        ax=ax,
+    )
+
+
+def ds_data_plot(data = None, time = None, data_label = None, ax= None):
+    sns.lineplot(x=time, y=data, color="black", ax=ax, linestyle="--", label=data_label)
+
+
+def ds_test_plot(test_start_time, test_end_time, ax):
+    ax.axvline(
+        test_start_time, color="black", linestyle=":", label="measurement period"
+    )
+    ax.axvline(test_end_time, color="black", linestyle=":")
+
+
+def ds_uncertainty_plot(
+    state_pred,
+    ylabel,
+    color,
+    ax,
+    data = None,
+    data_label = "observations",
+    time = None,
+    legend=False,
+    test_plot=True,
+    test_start_time = None,
+    test_end_time = None,
+    mean_label="posterior mean",
+    xlim=None,
+    intervention=None,
+):
+    
+    if time is None:
+        time = torch.arange(state_pred.shape[2])
+
+    ds_predictive_plot(
+         state_pred = state_pred, time = time, ylabel = None, 
+         color = None, ax = ax, mean_label=mean_label
+    )
+    if data is not None:
+        ds_data_plot(data = data, time = time, data_label = data_label, ax = ax)
+
+    if intervention is not None:
+        ds_intervention_plot(time, intervention, color, ax)
+
+    if test_plot:
+        ds_test_plot(test_start_time, test_end_time, ax)
+    if legend:
+        ax.legend()
+    else:
+        ax.legend().remove()
+    if xlim is not None:
+        ax.set_xlim(0, xlim)
+    sns.despine()
+
+
+
 def run_svi_inference(
     model,
     num_steps,

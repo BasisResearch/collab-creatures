@@ -104,8 +104,8 @@ def load_and_clean_locust(
     time = list(range(1, locust["time"].max() + 1))
 
     data = {
-        "x": np.repeat(rewards_x, len(time)),
-        "y": np.repeat(rewards_y, len(time)),
+        "x": np.tile(rewards_x, len(time)),
+        "y": np.tile(rewards_y, len(time)),
         "time": [t for t in time for _ in range(len(rewards_x))],
     }
 

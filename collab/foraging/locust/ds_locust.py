@@ -1,21 +1,14 @@
-import os
-import time
-
-import dill
-import matplotlib.pyplot as plt
-import numpy as np
 import pyro
 import pyro.distributions as dist
 import seaborn as sns
 import torch
-from chirho.dynamical.handlers import LogTrajectory, StaticBatchObservation, StaticIntervention
+from chirho.dynamical.handlers import LogTrajectory, StaticBatchObservation
 from chirho.dynamical.handlers.solver import TorchDiffEq
 from chirho.dynamical.ops import Dynamics, State, simulate
 from chirho.observational.handlers import condition
 from pyro.infer import Predictive
-from pyro.infer.autoguide import AutoMultivariateNormal
 
-from collab.foraging.toolkit import run_svi_inference
+from collab.foraging import toolkit as ft
 
 pyro.settings.set(module_local_params=True)
 
@@ -26,18 +19,10 @@ seed = 123
 pyro.clear_param_store()
 pyro.set_rng_seed(seed)
 
-import matplotlib.pyplot as plt
-import pandas as pd
-import seaborn as sns
-import torch
 
-from collab.foraging import locust as lc
-from collab.foraging import toolkit as ft
-from collab.utils import find_repo_root, progress_saver
-
-
-def compartmentalize_locust_data(rewards, foragers, center = 50,
-                                 feeding_radius = 10, edge_ring_width = 4):
+def compartmentalize_locust_data(
+    rewards, foragers, center=50, feeding_radius=10, edge_ring_width=4
+):
     left_idx = rewards["x"].idxmin()
     right_idx = rewards["x"].idxmax()
     x_left = rewards.iloc[left_idx, 0]
@@ -49,15 +34,22 @@ def compartmentalize_locust_data(rewards, foragers, center = 50,
     x_center = center
     y_center = center
 
-
     df_cat = ft.add_ring(
-        foragers, "feed_l", x0=x_left, y0=y_left,
-        outside_radius=feeding_radius, inside_radius=0
+        foragers,
+        "feed_l",
+        x0=x_left,
+        y0=y_left,
+        outside_radius=feeding_radius,
+        inside_radius=0,
     )
 
     df_cat = ft.add_ring(
-        df_cat, "feed_r", x0=x_right, y0=y_right, 
-        outside_radius=feeding_radius, inside_radius=0
+        df_cat,
+        "feed_r",
+        x0=x_right,
+        y0=y_right,
+        outside_radius=feeding_radius,
+        inside_radius=0,
     )
 
     df_cat = ft.add_ring(
@@ -80,17 +72,9 @@ def compartmentalize_locust_data(rewards, foragers, center = 50,
         divide_by_side=True,
     )
 
-
     df_cat.drop(["type"], inplace=True, axis=1)
 
     return df_cat
-
-    
-
-
-
-
-
 
 
 class LocustDynamics(pyro.nn.PyroModule):
@@ -179,11 +163,25 @@ class LocustDynamics(pyro.nn.PyroModule):
         return dX
 
 
+# superceded by the one involving the multinomial distribution?
+# def locust_noisy_model(X: State[torch.Tensor]) -> None:
+#     event_dim = 1 if X["edge_l"].shape and X["edge_l"].shape[-1] > 1 else 0
+#     keys = ["edge_l", "edge_r", "search_l", "search_r", "feed_l", "feed_r"]
+#     for key in keys:
+#         pyro.sample(f"{key}_obs", dist.Poisson(X[key]).to_event(event_dim))
+
+
 def locust_noisy_model(X: State[torch.Tensor]) -> None:
     event_dim = 1 if X["edge_l"].shape and X["edge_l"].shape[-1] > 1 else 0
     keys = ["edge_l", "edge_r", "search_l", "search_r", "feed_l", "feed_r"]
-    for key in keys:
-        pyro.sample(f"{key}_obs", dist.Poisson(X[key]).to_event(event_dim))
+
+    counts = torch.stack([X[key] for key in keys], dim=-1)
+
+    total_count = int(torch.sum(counts[0], dim=-1, keepdim=True))
+
+    with pyro.plate("data", len(X["edge_l"])):
+        pyro.sample("counts_obs", dist.Multinomial(total_count,
+                probs=counts/total_count))
 
 
 
@@ -205,6 +203,7 @@ def simulated_bayesian_locust(
         simulate(locust_model, init_state, start_time, logging_times[-1])
     return lt.trajectory
 
+
 def conditioned_locust(
     obs_times, data, init_state, start_time, base_model=LocustDynamics
 ) -> None:
@@ -214,14 +213,19 @@ def conditioned_locust(
         simulate(sir, init_state, start_time, obs_times[-1])
 
 
-
-def get_locust_posterior_samples(guide, num_samples, init_state, start_time, logging_times):
+def get_locust_posterior_samples(
+    guide, num_samples, init_state, start_time, logging_times
+):
     locust_predictive = Predictive(
-        simulated_bayesian_locust, guide, num_samples, init_state, start_time, logging_times)
+        simulated_bayesian_locust,
+        guide,
+        num_samples,
+        init_state,
+        start_time,
+        logging_times,
+    )
     locust_posterior_samples = locust_predictive(init_state, start_time, logging_times)
     return locust_posterior_samples
-
-
 
 
 def locust_uncertainty_plot(
@@ -247,13 +251,15 @@ def locust_uncertainty_plot(
     ax.set_xlabel("time")
     ax.set_ylabel(ylabel)
 
+
 def intervention_uncertainty_plot(time_period, intervention, color, ax):
     sns.lineplot(
         x=time_period,
         y=intervention.mean(dim=0).squeeze().tolist(),
         color="grey",
         label="intervened posterior prediction",
-        ax=ax)
+        ax=ax,
+    )
 
 
 def locust_data_plot(time, data, data_label, ax):
@@ -279,10 +285,9 @@ def locust_plot(
     ax,
     legend=False,
     test_plot=True,
-    
     mean_label="posterior mean",
     xlim=None,
-    intervention = None
+    intervention=None,
 ):
     locust_uncertainty_plot(
         time_period, state_pred, ylabel, color, ax, mean_label=mean_label
@@ -291,7 +296,6 @@ def locust_plot(
 
     if intervention is not None:
         intervention_uncertainty_plot(time_period, intervention, color, ax)
-
 
     if test_plot:
         locust_test_plot(test_start_time, test_end_time, ax)
@@ -302,23 +306,3 @@ def locust_plot(
     if xlim is not None:
         ax.set_xlim(0, xlim)
     sns.despine()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

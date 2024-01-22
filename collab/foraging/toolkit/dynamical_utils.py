@@ -1,9 +1,15 @@
+import os
+
+import dill
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
+import pyro
 import seaborn as sns
 import torch
 from pyro.infer.autoguide import AutoMultivariateNormal
-import pyro
+
+from collab.utils import find_repo_root
 
 
 def add_ring(
@@ -39,6 +45,55 @@ def add_ring(
     return df_c
 
 
+def tensorize_and_dump_count_data(df_cat, data_path):
+    root = find_repo_root()
+    all_states = df_cat["state"].unique()
+    times = sorted(df_cat["time"].unique())
+    N_obs = max(times)
+    all_combinations = pd.DataFrame(
+        [(state, time) for state in all_states for time in times],
+        columns=["state", "time"],
+    )
+    counts = pd.merge(
+        all_combinations,
+        df_cat.groupby(["state", "time"]).size().reset_index(name="count"),
+        how="left",
+        on=["state", "time"],
+    )
+    counts["count"].fillna(0, inplace=True)
+
+    count_data = {}
+    for state in all_states:
+        count_data[f"{state}_obs"] = torch.tensor(
+            counts[counts["state"] == state]["count"].values
+        )
+
+    shapes = [tensor.shape for tensor in count_data.values()]
+    assert all(shape == shapes[0] for shape in shapes)
+
+    tensor_length = len(next(iter(count_data.values())))
+
+    assert (
+        N_obs == tensor_length
+    ), "Tensor length does not match number of observations!"
+
+    sums_per_position = [
+        sum(count_data[state][k] for state in count_data) for k in range(tensor_length)
+    ]
+    assert all(
+        sums_per_position[0] == sum_at_k for sum_at_k in sums_per_position[1:]
+    ), "Population count is not constant!"
+
+    init_state = {key[:-4]: count_data[key][0] for key in count_data.keys()}
+
+    tensorized_count_data = {"count_data": count_data, "init_state": init_state}
+    tensorized_count_data_path = os.path.join(root, data_path)
+    with open(tensorized_count_data_path, "wb") as f:
+        dill.dump(tensorized_count_data, f)
+
+    return tensorized_count_data
+
+
 def moving_average(data, window_size):
     cumsum = torch.cumsum(data, dim=0)
     cumsum[window_size:] = cumsum[window_size:] - cumsum[:-window_size]
@@ -47,16 +102,25 @@ def moving_average(data, window_size):
 
 def plot_ds_trajectories(
     data,
-    times,
-    window_size,
+    times=None,
+    window_size=0,
     title="Counts",
     scatter_data=None,
     scatter_data_type=None,
     observed=False,
+    keys=None,
+    observed_keys=None,
+    colors=None,
 ):
-    keys = ["edge_l", "edge_r", "feed_l", "feed_r", "search_l", "search_r"]
-    observed_keys = [f"{key}_obs" for key in keys]
-    colors = ["green", "darkgreen", "red", "darkred", "orange", "darkorange"]
+    if times is None:
+        first_tensor = next(iter(data.values()))
+        times = torch.arange(len(first_tensor))
+
+    # default for locust, consider factoring out later
+    if keys is None:
+        keys = ["edge_l", "edge_r", "feed_l", "feed_r", "search_l", "search_r"]
+        observed_keys = [f"{key}_obs" for key in keys]
+        colors = ["green", "darkgreen", "red", "darkred", "orange", "darkorange"]
 
     used_keys = observed_keys if observed else keys
     for state, color in zip(used_keys, colors):

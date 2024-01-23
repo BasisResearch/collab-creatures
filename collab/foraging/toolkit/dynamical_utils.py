@@ -242,24 +242,23 @@ def ds_uncertainty_plot(
     sns.despine()
 
 
-
 def run_svi_inference(
     model,
-    num_steps,
+    num_steps=500,
     verbose=True,
     lr=0.03,
-    vi_family=AutoMultivariateNormal,
     guide=None,
+    blocked_sites=None,
     **model_kwargs,
-):
+    ):
+    
     losses = []
     if guide is None:
-        guide = vi_family(model)
+        guide = vi_family=AutoMultivariateNormal(pyro.poutine.block(model, hide=blocked_sites)) 
     elbo = pyro.infer.Trace_ELBO()(model, guide)
-    # initialize parameters
+    
     elbo(**model_kwargs)
     adam = torch.optim.Adam(elbo.parameters(), lr=lr)
-    # Do gradient steps
     for step in range(1, num_steps + 1):
         adam.zero_grad()
         loss = elbo(**model_kwargs)

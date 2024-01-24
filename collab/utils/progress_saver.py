@@ -20,7 +20,13 @@ class ProgressSaverContext:
 
 
 def progress_saver(
-    name, subfolder, filename=None, properties=None, property_names=None, code_f=None, force_rerun=False
+    name,
+    subfolder,
+    filename=None,
+    properties=None,
+    property_names=None,
+    code_f=None,
+    force_rerun=False,
 ):
     properties_string = "_".join(
         [f"{var_name}_{var}" for var_name, var in zip(property_names, properties)]

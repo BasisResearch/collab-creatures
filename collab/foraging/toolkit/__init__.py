@@ -9,8 +9,8 @@ from .derive import derive_predictors  # noqa: F401
 from .dynamical_utils import tensorize_and_dump_count_data  # noqa: F401
 from .dynamical_utils import (  # noqa: F401
     add_ring,
-    plot_ds_trajectories,
     ds_uncertainty_plot,
+    plot_ds_trajectories,
     run_svi_inference,
 )
 from .how_far import add_how_far_squared_scaled  # noqa: F401

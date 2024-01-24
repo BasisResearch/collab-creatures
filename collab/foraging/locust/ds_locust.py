@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import pyro
 import pyro.distributions as dist
 import seaborn as sns
@@ -172,7 +173,7 @@ class LocustDynamics(pyro.nn.PyroModule):
 
 
 def locust_noisy_model(X: State[torch.Tensor]) -> None:
-    event_dim = 1 if X["edge_l"].shape and X["edge_l"].shape[-1] > 1 else 0
+    #event_dim = 1 if X["edge_l"].shape and X["edge_l"].shape[-1] > 1 else 0
     keys = ["edge_l", "edge_r", "search_l", "search_r", "feed_l", "feed_r"]
 
     counts = torch.stack([X[key] for key in keys], dim=-1)
@@ -180,9 +181,9 @@ def locust_noisy_model(X: State[torch.Tensor]) -> None:
     total_count = int(torch.sum(counts[0], dim=-1, keepdim=True))
 
     with pyro.plate("data", len(X["edge_l"])):
-        pyro.sample("counts_obs", dist.Multinomial(total_count,
-                probs=counts/total_count))
-
+        pyro.sample(
+            "counts_obs", dist.Multinomial(total_count, probs=counts / total_count)#.to_event(event_dim)
+        )
 
 
 def bayesian_locust(base_model=LocustDynamics) -> Dynamics[torch.Tensor]:
@@ -196,7 +197,10 @@ def bayesian_locust(base_model=LocustDynamics) -> Dynamics[torch.Tensor]:
 
 
 def simulated_bayesian_locust(
-    init_state, start_time, logging_times, base_model=LocustDynamics,
+    init_state,
+    start_time,
+    logging_times,
+    base_model=LocustDynamics,
 ) -> State[torch.Tensor]:
     locust_model = bayesian_locust(base_model)
     with TorchDiffEq(), LogTrajectory(logging_times, is_traced=True) as lt:
@@ -306,3 +310,125 @@ def locust_plot(
     if xlim is not None:
         ax.set_xlim(0, xlim)
     sns.despine()
+
+
+def plot_ds_estimates(
+    prior_samples,
+    posterior_samples,
+    group,
+    which_coeff,
+    ground_truth=False,
+    true_attraction=None,
+    true_wander=None,
+    xlim=0.5,
+):
+    coef_names = {
+        "wander": ["w_ee", "w_es", "w_se", "w_sf", "w_fs", "w_ss"],
+        "attraction": [
+            "a_eler",
+            "a_erel",
+            "a_es",
+            "a_se",
+            "a_ef",
+            "a_sf",
+            "a_fs",
+            "a_slsr",
+            "a_srsl",
+        ],
+    }
+
+    fig, ax = plt.subplots(2, 1, figsize=(15, 5))
+    i = which_coeff
+
+    sns.histplot(
+        prior_samples[group][:, i], label="prior distribution", ax=ax[0], kde=False
+    )
+
+    ax[0].axvline(
+        prior_samples[group][:, i].mean(),
+        color="red",
+        label="mean estimate",
+        linestyle="--",
+    )
+
+    if ground_truth:
+        if group == "attraction":
+            ax[0].axvline(
+                true_attraction[i], color="black", label="ground truth", linestyle="--"
+            )
+        if group == "wander":
+            ax[0].axvline(true_wander[i], color="black", linestyle="--")
+
+    ax[0].set_title(
+        f"Prior ({coef_names[group][i]}, mean {round(prior_samples[group][:, i].mean().item(),3)})"
+    )
+    sns.despine(ax=ax[0])
+    ax[0].set_yticks([])
+    ax[0].legend(loc="upper right")
+    ax[0].set_xlabel(group)
+    ax[0].set_xlim([0, xlim])
+
+    sns.histplot(
+        posterior_samples[group][:, i],
+        label="posterior distribution",
+        ax=ax[1],
+        kde=False,
+    )
+
+    ax[1].axvline(
+        posterior_samples[group][:, i].mean(),
+        color="red",
+        label="mean estimate",
+        linestyle="--",
+    )
+
+    if ground_truth:
+        if group == "attraction":
+            ax[1].axvline(
+                true_attraction[i], color="black", label="ground truth", linestyle="--"
+            )
+        if group == "wander":
+            ax[1].axvline(true_wander[i], color="black", linestyle="--")
+
+    ax[1].set_title(
+        f"Posterior ({coef_names[group][i]}, mean {round(posterior_samples[group][:, i].mean().item(),3)})"
+    )
+    sns.despine(ax=ax[1])
+    ax[1].set_yticks([])
+    ax[1].legend(loc="upper right")
+    ax[1].set_xlabel(group)
+    ax[1].set_xlim([0, xlim])
+
+    plt.tight_layout()
+    plt.show()
+
+
+def plot_ds_interaction(posterior_samples, group, which_coeff, xlim=10, num_lines=20):
+    coef_names = {
+        "attraction": [
+            "a_eler",
+            "a_erel",
+            "a_es",
+            "a_se",
+            "a_ef",
+            "a_sf",
+            "a_fs",
+            "a_slsr",
+            "a_srsl",
+        ],
+    }
+
+    i = which_coeff
+    x = torch.arange(1, xlim, 1)
+    posterior_samples = posterior_samples[group][:, i]
+
+    ys = [x * posterior_samples[k] for k in range(num_lines)]
+
+    for y in ys:
+        sns.lineplot(x=x, y=y, color="grey", alpha=0.2, linewidth=0.5)
+
+    plt.xlabel("units at target")
+    plt.ylabel("proportion of units at at origin")
+    plt.title(f"Contribution of {coef_names[group][which_coeff]} to flux term")
+    sns.despine()
+    plt.show()

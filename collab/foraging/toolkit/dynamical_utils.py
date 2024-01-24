@@ -156,10 +156,14 @@ def plot_ds_trajectories(
     sns.despine()
 
 
-
-def ds_predictive_plot(state_pred = None, time = None, ylabel = None,
-                        color = None, ax = None, mean_label="posterior mean"):
-
+def ds_predictive_plot(
+    state_pred=None,
+    time=None,
+    ylabel=None,
+    color=None,
+    ax=None,
+    mean_label="posterior mean",
+):
     sns.lineplot(
         x=time,
         y=state_pred.mean(dim=0).squeeze().tolist(),
@@ -190,7 +194,7 @@ def ds_intervention_plot(time, intervention, ax):
     )
 
 
-def ds_data_plot(data = None, time = None, data_label = None, ax= None):
+def ds_data_plot(data=None, time=None, data_label=None, ax=None):
     sns.lineplot(x=time, y=data, color="black", ax=ax, linestyle="--", label=data_label)
 
 
@@ -206,27 +210,31 @@ def ds_uncertainty_plot(
     ylabel,
     color,
     ax,
-    data = None,
-    data_label = "observations",
-    time = None,
+    data=None,
+    data_label="observations",
+    time=None,
     legend=False,
     test_plot=True,
-    test_start_time = None,
-    test_end_time = None,
+    test_start_time=None,
+    test_end_time=None,
     mean_label="posterior mean",
     xlim=None,
+    ylim = None,
     intervention=None,
 ):
-    
     if time is None:
         time = torch.arange(state_pred.shape[2])
 
     ds_predictive_plot(
-         state_pred = state_pred, time = time, ylabel = None, 
-         color = None, ax = ax, mean_label=mean_label
+        state_pred=state_pred,
+        time=time,
+        ylabel=ylabel,
+        color=None,
+        ax=ax,
+        mean_label=mean_label,
     )
     if data is not None:
-        ds_data_plot(data = data, time = time, data_label = data_label, ax = ax)
+        ds_data_plot(data=data, time=time, data_label=data_label, ax=ax)
 
     if intervention is not None:
         ds_intervention_plot(time, intervention, color, ax)
@@ -239,6 +247,8 @@ def ds_uncertainty_plot(
         ax.legend().remove()
     if xlim is not None:
         ax.set_xlim(0, xlim)
+    if ylim is not None:
+        ax.set_ylim(0, ylim)
     sns.despine()
 
 
@@ -250,15 +260,17 @@ def run_svi_inference(
     guide=None,
     blocked_sites=None,
     **model_kwargs,
-    ):
-    
+):
     losses = []
     if guide is None:
-        guide = vi_family=AutoMultivariateNormal(pyro.poutine.block(model, hide=blocked_sites)) 
+        guide = vi_family = AutoMultivariateNormal(
+            pyro.poutine.block(model, hide=blocked_sites)
+        )
     elbo = pyro.infer.Trace_ELBO()(model, guide)
-    
+
     elbo(**model_kwargs)
     adam = torch.optim.Adam(elbo.parameters(), lr=lr)
+    print(f"Running SVI for {num_steps} steps...")
     for step in range(1, num_steps + 1):
         adam.zero_grad()
         loss = elbo(**model_kwargs)
@@ -267,5 +279,10 @@ def run_svi_inference(
         adam.step()
         if (step % 2 == 0) or (step == 1) & verbose:
             print("[iteration %04d] loss: %.4f" % (step, loss))
+
+    plt.plot(losses)
+    sns.despine()
+    plt.title("ELBO loss")
+    plt.show()
 
     return guide

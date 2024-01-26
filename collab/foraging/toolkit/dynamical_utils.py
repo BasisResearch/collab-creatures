@@ -262,6 +262,7 @@ def run_svi_inference(
     **model_kwargs,
 ):
     losses = []
+    running_loss_means = []
     if guide is None:
         guide = vi_family = AutoMultivariateNormal(
             pyro.poutine.block(model, hide=blocked_sites)
@@ -276,13 +277,21 @@ def run_svi_inference(
         loss = elbo(**model_kwargs)
         loss.backward()
         losses.append(loss.item())
+        running_loss_means = [np.nan] * 30
+        if step > 31:
+            running_loss_mean = np.mean(losses[-30:])
+            running_loss_means.append(running_loss_mean)
         adam.step()
-        if (step % 2 == 0) or (step == 1) & verbose:
+        if (step % 50 == 0) or (step == 1) & verbose:
             print("[iteration %04d] loss: %.4f" % (step, loss))
 
-    plt.plot(losses)
-    sns.despine()
-    plt.title("ELBO loss")
-    plt.show()
+        if (step % 100 == 0) & verbose:
+            plt.plot(losses, label='ELBO loss')
+            plt.plot(running_loss_means, label='running mean', color='gray', linestyle='--')
+            sns.despine()
+            plt.title("ELBO Loss")
+            plt.ylim(0, max(losses))
+            plt.legend()
+            plt.show()
 
     return guide

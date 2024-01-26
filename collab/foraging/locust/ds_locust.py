@@ -320,22 +320,25 @@ def plot_ds_estimates(
     ground_truth=False,
     true_attraction=None,
     true_wander=None,
+    coef_names=None,
     xlim=0.5,
 ):
-    coef_names = {
-        "wander": ["w_ee", "w_es", "w_se", "w_sf", "w_fs", "w_ss"],
-        "attraction": [
-            "a_eler",
-            "a_erel",
-            "a_es",
-            "a_se",
-            "a_ef",
-            "a_sf",
-            "a_fs",
-            "a_slsr",
-            "a_srsl",
-        ],
-    }
+    
+    if coef_names is None:
+        coef_names = {
+            "wander": ["w_ee", "w_es", "w_se", "w_sf", "w_fs", "w_ss"],
+            "attraction": [
+                "a_eler",
+                "a_erel",
+                "a_es",
+                "a_se",
+                "a_ef",
+                "a_sf",
+                "a_fs",
+                "a_slsr",
+                "a_srsl",
+            ],
+        }
 
     fig, ax = plt.subplots(2, 1, figsize=(15, 5))
     i = which_coeff

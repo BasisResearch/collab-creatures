@@ -9,5 +9,9 @@ from .ds_locust_functions import (  # noqa: F401
     plot_ds_estimates,
     plot_ds_interaction,
     simulated_bayesian_locust,
+    get_count_data_subset
 )
+
+from .ds_locust_class import LocustDS  # noqa: F401
+
 from .locust import load_and_clean_locust, locust_object_from_data  # noqa: F401

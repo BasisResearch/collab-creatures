@@ -285,13 +285,12 @@ def run_svi_inference(
         if (step % 50 == 0) or (step == 1) & verbose:
             print("[iteration %04d] loss: %.4f" % (step, loss))
 
-        if (step % 100 == 0) & verbose:
-            plt.plot(losses, label='ELBO loss')
-            plt.plot(running_loss_means, label='running mean', color='gray', linestyle='--')
-            sns.despine()
-            plt.title("ELBO Loss")
-            plt.ylim(0, max(losses))
-            plt.legend()
-            plt.show()
+    plt.plot(losses, label='ELBO loss')
+    plt.plot(running_loss_means, label='running mean', color='gray', linestyle='--')
+    sns.despine()
+    plt.title("ELBO Loss")
+    plt.ylim(0, max(losses))
+    plt.legend()
+    plt.show()
 
     return guide

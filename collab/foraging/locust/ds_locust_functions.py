@@ -78,6 +78,13 @@ def compartmentalize_locust_data(
     return df_cat
 
 
+def get_count_data_subset(count_data, start, end):
+    count_subset = {key: count_data[key][start:end] for key in count_data.keys()}
+    init_state = {key[:-4]: count_subset[key][0] for key in count_subset.keys()}
+
+    return {"count_subset": count_subset, "init_state": init_state}
+
+
 class LocustDynamics(pyro.nn.PyroModule):
     def __init__(self, attraction, wander):
         super().__init__()

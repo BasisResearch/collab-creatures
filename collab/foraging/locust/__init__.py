@@ -1,4 +1,4 @@
-from .ds_locust import (  # noqa: F401
+from .ds_locust_functions import (  # noqa: F401
     LocustDynamics,
     bayesian_locust,
     compartmentalize_locust_data,

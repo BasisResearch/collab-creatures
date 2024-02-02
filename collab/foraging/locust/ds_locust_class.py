@@ -31,6 +31,7 @@ class LocustDS():
 
     def __init__(self, data_code, start, end):
         
+
         self.data_code = data_code
         self.start = start
         self.start_tensor = torch.tensor(start).float()
@@ -56,6 +57,8 @@ class LocustDS():
 
         self.piecemeal_path = os.path.join(self.root, 
                                       "data/foraging/locust/ds/")
+        self.validation = {}
+
 
     def simulate_trajectories(self, true_attraction,
                             true_wander, init_state = None):
@@ -125,29 +128,51 @@ class LocustDS():
             with open(self.file_path, 'wb') as file:
                 dill.dump(self.samples, file)
 
-    def evaluate(self):
+    def evaluate(self, samples = None, subset = None, check = True):
+
+        if samples is None:
+            samples = self.samples
+        if subset is None:
+            subset = self.subset
+
         mean_preds = {}
         abs_errors = {}
         sq_errors = {}
-        self.maes = {}
-        self.mses = {}
+        maes = {}
+        mses = {}
         for compartment in ["edge_l", "edge_r", "feed_l", "feed_r", "search_l", "search_r"]:
-            mean_preds[compartment] = self.samples[compartment].mean(dim=0)
-            abs_errors[compartment] = torch.abs(self.subset[f"{compartment}_obs"] - mean_preds[compartment])
+            mean_preds[compartment] = samples[compartment].mean(dim=0)
+            abs_errors[compartment] = torch.abs(subset[f"{compartment}_obs"] - mean_preds[compartment])
             sq_errors[compartment] = torch.square(abs_errors[compartment])
-            self.maes[compartment] = abs_errors[compartment].mean()
-            self.mses[compartment] = sq_errors[compartment].mean()
+            maes[compartment] = abs_errors[compartment].mean()
+            mses[compartment] = sq_errors[compartment].mean()
             all_abs_errors = torch.cat([tensor for tensor in abs_errors.values()])
             all_sq_errors = torch.cat([tensor for tensor in sq_errors.values()])
-            self.mae_mean = torch.mean(all_abs_errors).item()
-            self.mse_mean = torch.mean(all_sq_errors).item()
+            mae_mean = torch.mean(all_abs_errors).item()
+            mse_mean = torch.mean(all_sq_errors).item()
 
             mean_count_overall = torch.mean(torch.concat(
-            [self.subset[key] for key in self.subset.keys()]
+            [subset[key] for key in subset.keys()]
             ))
+            null_mse = torch.mean(torch.concat([torch.pow(torch.abs(subset[key] - mean_count_overall), 2) for key in self.subset.keys()]))
+            rsquared = 1 - (mse_mean / null_mse)
 
-            self.null_mse = torch.mean(torch.concat([torch.pow(torch.abs(self.subset[key] - mean_count_overall), 2) for key in self.subset.keys()]))
-            self.rsquared = 1 - (self.mse_mean / self.null_mse)
+        if check:
+            self.null_mse = null_mse
+            self.mae_mean = mae_mean
+            self.mse_mean = mse_mean
+            self.maes = maes
+            self.mses = mses
+            self.rsquared = rsquared        
+
+        else:
+            return {"null_mse": null_mse,
+                    "mae_mean": mae_mean,
+                      "mse_mean": mse_mean, 
+                      "maes": maes, "mses": mses, 
+                      "rsquared": rsquared}
+               
+
 
     def posterior_check(self):
         fig, ax = plt.subplots(2, 3, figsize=(15, 5))
@@ -187,6 +212,65 @@ class LocustDS():
             a,
             xlim=1,
             )
+
+    def validate(self, validation_data_code, num_iterations = 1500,
+                  lr = .003, num_samples = 150, force = False, name = "length"):
+
+
+        self.v_data_path =  os.path.join(
+            self.root, 
+        f"data/foraging/locust/ds/locust_counts{validation_data_code}.pkl"
+        )
+
+
+        with open(self.v_data_path, "rb") as f:
+            validation_data = dill.load(f)
+
+        self.validation_count_data = validation_data["count_data"]
+
+        self.v_data = get_count_data_subset(self.validation_count_data, 
+                                                     self.start, 
+                                                     self.end)
+        
+        self.v_subset = self.v_data["count_subset"]
+        self.v_init_state = self.v_data["init_state"]
+
+
+        self.v_file_path = os.path.join(self.piecemeal_path, 
+            f"v_{name}_s{self.start}_e{self.end}_i{num_iterations}_{self.data_code}_v{validation_data_code}.pkl")
+        if os.path.exists(self.v_file_path) and not force:
+            with open(self.v_file_path, 'rb') as file:
+                self.v_samples = dill.load(file)
+        else:
+            print("No validation samples file found, running inference")
+
+            guide = run_svi_inference(
+                model=conditioned_locust_model,
+                num_steps=num_iterations,
+                verbose=True,
+                lr=lr,  #0.001 worked well
+                blocked_sites=["counts_obs"],
+                obs_times=self.logging_times,
+                data=self.subset, #train on original data
+                init_state=self.init_state,
+                start_time=self.start_tensor,
+            )
+
+            predictive = Predictive(
+            simulated_bayesian_locust, guide=guide,
+            num_samples=num_samples
+            )
+
+            self.v_samples = predictive(self.v_init_state, 
+                                self.start_tensor,
+                                self.logging_times)
+            # predict for the new data
+
+            with open(self.v_file_path, 'wb') as file:
+                dill.dump(self.v_samples, file)
+
+        self.validation[validation_data_code] = self.evaluate(samples = self.v_samples, 
+                                                        subset = self.v_subset, check = False)
 
 
 

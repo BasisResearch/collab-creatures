@@ -58,7 +58,7 @@ def compartmentalize_locust_data(
         "edge",
         x0=x_center,
         y0=y_center,
-        outside_radius=center + 1,
+        outside_radius=center + 3,
         inside_radius=center + 1 - edge_ring_width,
         divide_by_side=True,
     )

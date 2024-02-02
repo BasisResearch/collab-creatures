@@ -118,12 +118,12 @@ class LocustDS():
             num_samples=num_samples
             )
 
-            samples = predictive(self.init_state, 
+            self.samples = predictive(self.init_state, 
                                 self.start_tensor,
                                 self.logging_times)
 
             with open(self.file_path, 'wb') as file:
-                dill.dump(samples, file)
+                dill.dump(self.samples, file)
 
     def evaluate(self):
         mean_preds = {}

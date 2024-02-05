@@ -174,7 +174,13 @@ class LocustDS():
                
 
 
-    def posterior_check(self):
+    def posterior_check(self, samples = None, subset = None):   
+
+        if samples is None:
+            samples = self.samples
+        if subset is None:
+            subset = self.subset
+
         fig, ax = plt.subplots(2, 3, figsize=(15, 5))
         ax = ax.flatten()
 
@@ -184,8 +190,8 @@ class LocustDS():
             ["green", "darkgreen", "red", "darkred", "orange", "darkorange"],
         ):
             ds_uncertainty_plot(
-                state_pred=self.samples[state],
-                data=self.subset[f"{state}_obs"],
+                state_pred=samples[state],
+                data=subset[f"{state}_obs"],
                 ylabel=f"# in {state}",
                 color=color,
                 data_label="observations",

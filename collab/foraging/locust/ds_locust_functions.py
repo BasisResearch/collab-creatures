@@ -367,17 +367,9 @@ def plot_ds_estimates(
     
     if coef_names is None:
         coef_names = {
-            "wander": ["w_ee", "w_es", "w_se", "w_sf", "w_fs", "w_ss"],
+            "wander": ["w_sides", "w_inside", "w_outside", "w_feed"],
             "attraction": [
-                "a_eler",
-                "a_erel",
-                "a_es",
-                "a_se",
-                "a_ef",
-                "a_sf",
-                "a_fs",
-                "a_slsr",
-                "a_srsl",
+                "a_r", "a_l", "a_edge", "a_search", "a_feed"
             ],
         }
 
@@ -450,15 +442,7 @@ def plot_ds_estimates(
 def plot_ds_interaction(posterior_samples, group, which_coeff, xlim=10, num_lines=20):
     coef_names = {
         "attraction": [
-            "a_eler",
-            "a_erel",
-            "a_es",
-            "a_se",
-            "a_ef",
-            "a_sf",
-            "a_fs",
-            "a_slsr",
-            "a_srsl",
+            "a_r", "a_l", "a_edge", "a_search", "a_feed"
         ],
     }
 

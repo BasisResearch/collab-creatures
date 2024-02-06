@@ -94,17 +94,18 @@ class LocustDS():
             with open(self.priors_path, 'wb') as file:
                 dill.dump(prior_samples, file)
 
-    def run_inference(self, name, num_iterations, lr = .003, num_samples = 50, force = False):
+    def run_inference(self, name, num_iterations, lr = .001, num_samples = 150, force = False):
         
         self.file_path = os.path.join(self.piecemeal_path, 
             f"{name}_s{self.start}_e{self.end}_i{num_iterations}_{self.data_code}.pkl")
         if os.path.exists(self.file_path) and not force:
+            print("Loading inference samples")
             with open(self.file_path, 'rb') as file:
                 self.samples = dill.load(file)
         else:
-            print("No samples file found, running inference")
+            print("Running inference")
 
-            guide = run_svi_inference(
+            self.guide = run_svi_inference(
                 model=conditioned_locust_model,
                 num_steps=num_iterations,
                 verbose=True,
@@ -116,17 +117,17 @@ class LocustDS():
                 start_time=self.start_tensor,
             )
 
-            predictive = Predictive(
-            simulated_bayesian_locust, guide=guide,
+            self.predictive = Predictive(
+            simulated_bayesian_locust, guide=self.guide,
             num_samples=num_samples
             )
 
-            self.samples = predictive(self.init_state, 
+            self.samples = self.predictive(self.init_state, 
                                 self.start_tensor,
                                 self.logging_times)
 
-            with open(self.file_path, 'wb') as file:
-                dill.dump(self.samples, file)
+            with open(self.file_path, 'wb') as new_file:
+                dill.dump(self.samples, new_file)
 
     def evaluate(self, samples = None, subset = None, check = True):
 
@@ -174,8 +175,10 @@ class LocustDS():
                
 
 
-    def posterior_check(self, samples = None, subset = None):   
+    def posterior_check(self, samples = None, subset = None, title = None):   
 
+        if title is None:
+            title = f"Posterior predictive check ({self.start * 10} to {self.end * 10})"
         if samples is None:
             samples = self.samples
         if subset is None:
@@ -202,6 +205,8 @@ class LocustDS():
                 ylim = 15
             )
 
+        fig.suptitle(title)
+
     def plot_param_estimates(self, w =0, a = 0):
             plot_ds_estimates(
             self.prior_samples,
@@ -220,7 +225,7 @@ class LocustDS():
             )
 
     def validate(self, validation_data_code, num_iterations = 1500,
-                  lr = .003, num_samples = 150, force = False, name = "length"):
+                  lr = .001, num_samples = 150, force = False, name = "length"):
 
 
         self.v_data_path =  os.path.join(
@@ -245,35 +250,37 @@ class LocustDS():
         self.v_file_path = os.path.join(self.piecemeal_path, 
             f"v_{name}_s{self.start}_e{self.end}_i{num_iterations}_{self.data_code}_v{validation_data_code}.pkl")
         if os.path.exists(self.v_file_path) and not force:
-            with open(self.v_file_path, 'rb') as file:
-                self.v_samples = dill.load(file)
+            print("Loading validation samples")
+            with open(self.v_file_path, 'rb') as v_file:
+                self.v_samples = dill.load(v_file)
         else:
-            print("No validation samples file found, running inference")
+            print("Generating validation samples")
+            if not hasattr(self, 'guide'):
+                print("Running inference for validation")
+                self.guide = run_svi_inference(
+                    model=conditioned_locust_model,
+                    num_steps=num_iterations,
+                    verbose=True,
+                    lr=lr,  #0.001 worked well
+                    blocked_sites=["counts_obs"],
+                    obs_times=self.logging_times,
+                    data=self.subset, #train on original data
+                    init_state=self.init_state,
+                    start_time=self.start_tensor,
+                )
 
-            guide = run_svi_inference(
-                model=conditioned_locust_model,
-                num_steps=num_iterations,
-                verbose=True,
-                lr=lr,  #0.001 worked well
-                blocked_sites=["counts_obs"],
-                obs_times=self.logging_times,
-                data=self.subset, #train on original data
-                init_state=self.init_state,
-                start_time=self.start_tensor,
-            )
+                self.predictive = Predictive(
+                simulated_bayesian_locust, guide=self.guide,
+                num_samples=num_samples
+                )
 
-            predictive = Predictive(
-            simulated_bayesian_locust, guide=guide,
-            num_samples=num_samples
-            )
-
-            self.v_samples = predictive(self.v_init_state, 
+            self.v_samples = self.predictive(self.v_init_state, 
                                 self.start_tensor,
                                 self.logging_times)
-            # predict for the new data
+            
 
-            with open(self.v_file_path, 'wb') as file:
-                dill.dump(self.v_samples, file)
+            with open(self.v_file_path, 'wb') as new_v_file:
+                dill.dump(self.v_samples, new_v_file)
 
         self.validation[validation_data_code] = self.evaluate(samples = self.v_samples, 
                                                         subset = self.v_subset, check = False)

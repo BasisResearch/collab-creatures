@@ -94,133 +94,136 @@ class LocustDynamics(pyro.nn.PyroModule):
     def forward(self, X: State[torch.Tensor]):
         dX = dict()
 
-        w_sides, w_inside, w_outside, w_feed = torch.unbind(self.wander)        
+        w_sides, w_inside, w_outside, w_feed = torch.unbind(self.wander)
         a_r, a_l, a_edge, a_search, a_feed = torch.unbind(self.attraction)
 
         epsilon = 0.0001
 
-        w_edgers_lr = w_sides * X['edge_l']
-        w_edgers_rl = w_sides * X['edge_r']
+        w_edgers_lr = w_sides * X["edge_l"]
+        w_edgers_rl = w_sides * X["edge_r"]
 
-        a_edgers_lr = a_r * X['edge_l'] * X['edge_r']
-        a_edgers_rl = a_l * X['edge_r'] * X['edge_l']
+        a_edgers_lr = a_r * X["edge_l"] * X["edge_r"]
+        a_edgers_rl = a_l * X["edge_r"] * X["edge_l"]
 
-        w_edgers_ls = w_inside * X['edge_l']
-        w_edgers_rs = w_inside * X['edge_r']
+        w_edgers_ls = w_inside * X["edge_l"]
+        w_edgers_rs = w_inside * X["edge_r"]
 
-        a_edgers_ls = a_search * X['edge_l'] * X['search_l']
-        a_edgers_rs = a_search * X['edge_r'] * X['search_r']
+        a_edgers_ls = a_search * X["edge_l"] * X["search_l"]
+        a_edgers_rs = a_search * X["edge_r"] * X["search_r"]
 
-        a_edgers_lf = a_feed * X['edge_l'] * X['feed_l']
-        a_edgers_rf = a_feed * X['edge_r'] * X['feed_r']
+        a_edgers_lf = a_feed * X["edge_l"] * X["feed_l"]
+        a_edgers_rf = a_feed * X["edge_r"] * X["feed_r"]
 
-        w_searchers_le = w_outside * X['search_l']
-        w_searchers_re = w_outside * X['search_r']
+        w_searchers_le = w_outside * X["search_l"]
+        w_searchers_re = w_outside * X["search_r"]
 
-        a_searchers_le = a_edge * X['search_l'] * X['edge_l']
-        a_searchers_re = a_edge * X['search_r'] * X['edge_r']
+        a_searchers_le = a_edge * X["search_l"] * X["edge_l"]
+        a_searchers_re = a_edge * X["search_r"] * X["edge_r"]
 
-        w_searchers_lr = w_sides * X['search_l']
-        w_searchers_rl = w_sides * X['search_r']
+        w_searchers_lr = w_sides * X["search_l"]
+        w_searchers_rl = w_sides * X["search_r"]
 
-        a_searchers_lr = a_r * X['search_l'] * X['search_r']
-        a_searchers_rl = a_l * X['search_r'] * X['search_l']
+        a_searchers_lr = a_r * X["search_l"] * X["search_r"]
+        a_searchers_rl = a_l * X["search_r"] * X["search_l"]
 
+        w_searchers_lf = w_feed * X["search_l"]
+        w_searchers_rf = w_feed * X["search_r"]
 
-        w_searchers_lf = w_feed * X['search_l']
-        w_searchers_rf = w_feed * X['search_r']
+        a_searchers_lf = a_feed * X["search_l"] * X["feed_l"]
+        a_searchers_rf = a_feed * X["search_r"] * X["feed_r"]
 
-        a_searchers_lf = a_feed * X['search_l'] * X['feed_l']
-        a_searchers_rf = a_feed * X['search_r'] * X['feed_r']
+        w_feeders_l = w_outside * X["feed_l"]
+        w_feeders_r = w_outside * X["feed_r"]
 
-        w_feeders_l = w_outside * X['feed_l'] 
-        w_feeders_r = w_outside * X['feed_r']
-
-        a_feeders_l = a_search * X['feed_l'] * X['search_l']
-        a_feeders_r = a_search * X['feed_r'] * X['search_r']
+        a_feeders_l = a_search * X["feed_l"] * X["search_l"]
+        a_feeders_r = a_search * X["feed_r"] * X["search_r"]
 
         dX["edge_l"] = (
-            - w_edgers_lr  # 1-
+            -w_edgers_lr  # 1-
             + w_edgers_rl  # 2+
             - a_edgers_lr  # 3-
             + a_edgers_rl  # 4+
             - w_edgers_ls  # 5-
             - a_edgers_ls  # 7-
             - a_edgers_lf  # 9-
-            + w_searchers_le # 11+
-            + a_searchers_le #  13+
+            + w_searchers_le  # 11+
+            + a_searchers_le  #  13+
         ) + epsilon
 
         dX["edge_r"] = (
-            - w_edgers_rl  # 2-
+            -w_edgers_rl  # 2-
             + w_edgers_lr  # 1+
             + a_edgers_lr  # 3+
             - a_edgers_rl  # 4-
             - w_edgers_rs  # 6-
             - a_edgers_rs  # 8-
             - a_edgers_rf  # 10-
-            + w_searchers_re # 12+
-            + a_searchers_re # 14+
+            + w_searchers_re  # 12+
+            + a_searchers_re  # 14+
         ) + epsilon
 
-        dX['search_l'] = (
+        dX["search_l"] = (
             w_edgers_ls  # 5+
             + a_edgers_ls  # 7+
             + a_edgers_lf  #  9+
-            - w_searchers_le # 11-
-            - w_searchers_lr # 15-
-            + w_searchers_rl # 16+
-            - w_searchers_lf # 19-
-            - a_searchers_lr # 17-
-            + a_searchers_rl # 18+
-            - a_searchers_le # 13-
-            - a_searchers_lf # 21-
-            + w_feeders_l # 23+
-            + a_feeders_l # 25+
+            - w_searchers_le  # 11-
+            - w_searchers_lr  # 15-
+            + w_searchers_rl  # 16+
+            - w_searchers_lf  # 19-
+            - a_searchers_lr  # 17-
+            + a_searchers_rl  # 18+
+            - a_searchers_le  # 13-
+            - a_searchers_lf  # 21-
+            + w_feeders_l  # 23+
+            + a_feeders_l  # 25+
         ) + epsilon
 
-        dX['search_r'] = (
+        dX["search_r"] = (
             w_edgers_rs  # 6+
             + a_edgers_rs  # 8+
             + a_edgers_rf  # 10+
-            - w_searchers_re # 12-
-            - w_searchers_rl # 16-
-            + w_searchers_lr # 15+
-            - w_searchers_rf # 20-
-            - a_searchers_rl # 18-
-            + a_searchers_lr # 17+
-            - a_searchers_re # 14-
-            - a_searchers_rf # 22-
-            + w_feeders_r # 24+
-            + a_feeders_r # 26+
+            - w_searchers_re  # 12-
+            - w_searchers_rl  # 16-
+            + w_searchers_lr  # 15+
+            - w_searchers_rf  # 20-
+            - a_searchers_rl  # 18-
+            + a_searchers_lr  # 17+
+            - a_searchers_re  # 14-
+            - a_searchers_rf  # 22-
+            + w_feeders_r  # 24+
+            + a_feeders_r  # 26+
         ) + epsilon
 
-        dX['feed_l'] = (
+        dX["feed_l"] = (
             w_searchers_lf  # 19+
             + a_searchers_lf  # 21+
-            - w_feeders_l # 23-
-            - a_feeders_l # 25-
+            - w_feeders_l  # 23-
+            - a_feeders_l  # 25-
         ) + epsilon
 
-
-        dX['feed_r'] = (
-            w_searchers_rf  # 20+ 
+        dX["feed_r"] = (
+            w_searchers_rf  # 20+
             + a_searchers_rf  # 22+
-            - w_feeders_r # 24-
-            - a_feeders_r # 26-
+            - w_feeders_r  # 24-
+            - a_feeders_r  # 26-
         ) + epsilon
 
         return dX
-        
+
 
 def bayesian_locust(base_model=LocustDynamics) -> Dynamics[torch.Tensor]:
     with pyro.plate("attr", size=5):
-        attraction = pyro.sample("attraction",  dist.Uniform(0.00001,.1)) # dist.LogNormal(.3, 8))
+        attraction = pyro.sample(
+            "attraction", dist.Uniform(0.00001, 0.1)
+        )  # dist.LogNormal(.3, 8))
     with pyro.plate("wond", size=4):
-        wander = pyro.sample("wander", dist.Uniform(0.00001, .3)) #dist.LogNormal(.5, 5))
+        wander = pyro.sample(
+            "wander", dist.Uniform(0.00001, 0.3)
+        )  # dist.LogNormal(.5, 5))
 
     locust_model = base_model(attraction, wander)
     return locust_model
+
 
 def locust_noisy_model(X: State[torch.Tensor]) -> None:
     keys = ["edge_l", "edge_r", "search_l", "search_r", "feed_l", "feed_r"]
@@ -233,15 +236,17 @@ def locust_noisy_model(X: State[torch.Tensor]) -> None:
 
     with pyro.plate("data", len(X["edge_l"])):
         pyro.sample(
-            "counts_obs", dist.Multinomial(total_count, probs=probs)#.to_event(event_dim)
+            "counts_obs",
+            dist.Multinomial(total_count, probs=probs),  # .to_event(event_dim)
         )
+
 
 def conditioned_locust_model(
     obs_times, data, init_state, start_time, base_model=LocustDynamics
 ) -> None:
     bayesian = bayesian_locust(base_model)
     obs = condition(data=data)(locust_noisy_model)
-    with TorchDiffEq(method='rk4'), StaticBatchObservation(obs_times, observation=obs):
+    with TorchDiffEq(method="rk4"), StaticBatchObservation(obs_times, observation=obs):
         simulate(bayesian, init_state, start_time, obs_times[-1])
 
 
@@ -255,7 +260,6 @@ def simulated_bayesian_locust(
     with TorchDiffEq(), LogTrajectory(logging_times, is_traced=True) as lt:
         simulate(locust_model, init_state, start_time, logging_times[-1])
     return lt.trajectory
-
 
 
 def get_locust_posterior_samples(
@@ -364,13 +368,10 @@ def plot_ds_estimates(
     coef_names=None,
     xlim=0.5,
 ):
-    
     if coef_names is None:
         coef_names = {
             "wander": ["w_sides", "w_inside", "w_outside", "w_feed"],
-            "attraction": [
-                "a_r", "a_l", "a_edge", "a_search", "a_feed"
-            ],
+            "attraction": ["a_r", "a_l", "a_edge", "a_search", "a_feed"],
         }
 
     fig, ax = plt.subplots(2, 1, figsize=(15, 5))
@@ -441,9 +442,7 @@ def plot_ds_estimates(
 
 def plot_ds_interaction(posterior_samples, group, which_coeff, xlim=10, num_lines=20):
     coef_names = {
-        "attraction": [
-            "a_r", "a_l", "a_edge", "a_search", "a_feed"
-        ],
+        "attraction": ["a_r", "a_l", "a_edge", "a_search", "a_feed"],
     }
 
     i = which_coeff

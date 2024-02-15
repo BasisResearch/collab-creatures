@@ -219,7 +219,7 @@ def ds_uncertainty_plot(
     test_end_time=None,
     mean_label="posterior mean",
     xlim=None,
-    ylim = None,
+    ylim=None,
     intervention=None,
 ):
     if time is None:
@@ -280,9 +280,9 @@ def run_svi_inference(
         adam.step()
         if (step % 100 == 0) or (step == 1) & verbose:
             print("[iteration %04d] loss: %.4f" % (step, loss))
-    
+
     plt.figure()
-    plt.plot(losses, label='ELBO loss')
+    plt.plot(losses, label="ELBO loss")
     sns.despine()
     plt.title("ELBO Loss")
     plt.ylim(0, max(losses))

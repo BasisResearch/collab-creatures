@@ -208,8 +208,8 @@ def ds_test_plot(test_start_time, test_end_time, ax):
 def ds_uncertainty_plot(
     state_pred,
     ylabel,
-    color,
-    ax,
+    color="skyblue",
+    ax=None,
     data=None,
     data_label="observations",
     time=None,
@@ -229,7 +229,7 @@ def ds_uncertainty_plot(
         state_pred=state_pred,
         time=time,
         ylabel=ylabel,
-        color=None,
+        color=color,
         ax=ax,
         mean_label=mean_label,
     )

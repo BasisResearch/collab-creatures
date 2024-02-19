@@ -190,7 +190,7 @@ class LocustDS:
                 "rsquared": rsquared,
             }
 
-    def posterior_check(self, samples=None, subset=None, title=None):
+    def posterior_check(self, samples=None, subset=None, title=None, save=False):
         if title is None:
             title = f"Posterior predictive check ({self.start * 10} to {self.end * 10})"
         if samples is None:
@@ -221,13 +221,18 @@ class LocustDS:
 
         fig.suptitle(title)
 
-    def plot_param_estimates(self, w=0, a=0):
+        if save:
+            fig.savefig("locust_posterior_check.png")
+
+
+    def plot_param_estimates(self, w=0, a=0, xlim = 1, save = False):
         plot_ds_estimates(
             self.prior_samples,
             self.samples,
             "wander",
             w,
-            xlim=1,
+            xlim=xlim,
+            save = save
         )
 
         plot_ds_estimates(
@@ -235,8 +240,11 @@ class LocustDS:
             self.samples,
             "attraction",
             a,
-            xlim=1,
+            xlim=xlim,
+            save = save
         )
+
+
 
     def validate(
         self,

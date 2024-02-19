@@ -367,6 +367,7 @@ def plot_ds_estimates(
     true_wander=None,
     coef_names=None,
     xlim=0.5,
+    save = False
 ):
     if coef_names is None:
         coef_names = {
@@ -437,10 +438,13 @@ def plot_ds_estimates(
     ax[1].set_xlim([0, xlim])
 
     plt.tight_layout()
+
+    if save:
+        plt.savefig(f"ds_estimates_{coef_names[group][i]}.png")
     plt.show()
 
 
-def plot_ds_interaction(posterior_samples, group, which_coeff, xlim=10, num_lines=20):
+def plot_ds_interaction(posterior_samples, group, which_coeff, xlim=10, num_lines=20, save = False):
     coef_names = {
         "attraction": ["a_r", "a_l", "a_edge", "a_search", "a_feed"],
     }
@@ -458,4 +462,6 @@ def plot_ds_interaction(posterior_samples, group, which_coeff, xlim=10, num_line
     plt.ylabel("proportion of units at at origin")
     plt.title(f"Contribution of {coef_names[group][which_coeff]} to flux term")
     sns.despine()
+    if save:
+        plt.savefig(f"ds_interaction_{coef_names[group][which_coeff]}.png")
     plt.show()

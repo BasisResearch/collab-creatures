@@ -28,7 +28,7 @@ setup(
         "Source": "https://github.com/BasisResearch/collaborative-intelligence",
     },
     install_requires=[
-        "pyro-ppl>=1.8.5", "pandas", "plotly", "plotly.express", "plotly.graph_objects", "torch"
+        "pyro-ppl>=1.8.5", "pandas", "plotly", "plotly.express", "torch"
     ],
     extras_require={
         "extras": EXTRAS_REQUIRE,

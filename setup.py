@@ -42,6 +42,8 @@ setup(
             "flake8",
             "isort",
             "nbval",
+            "autoflake", 
+            "nbqa"
         ],
     },
     python_requires=">=3.10",

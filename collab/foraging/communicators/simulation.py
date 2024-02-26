@@ -87,9 +87,9 @@ class SimulateCommunicators(object):
 
             # eat the food
             self.env.food_calories_by_loc -= delta_food_cal
-            self.env.food_calories_by_loc[
-                self.env.food_calories_by_loc < 0
-            ] = 0  # set negative values to 0
+            self.env.food_calories_by_loc[self.env.food_calories_by_loc < 0] = (
+                0  # set negative values to 0
+            )
             self.env.phi_food = self.env.food_calories_by_loc
 
             # if phi_food is low, generate new food
@@ -201,9 +201,9 @@ class SimulateCommunicators(object):
                 # -------------------------------------------------------------------
 
                 agent.state_trajectory[ti + 1] = next_loc_1d  # scalar
-                agent.value_trajectory[
-                    :, ti + 1
-                ] = value.flatten()  # (N_states, N_timesteps)
+                agent.value_trajectory[:, ti + 1] = (
+                    value.flatten()
+                )  # (N_states, N_timesteps)
                 agent.energy_trajectory[ti + 1] = agent.energy_total
                 self.calories_total_mat[ai, ti + 1] = (
                     self.calories_total_mat[ai, ti]

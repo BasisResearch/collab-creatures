@@ -13,6 +13,7 @@ EXTRAS_REQUIRE = [
     "matplotlib",
     "pandas",
     "seaborn",
+    "nbqa"
 ]
 
 setup(
@@ -27,7 +28,7 @@ setup(
         "Source": "https://github.com/BasisResearch/collaborative-intelligence",
     },
     install_requires=[
-        "pyro-ppl>=1.8.5",
+        "pyro-ppl>=1.8.5", "pandas", "plotly", "plotly.express", "torch"
     ],
     extras_require={
         "extras": EXTRAS_REQUIRE,

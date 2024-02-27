@@ -26,7 +26,7 @@ Installation
 To install dev dependencies for Collab, run the following command:
 
 ```sh
-pip install -e .[test]
+pip install -e ".[test]"
 ```
 
 ** Contributing: **
@@ -34,9 +34,9 @@ pip install -e .[test]
 Before submitting a pull request, please autoformat code and ensure that unit tests pass locally
 
 ```sh
+make format            # runs black and isort
 make lint              # linting
-make format            # runs black and isort, including on notebooks in the docs/ folder
-make tests             # linting, unit and notebook tests
+make tests             # notebook and unit tests
 ```
 
 ## Getting started

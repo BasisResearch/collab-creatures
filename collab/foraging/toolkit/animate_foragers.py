@@ -337,8 +337,9 @@ def visualise_forager_predictors(
         fig3.show()
 
 
-def plot_coefs(samples, title, nbins=20, ann_start_y=100,
-               ann_break_y=50, generate_object = False):
+def plot_coefs(
+    samples, title, nbins=20, ann_start_y=100, ann_break_y=50, generate_object=False
+):
     if "svi_samples" in samples.keys():
         svi_samples = samples["svi_samples"]
     else:
@@ -387,11 +388,9 @@ def plot_coefs(samples, title, nbins=20, ann_start_y=100,
     fig_coefs.update_traces(marker=dict(line=dict(width=2, color="Black")))
 
     fig_coefs.show()
-    
+
     if generate_object:
         return fig_coefs
-    
-    
 
 
 # def visualise_forager_predictors(tr, prox, hf, com=None, vis_sampling_rate=1):

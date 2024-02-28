@@ -1,7 +1,7 @@
 from .animate_foragers import (  # noqa: F401
     animate_foragers,
+    plot_coefs,
     visualise_forager_predictors,
-    plot_coefs
 )
 from .communicates import generate_communicates  # noqa: F401
 from .derive import derive_predictors  # noqa: F401

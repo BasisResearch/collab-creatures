@@ -281,7 +281,7 @@ def visualise_forager_predictors(tr, prox, hf, com=None, vis_sampling_rate=1):
         fig3.show()
 
 
-def plot_coefs(samples, title, nbins = 20, ann_start_y=100, ann_break_y=50):
+def plot_coefs(samples, title, nbins=20, ann_start_y=100, ann_break_y=50):
     if "svi_samples" in samples.keys():
         svi_samples = samples["svi_samples"]
     else:
@@ -299,7 +299,7 @@ def plot_coefs(samples, title, nbins = 20, ann_start_y=100, ann_break_y=50):
         labels={"variable": "coefficient"},
         width=700,
         title=title,
-        nbins = nbins,
+        nbins=nbins,
         marginal="rug",
         barmode="overlay",
     )

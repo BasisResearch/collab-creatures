@@ -281,11 +281,15 @@ def visualise_forager_predictors(tr, prox, hf, com=None, vis_sampling_rate=1):
         fig3.show()
 
 
-def plot_coefs(samples, title, ann_start_y=100, ann_break_y=50):
-    for key in samples["svi_samples"].keys():
-        samples["svi_samples"][key] = samples["svi_samples"][key].flatten()
+def plot_coefs(samples, title, nbins = 20, ann_start_y=100, ann_break_y=50):
+    if "svi_samples" in samples.keys():
+        svi_samples = samples["svi_samples"]
+    else:
+        svi_samples = samples
+    for key in svi_samples.keys():
+        svi_samples[key] = svi_samples[key].flatten()
 
-    samplesDF = pd.DataFrame(samples["svi_samples"])
+    samplesDF = pd.DataFrame(svi_samples)
     samplesDF_medians = samplesDF.median(axis=0)
 
     fig_coefs = px.histogram(
@@ -295,6 +299,7 @@ def plot_coefs(samples, title, ann_start_y=100, ann_break_y=50):
         labels={"variable": "coefficient"},
         width=700,
         title=title,
+        nbins = nbins,
         marginal="rug",
         barmode="overlay",
     )

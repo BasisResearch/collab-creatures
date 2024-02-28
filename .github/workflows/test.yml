@@ -2,9 +2,9 @@ name: Test
 
 on:
   push:
-    branches: [ master, staging-* ]
+    branches: [ main, staging-* ]
   pull_request:
-    branches: [ master, staging-* ]
+    branches: [ main, staging-* ]
   workflow_dispatch:
 
 jobs:
@@ -51,4 +51,4 @@ jobs:
       - name: Test
         shell: bash
         run: |
-          MKL_NUM_THREADS=1 pytest tests/ -s -n auto --cov=chirho/ --cov-report=term-missing ${@-}
+          MKL_NUM_THREADS=1 pytest tests/ -s -n auto --cov=collab/ --cov-report=term-missing ${@-}

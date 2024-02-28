@@ -1,5 +1,6 @@
 from .animate_foragers import (  # noqa: F401
     animate_foragers,
+    plot_coefs,
     plot_distances,
     plot_trajectories,
     visualise_forager_predictors,

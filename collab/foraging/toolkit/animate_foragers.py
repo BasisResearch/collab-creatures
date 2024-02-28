@@ -317,3 +317,54 @@ def visualise_forager_predictors(tr, prox, hf, com=None, vis_sampling_rate=1):
         fig3.update_yaxes(showgrid=False)
 
         fig3.show()
+
+
+def plot_coefs(samples, title, nbins=20, ann_start_y=100, ann_break_y=50):
+    if "svi_samples" in samples.keys():
+        svi_samples = samples["svi_samples"]
+    else:
+        svi_samples = samples
+    for key in svi_samples.keys():
+        svi_samples[key] = svi_samples[key].flatten()
+
+    samplesDF = pd.DataFrame(svi_samples)
+    samplesDF_medians = samplesDF.median(axis=0)
+
+    fig_coefs = px.histogram(
+        samplesDF,
+        template="presentation",
+        opacity=0.4,
+        labels={"variable": "coefficient"},
+        width=700,
+        title=title,
+        nbins=nbins,
+        marginal="rug",
+        barmode="overlay",
+    )
+
+    color_scale = px.colors.qualitative.Alphabet
+
+    for i, median_value in enumerate(samplesDF_medians):
+        color = color_scale[i % len(color_scale)]
+        fig_coefs.add_vline(
+            x=median_value,
+            line_dash="dash",
+            line_color=color,
+            name=f"Median ({samplesDF_medians.iloc[i]})",
+        )
+
+        fig_coefs.add_annotation(
+            x=samplesDF_medians.iloc[i],
+            y=ann_start_y
+            + ann_break_y * i,  # Adjust the vertical position of the label
+            text=f"{samplesDF_medians.iloc[i]:.2f}",
+            showarrow=False,
+            bordercolor="black",
+            borderwidth=2,
+            bgcolor="white",
+            opacity=0.8,
+        )
+
+    fig_coefs.update_traces(marker=dict(line=dict(width=2, color="Black")))
+
+    fig_coefs.show()

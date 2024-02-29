@@ -28,7 +28,9 @@ setup(
         "Source": "https://github.com/BasisResearch/collaborative-intelligence",
     },
     install_requires=[
-        "pyro-ppl>=1.8.5", "pandas", "plotly", "plotly.express", "torch"
+        "pyro-ppl>=1.8.5", "pandas", "plotly", "plotly.express", 
+        "torch", "scipy", "scikit-learn",
+        "matplotlib>=3.8.2", "numpyro"
     ],
     extras_require={
         "extras": EXTRAS_REQUIRE,
@@ -42,11 +44,11 @@ setup(
             "flake8",
             "isort",
             "nbval",
-            "autoflake", 
-            "nbqa"
+            "nbqa",
+            "autoflake",
         ],
     },
-    python_requires=">=3.10",
+    python_requires=">=3.9",
     keywords="animal behavior, bayesian modeling, probabilistic programming, dynamical systems",
     license="Apache 2.0",
 )

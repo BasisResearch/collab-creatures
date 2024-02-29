@@ -55,7 +55,7 @@ class Communicators(object):
         return phi_visible_mat
 
     def value_update(self, w_food_self, w_food_others):
-        # w_food_others -- information from other birds about locations of food rewards
+        # w_food_others -- information from other foragers about locations of food rewards
         # w_food_self -- my own information about locations of food rewards
         sum_weighted_features = (
             1 - self.c_trust

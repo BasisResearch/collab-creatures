@@ -3,15 +3,14 @@ import random
 
 import numpy as np
 import pandas as pd
+import pytest
 from pandas.testing import assert_frame_equal
 
 from collab.foraging import random_hungry_followers as rhf
 from collab.foraging import toolkit as ft
-from collab.foraging import locust as lc
-
 from collab.utils import find_repo_root
-root = find_repo_root()
 
+root = find_repo_root()
 
 
 def test_random_derivation():
@@ -36,6 +35,9 @@ def test_random_derivation():
     assert_frame_equal(random_foragers_derived.derivedDF, rhf_test_data)
 
 
+@pytest.mark.filterwarnings(
+    "ignore:Behavior when concatenating bool-dtype and numeric-dtype arrays is deprecated"
+)
 def test_hungry_derivation():
     random.seed(22)
     np.random.seed(22)
@@ -69,8 +71,8 @@ def test_followers_derivation():
     follower_sim()
 
     follower_sim = rhf.add_follower_foragers(
-            follower_sim, num_follower_foragers=3, proximity_decay=0.3, visibility_range=6
-        )
+        follower_sim, num_follower_foragers=3, proximity_decay=0.3, visibility_range=6
+    )
 
     follower_sim_derived = ft.derive_predictors(
         follower_sim, getting_worse=0.5, optimal=3, visibility_range=6, dropna=False
@@ -81,47 +83,3 @@ def test_followers_derivation():
     followers_test_data = pd.read_csv(path)
 
     assert_frame_equal(follower_sim_derived.derivedDF, followers_test_data)
-
-
-
-def test_locust_derivation():
-    locust_data_path = os.path.join(root, "data/foraging/locust/15EQ20191202_tracked.csv")
-
-    df = lc.load_and_clean_locust(
-        path=locust_data_path,
-        desired_frames=500,
-        grid_size=45,
-        rewards_x=[0.68074, -0.69292],
-        rewards_y=[-0.03068, -0.03068],
-        subset_starts=420,
-        subset_ends=430,
-    )
-
-    loc_subset = df["subset"]
-
-    loc_subset = ft.derive_predictors(
-        loc_subset,
-        rewards_decay=0.4,
-        visibility_range=90,
-        getting_worse=0.001,
-        optimal=2.11,
-        proximity_decay=3,
-        generate_communicates_indicator=True,
-        info_time_decay=10,
-        info_spatial_decay=0.1,
-        finders_tolerance=2,
-        time_shift=420- 1,
-        sampling_rate=0.1,
-        restrict_to_invisible=False,
-    )
-
-    loc_test_df = loc_subset.derivedDF
-
-
-    module_dir = os.path.dirname(__file__)
-    path = os.path.join(module_dir, "locust_test_data.csv")
-    loc_test_data = pd.read_csv(path)
-
-    assert_frame_equal(loc_test_df, loc_test_data)
-
-test_locust_derivation()

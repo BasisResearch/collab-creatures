@@ -1,14 +1,8 @@
 import copy
 
 import numpy as np
-import numpyro
-import numpyro.distributions as dist
-import numpyro.optim as optim
 import pandas as pd
 import torch
-from jax import random
-from numpyro.infer import SVI, Trace_ELBO
-from numpyro.infer.autoguide import AutoNormal
 
 
 def normalize(column):
@@ -115,64 +109,3 @@ def get_tensorized_data(sim_derived):
     }
 
     return data
-
-
-def get_svi_results(df, num_iterations=2000):
-    numpyro.set_platform("cpu")
-
-    def discretized_p(proximity_id, how_far):
-        p = numpyro.sample("p", dist.Uniform(0, 1).expand([len(set(proximity_id))]))
-        sigma = numpyro.sample(
-            "sigma", dist.Exponential(7).expand([len(set(proximity_id))])
-        )
-        # mu = p[proximity_id]
-        numpyro.sample(
-            "how_far", dist.Normal(p[proximity_id], sigma[proximity_id]), obs=how_far
-        )
-
-    def discretized_t(trace_id, how_far):
-        t = numpyro.sample("t", dist.Beta(1, 1).expand([len(set(trace_id))]))
-        sigma = numpyro.sample("sigma", dist.Exponential(7))
-        mu = t[trace_id]
-        numpyro.sample("how_far", dist.Normal(mu, sigma), obs=how_far)
-
-    def discretized_c(communicate_id, how_far):
-        c = numpyro.sample("c", dist.Beta(1, 1).expand([len(set(communicate_id))]))
-        sigma = numpyro.sample("sigma", dist.Exponential(7))
-        mu = c[communicate_id]
-        numpyro.sample("how_far", dist.Normal(mu, sigma), obs=how_far)
-
-    guide_p = AutoNormal(discretized_p)
-    guide_t = AutoNormal(discretized_t)
-    guide_c = AutoNormal(discretized_c)
-
-    svi_p = SVI(
-        discretized_p,
-        guide_p,
-        optim.Adam(1),
-        Trace_ELBO(),
-        proximity_id=df.proximity_id.values,
-        how_far=df.how_far.values,
-    )
-    svi_t = SVI(
-        discretized_t,
-        guide_t,
-        optim.Adam(1),
-        Trace_ELBO(),
-        trace_id=df.trace_id.values,
-        how_far=df.how_far.values,
-    )
-    svi_c = SVI(
-        discretized_c,
-        guide_c,
-        optim.Adam(1),
-        Trace_ELBO(),
-        communicate_id=df.communicate_id.values,
-        how_far=df.how_far.values,
-    )
-
-    svi_result_p = svi_p.run(random.PRNGKey(0), num_iterations)
-    svi_result_t = svi_t.run(random.PRNGKey(0), num_iterations)
-    svi_result_c = svi_c.run(random.PRNGKey(0), num_iterations)
-
-    return svi_result_p, svi_result_t, svi_result_c

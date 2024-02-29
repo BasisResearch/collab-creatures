@@ -1,4 +1,3 @@
-import sys
 
 from setuptools import find_packages, setup
 
@@ -13,7 +12,7 @@ EXTRAS_REQUIRE = [
     "matplotlib",
     "pandas",
     "seaborn",
-    "nbqa"
+    "kaleido",
 ]
 
 setup(

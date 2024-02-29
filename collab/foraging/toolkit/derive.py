@@ -110,6 +110,7 @@ def derive_predictors(
         sim.derivedDF = sim.derivedDF.merge(sim.communicatesDF, how="left")
 
         sim.derivedDF["communicate"].fillna(0, inplace=True)
+        sim.communicatesDF.loc[:, "time"] = sim.communicatesDF["time"] - time_shift
 
         derivation_logger.info("communicates done")
 
@@ -120,7 +121,6 @@ def derive_predictors(
     sim.visibilityDF.loc[:, "time"] = sim.visibilityDF["time"] - time_shift
     sim.proximityDF.loc[:, "time"] = sim.proximityDF["time"] - time_shift
     sim.how_farDF.loc[:, "time"] = sim.how_farDF["time"] - time_shift
-    sim.communicatesDF.loc[:, "time"] = sim.communicatesDF["time"] - time_shift
     sim.derivedDF.loc[:, "time"] = sim.derivedDF["time"] - time_shift
 
     if dropna:

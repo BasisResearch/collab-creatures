@@ -65,9 +65,8 @@ def generate_communicates(
             out_of_range_foragers.append(others_now)
         out_of_range_foragersDF = pd.concat(out_of_range_foragers)
         out_of_range_foragersDF = out_of_range_foragersDF[
-            out_of_range_foragersDF[
-                "on_reward"
-            ]  # == True  [removed in refactoring, delete after testing]
+            out_of_range_foragersDF["on_reward"]
+            == True  # noqa E712   the == True  removal or switching to `is True` leads to failure
         ]
 
         expansion = [

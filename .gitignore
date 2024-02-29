@@ -128,3 +128,28 @@ dmypy.json
 # Pyre type checker
 .pyre/
 .vscode/settings.json
+
+
+# Picked datasets
+random_hungry_followers/rhf_docs/communicators_strong/*
+random_hungry_followers/rhf_docs/communicators_data/*
+random_hungry_followers/rhf_docs/locust_data/derived_all.pkl
+random_hungry_followers/rhf_docs/locust_data/svi_results.pkl
+
+
+# client secrets google api
+client_secrets.json
+
+# folder to temporarily store files
+tmp_files/
+
+# .DS_store
+.DS_Store
+
+# folder to temporarily store files
+data/user_data/*
+
+data/communicators/communicators_strong/*
+data/communicators/communicators_data/*
+data/central_park_birds_2022/*
+data/foraging/central_park_birds_cleaned_2022/*

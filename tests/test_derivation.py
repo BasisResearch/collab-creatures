@@ -61,8 +61,8 @@ def test_hungry_derivation():
     assert_frame_equal(hungry_sim_derived.derivedDF, hungry_test_data)
 
 
-# todo still fails due to randomness,
-# double tested with animations, nothing goes wrong
+#  todo still fails due to randomness,
+#  double tested with animations, nothing goes wrong
 
 # def test_followers_derivation():
 #     random.seed(22)

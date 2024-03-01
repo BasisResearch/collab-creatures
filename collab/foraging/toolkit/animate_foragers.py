@@ -57,11 +57,15 @@ def animate_foragers(
     visibility_multiplier=10,
     proximity_multiplier=10,
     communicate_multiplier=10,
+    color_by_state=False,
     produce_object=False,
 ):
     if plot_rewards:
         rew = sim.rewardsDF.copy()
-        rew["forager"] = "reward"
+        if color_by_state:
+            rew["state"] = "reward"
+        else:
+            rew["forager"] = "reward"
         df = pd.concat([sim.foragersDF, rew])
 
     else:
@@ -95,7 +99,10 @@ def animate_foragers(
         df = df.reset_index(drop=True)
         df = pd.concat([com, df], axis=0, ignore_index=True, verify_integrity=True)
 
-    fig = px.scatter(df, x="x", y="y", animation_frame="time", color="forager")
+    if not color_by_state:
+        fig = px.scatter(df, x="x", y="y", animation_frame="time", color="forager")
+    else:
+        fig = px.scatter(df, x="x", y="y", animation_frame="time", color="state")
 
     fig.update_layout(
         template="presentation",

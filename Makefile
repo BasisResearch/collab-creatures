@@ -4,7 +4,7 @@ lint: FORCE
 format:
 	./scripts/clean.sh
 
-test: FORCE
+tests: FORCE
 	pytest -v tests
 	./scripts/test_notebooks.sh
 

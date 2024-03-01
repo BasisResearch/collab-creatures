@@ -48,7 +48,7 @@ setup(
             "autoflake",
         ],
     },
-    python_requires=">=3.10",
+    python_requires=">=3.9",
     keywords="animal behavior, bayesian modeling, probabilistic programming, dynamical systems",
     license="Apache 2.0",
 )

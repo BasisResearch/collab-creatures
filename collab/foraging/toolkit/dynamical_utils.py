@@ -262,11 +262,9 @@ def run_svi_inference(
     **model_kwargs,
 ):
     losses = []
-    running_loss_means = []
+    # running_loss_means = []
     if guide is None:
-        guide = vi_family = AutoMultivariateNormal(
-            pyro.poutine.block(model, hide=blocked_sites)
-        )
+        guide = AutoMultivariateNormal(pyro.poutine.block(model, hide=blocked_sites))
     elbo = pyro.infer.Trace_ELBO()(model, guide)
 
     elbo(**model_kwargs)

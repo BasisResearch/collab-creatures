@@ -147,7 +147,7 @@ class LocustDynamics(pyro.nn.PyroModule):
             - a_edgers_ls  # 7-
             - a_edgers_lf  # 9-
             + w_searchers_le  # 11+
-            + a_searchers_le  #  13+
+            + a_searchers_le  # 13+
         ) + epsilon
 
         dX["edge_r"] = (
@@ -165,7 +165,7 @@ class LocustDynamics(pyro.nn.PyroModule):
         dX["search_l"] = (
             w_edgers_ls  # 5+
             + a_edgers_ls  # 7+
-            + a_edgers_lf  #  9+
+            + a_edgers_lf  # 9+
             - w_searchers_le  # 11-
             - w_searchers_lr  # 15-
             + w_searchers_rl  # 16+
@@ -367,7 +367,7 @@ def plot_ds_estimates(
     true_wander=None,
     coef_names=None,
     xlim=0.5,
-    save = False
+    save=False,
 ):
     if coef_names is None:
         coef_names = {
@@ -444,7 +444,9 @@ def plot_ds_estimates(
     plt.show()
 
 
-def plot_ds_interaction(posterior_samples, group, which_coeff, xlim=10, num_lines=20, save = False):
+def plot_ds_interaction(
+    posterior_samples, group, which_coeff, xlim=10, num_lines=20, save=False
+):
     coef_names = {
         "attraction": ["a_r", "a_l", "a_edge", "a_search", "a_feed"],
     }

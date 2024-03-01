@@ -23,6 +23,8 @@ from .ds_locust_functions import (
     simulated_bayesian_locust,
 )
 
+root = find_repo_root()
+
 
 class LocustDS:
     def __init__(self, data_code, start, end):
@@ -222,29 +224,17 @@ class LocustDS:
         fig.suptitle(title)
 
         if save:
-            fig.savefig("locust_posterior_check.png")
+            path = os.path.join(root, "docs/figures/locust_posterior_check.png")
+            fig.savefig(path)
 
-
-    def plot_param_estimates(self, w=0, a=0, xlim = 1, save = False):
+    def plot_param_estimates(self, w=0, a=0, xlim=1, save=False):
         plot_ds_estimates(
-            self.prior_samples,
-            self.samples,
-            "wander",
-            w,
-            xlim=xlim,
-            save = save
+            self.prior_samples, self.samples, "wander", w, xlim=xlim, save=save
         )
 
         plot_ds_estimates(
-            self.prior_samples,
-            self.samples,
-            "attraction",
-            a,
-            xlim=xlim,
-            save = save
+            self.prior_samples, self.samples, "attraction", a, xlim=xlim, save=save
         )
-
-
 
     def validate(
         self,

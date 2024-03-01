@@ -84,8 +84,8 @@ class Environment(object):
             # update food tracking variables
             self.phi_food[list_newfood_loc_1d] = 1
             self.phi_food_init[list_newfood_loc_1d] = 1
-            self.food_calories_by_loc[list_newfood_loc_1d] = (
-                20  # add a fixed number of calories to each new food location
-            )
+            self.food_calories_by_loc[
+                list_newfood_loc_1d
+            ] = 20  # add a fixed number of calories to each new food location
 
         return

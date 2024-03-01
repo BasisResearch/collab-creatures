@@ -121,7 +121,7 @@ def load_and_clean_locust(
         locust_subset,
         rewards_subset,
         grid_size=grid_size,
-        frames= len(locust_subset['time'].unique()) #subset_ends - subset_starts,
+        frames=len(locust_subset["time"].unique()),  # subset_ends - subset_starts,
     )
 
     loc = locust_object_from_data(

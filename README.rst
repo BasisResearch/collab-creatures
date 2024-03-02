@@ -1,12 +1,16 @@
-|Build Status|
+.. image:: https://github.com/BasisResearch/collaborative-intelligence/actions/workflows/test_notebooks.yml/badge.svg
+   :alt: Test Notebooks Badge
+   :target: https://github.com/BasisResearch/collaborative-intelligence/actions/workflows/test_notebooks.yml
+
+.. image:: https://github.com/BasisResearch/collaborative-intelligence/actions/workflows/test.yml/badge.svg
+   :alt: Test Badge
+   :target: https://github.com/BasisResearch/collaborative-intelligence/actions/workflows/test.yml
 
 .. index-inclusion-marker
 
 Collaborative Animal Behavior Modeling with Collab
-============================
-
-Collaborative Animal Behavior Modeling with Collab
 ===================================================
+
 
 Collab is a package that supports the use of Bayesian and causal inference
 in the study of animal collaborative behavior. The current version focuses on foraging 

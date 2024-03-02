@@ -35,20 +35,19 @@ Installation
 
 **Basic Setup:**
 
-```sh
-git clone git@github.com:BasisResearch/collaborative-intelligence.git
-cd collaborative-intelligence
-git checkout main
-pip install .
-```
+.. code:: sh
+    git clone git@github.com:BasisResearch/collaborative-intelligence.git
+    cd collaborative-intelligence
+    git checkout main
+    pip install .
+
 
 **Dev Setup:**
 
 To install dev dependencies for Collab, run the following command:
 
-```sh
-pip install -e ".[test]"
-```
+.. code:: sh
+    pip install -e ".[test]"
 
 ** Contributing: **
 

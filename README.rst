@@ -76,7 +76,7 @@ Getting started and notebooks
 All the notebooks are located in the `docs` (especially `docs/foraging`) folder. The following notebooks are available:
 
 
-- `random-hungry-followers.ipynb`: uses of the package to simulate data of foraging animals and to use it to profile the foraging strategy (random/food trace focus/followers) using Bayesian inference.
+- `random-hungry-followers.ipynb` uses of the package to simulate data of foraging animals and to use it to profile the foraging strategy (random/food trace focus/followers) using Bayesian inference.
 
 - `communicators_simulations.ipynb`  illustrates the use of the package to simulate data of foraging animals where the animals reveal the position of food to each other.
 
@@ -101,4 +101,6 @@ All the notebooks are located in the `docs` (especially `docs/foraging`) folder.
 
 *Note*: The inference steps assume some familiarity with `Pyro <https://github.com/pyro-ppl/pyro>`_ and 
 probabilistic programming. The `Pyro repository <https://github.com/pyro-ppl/pyro>`_ contains links 
-to introductory Pyro tutorials.
+to introductory Pyro tutorials. The dynamical systems materials assume some familarity 
+with `ChiRho <https://github.com/BasisResearch/chirho>`_ (see especially 
+`this tutorial <https://basisresearch.github.io/chirho/dynamical_intro.html>`_).

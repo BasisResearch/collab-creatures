@@ -20,15 +20,15 @@ functionalities are illustrated in Jupyter notebooks (listed further down).
 Using the package you can:
 
 
-1. **Simulate Artificial Data** of foraging animals (random walkers, foragers following only food trace, foragers following a leader, foragers communicating about the position of food).
+1. **Simulate synthetic data of foraging animals** (random walkers, foragers following only food trace, foragers following a leader, foragers communicating about the position of food).
 
 2. **Use either the simulated or real-world data** with (ideally, empirically informed) hyperparameters to **expand the dataset** into one that at each frame assigns various predictor scores to space-time points per forager, such as the presence of visible food trace, appropriate proximity of other foragers, availability of communication, etc.
 
 3. Use the expanded data to **profile the foraging strategy using Bayesian inference**.
 
-4. **Compartmentalize Artificial or Real-World Animal Movement Data** in preparation for Bayesian dynamical systems inference.
+4. **Compartmentalize synthetic or real-world animal movement data** in preparation for Bayesian dynamical systems inference.
 
-5. **Build Your Own Dynamical Systems Model** of the compartmentalized data and use it within a Bayesian inferential workflow.
+5. **Build your own dynamical systems model** of the compartmentalized data and use it within a Bayesian inferential workflow.
 
 
 Installation

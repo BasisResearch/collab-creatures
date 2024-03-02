@@ -13,7 +13,7 @@ Collaborative Animal Behavior Modeling with Collab
 
 
 **Collab** is a package that supports the use of Bayesian and causal inference 
-with :doc:`Pyro <https://github.com/pyro-ppl/pyro>` and :doc:`ChiRho <https://github.com/BasisResearch/chirho>`
+with  `Pyro <https://github.com/pyro-ppl/pyro>`_ and `ChiRho <https://github.com/BasisResearch/chirho>` 
 in the study of animal collaborative behavior. The current version focuses on foraging 
 animals and the probabilistic identification of foraging strategies. All the
 functionalities are illustrated in jupyter notebooks (listed further down).

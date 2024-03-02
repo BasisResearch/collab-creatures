@@ -3,6 +3,13 @@
 Collaborative Animal Behavior Modeling with Collab
 ===================================================
 
+Collab is a package that supports the use of Bayesian and causal inference
+in the study of animal collaborative behavior. The current version focuses on foraging 
+animals and the probabilistic identification of foraging strategies. All the functionalities
+are illustrated in jupyter notebooks (listed below). Using the package you can:
+
+1) 
+
 
 
 TODO: add description

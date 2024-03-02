@@ -275,6 +275,7 @@ def cp_derive(obj, optimal_list, distances=None):
     objects = {}
 
     for optimal in optimal_list:
+        print(f"Processing optimal proximity parameter {optimal}")
         prox = cp_generate_proximity_score(
             obj,
             visibility_range=100,
@@ -299,6 +300,7 @@ def cp_derive_sps(obj, optimal_list, distances=None):
     objects = {}
 
     for optimal in optimal_list:
+        print(f"Processing optimal proximity parameter {optimal}")
         prox = cp_generate_proximity_score_sps(
             obj,
             visibility_range=100,

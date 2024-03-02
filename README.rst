@@ -5,14 +5,28 @@
 Collaborative Animal Behavior Modeling with Collab
 ============================
 
-ChiRho is a causal extension to the Pyro probabilistic programming
-language. It was built to bridge the gap between the capabilities of
-modern probabilistic programming systems, such as Pyro, and the needs of
-policymakers, scientists, and AI researchers, who often want to use
-models to answer their questions about cause-and-effect relationships.
-As a non-exhaustive set of examples, ChiRho makes it easier to
-answer the following kinds of causal questions that appear frequently in
-practice.
+Collaborative Animal Behavior Modeling with Collab
+===================================================
+
+Collab is a package that supports the use of Bayesian and causal inference
+in the study of animal collaborative behavior. The current version focuses on foraging 
+animals and the probabilistic identification of foraging strategies. All the
+functionalities are illustrated in jupyter notebooks (listed below).
+Using the package you can:
+
+1) **Simulate artifical data** of foraging animals (random walkers, foragers following 
+only food trace, foragers following a leader, foragers communicating about
+the position of food).
+2) Use either the simulated or real-world date with (ideally, empirically informed)
+hyperparameters to **expand the dataset** into one that at each frame assings 
+**various predictor scores to space-time points per forager,** such as the presence of visible food trace,
+appropriate proximity of other foragers, availability of a communicate etc. 
+3) Use the expanded data to **profile the foraging strategy using Bayesian inference**.
+4) **Compartmentalize artificial or real-world animal movement data** in preparation for 
+Bayesian dynamical systems inference.
+5) **Build your own dynamical systems model of the compartmentalized data** and 
+use it within Bayesian inferential workflow. 
+
 
 -  **Interventional**: *How many COVID-19 hospitalizations will occur if
    the USA imposes a national mask mandate?*

@@ -16,7 +16,7 @@ Collaborative Animal Behavior Modeling with Collab
 with  `Pyro <https://github.com/pyro-ppl/pyro>`_ and `ChiRho <https://github.com/BasisResearch/chirho>`_ 
 in the study of animal collaborative behavior. The current version focuses on foraging 
 animals and the probabilistic identification of foraging strategies. All the
-functionalities are illustrated in jupyter notebooks (listed further down).
+functionalities are illustrated in Jupyter notebooks (listed further down).
 Using the package you can:
 
 
@@ -49,11 +49,13 @@ Installation
 To install dev dependencies needed to contribute to Collab, run the following command:
 
 .. code-block:: sh
+
     pip install -e ".[test]"
 
 or 
 
 .. code-block:: sh
+  
     pip install -e .[test]
 
 

@@ -45,7 +45,7 @@ Installation
 
 **Dev Setup:**
 
-To install dev dependencies for Collab, run the following command:
+To install dev dependencies needed to contribute to Collab, run the following command:
 
 .. code-block:: sh
     pip install -e ".[test]"
@@ -68,40 +68,6 @@ Before submitting a pull request, please autoformat code and ensure that unit te
 
 
 Getting Started
----------------
-
-Below is a simple example of how to use ChiRho to answer an
-interventional question. For more in-depth examples, go to `Learn
-more <#learn-more>`__.
-
-.. code:: python
-
-   import torch
-   import pyro
-   import pyro.distributions as dist
-   from chirho.interventional.handlers import do
-
-   pyro.set_rng_seed(101)
-
-   # Define a causal model with single confounder h
-   def model():
-       h = pyro.sample("h", dist.Normal(0, 1))
-       x = pyro.sample("x", dist.Normal(h, 1))
-       y = pyro.sample("y", dist.Normal(x + h, 1))
-       return y
-
-   # Define a causal query (here intervening on x)
-   def queried_model():
-       return do(model, {"x": 1})
-
-   # Generate 10,000 samples from the observational distribution P(y) ~ N(0, 2)
-   obs_samples = pyro.infer.Predictive(model, num_samples=1000)()["y"]
-
-   # Generate 10,000 samples from the interventional distribution P(y | do(X=1)) ~ N(1, 1)
-   int_samples = pyro.infer.Predictive(queried_model(), num_samples=1000)()["y"]
-
-Learn more
-----------
 
 We have written a number of tutorials and examples for ChiRho. We
 have tried to choose simple examples that would be of interest to both

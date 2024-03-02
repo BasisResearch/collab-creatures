@@ -70,102 +70,48 @@ Before submitting a pull request, please autoformat code and ensure that unit te
      make tests             # notebook and unit tests
 
 
-Getting Started
+Getting started and notebooks
+------------------------------
 
-We have written a number of tutorials and examples for ChiRho. We
-have tried to choose simple examples that would be of interest to both
-the causal inference and probabilistic programming communities: they
-collectively span Pearl’s causal hierarchy (Pearl 2009), and
-most are broadly applicable, empirically validated, have an
-unconventional or limited identification result, and make use of modern
-probabilistic machine learning tools, like neural networks or stochastic
-variational inference.
+All the notebooks are located in the `docs` (especially `docs/foraging`) folder. The following notebooks are available:
 
-Our examples demonstrate how real-world causal assumptions can be expressed as probabilistic programs 
-and real-world causal estimands can be expressed as program transformations.
-These example illustrate how ChiRho is compatible with any inference method 
-implemented in Pyro, including the kinds of scalable gradient-based
-approximations that power much of the modern probabilistic machine learning landscape.
 
-- `Tutorial <https://basisresearch.github.io/chirho/tutorial_i.html>`_
-  - Key observations inspiring ChiRho's design and outlines a causal Bayesian workflow for using ChiRho to answer causal questions
-- `Example: Backdoor Adjustment Criteria <https://basisresearch.github.io/chirho/backdoor.html>`_
-  - Adjusting for observed confounders
-- `Example: Causal Effect Variational Autoencoder <https://basisresearch.github.io/chirho/cevae.html>`_
-  - Causal inference with deep models and proxy variables
-- `Example: Mediation analysis and (in)direct effects <https://basisresearch.github.io/chirho/mediation.html>`_
-  - Mediation analysis for path specific effects
-- `Example: Deep structural causal model counterfactuals <https://basisresearch.github.io/chirho/deepscm.html>`_
-  - Counterfactuals with normalizing flows
-- `Example: Structured Latent Confounders <https://basisresearch.github.io/chirho/slc.html>`_
-  - Causal effect estimation when latent confounders are shared across groups
-- `Example: Synthetic difference-in-differences <https://basisresearch.github.io/chirho/sdid.html>`_
-  - Counterfactual estimation from longitudinal data
-- `Example: Robust estimation with the DR learner <https://basisresearch.github.io/chirho/dr_learner.html>`_
-  - Heterogeneous causal effect estimation with a misspecified model
-- `Example: Estimating the effects of drugs on gene expression <https://basisresearch.github.io/chirho/sciplex.html>`_
-  - Causal inference with single-cell RNA-seq data
-- `Example: Causal reasoning in dynamical systems <https://basisresearch.github.io/chirho/dynamical_intro.html>`_
-  - Causal inference with continuous-time dynamical systems
-- `Design notes <https://basisresearch.github.io/chirho/design_notes>`_
-  - Technical implementation details of ChiRho using effect handlers
+- `random-hungry-followers.ipynb` uses of the package to simulate data of foraging animals 
+and to use it to profile the foraging strategy (random/food trace focus/followers) using Bayesian inference.
 
-*Note*: These tutorials and examples assume some familiarity with Pyro and
-probabilistic programming. For introductory Pyro tutorials, please see
-`Additional background reading
-material <#additional-background-reading-material>`__ below.
+- `communicators_simulations.ipynb`  illustrates the use of the package to simulate data of foraging animals 
+where the animals reveal the position of food to each other.
 
-Documentation
--------------
-- `Counterfactual <https://basisresearch.github.io/chirho/counterfactual.html>`_
-  - Effect handlers for counterfactual world splitting
-- `Interventional <https://basisresearch.github.io/chirho/interventional.html>`_
-  - Effect handlers for performing interventions
-- `Observational <https://basisresearch.github.io/chirho/observational.html>`_
-  - Effect handler utilities for computing probabilistic quantities for 
-  partially deterministic models which is useful for counterfactual reasoning
-- `Indexed <https://basisresearch.github.io/chirho/indexed.html>`_
-  - Effect handler utilities for named indices in ChiRho which is useful for manipluating
-  and tracking counterfactual worlds
-- `Dynamical <https://basisresearch.github.io/chirho/dynamical.html>`_
-  - Operations and effect handlers for counterfactual reasoning in dynamical systems
-- `Robust <https://basisresearch.github.io/chirho/robust.html>`_
-  - Operations and effect handlers for robust estimation
-- `Explainable <https://basisresearch.github.io/chirho/explainable.html>`_
-  - Operations and effect handlers for causal explanation
+- `communicators_inference.ipynb` shows how to use our toolkit to profile  this foraging strategy 
+using Bayesian inference.
+
+- `central_park_birds_predictors.ipynb` illustrates how to use the package to expand a real world dataset
+that includes the movement of foraging birds in Central Park, New York, into one that at each frame assigns various 
+predictor scores to space-time points per forager.
+
+- `central_park_birds_inference.ipynb` contains an example that involves using the expanded data to profile 
+  the proximity to other animals preferences of ducs and sparrows using Bayesian inference.
+
+-  `locust_approximate_pipeline.ipynb` goes through an analogous workflow with a real-world dataset of foraging locust,
+related to `Information integration for decision-making in desert locusts <https://doi.org/10.1016/j.isci.2023.106388>`_ by 
+Günzel, Oberhauser and Couzin-Fuchs.
+
+- `locust_ds_data.ipynb` illustrates how to compartmentalize the locust data in preparation for 
+- Bayesian dynamical systems inference.
+
+- `locust_ds_class.ipynb` shows how to build a dynamical systems mode of the compartmentalized data and use it 
+within the Bayesian inferential workflow.
+
+- `locust_ds_inference.ipynb` shows how to build a dynamical systems model of the compartmentalized data and use
+it within a Bayesian inferential workflow.
+
+- `locust_ds_validate.ipynb` uses the class we defined to validate the dynamical systems model of the 
+compartmentalized data.
+
+- `locust_ds_interpret.ipynb` elaborates on a proper way to interpret the inference results of the dynamical 
+systems model.
   
-Caveats
--------
-ChiRho does not answer causal questions by magic. In fact, there is
-no escaping the fact that
 
-   *behind any causal conclusion there must lie some causal assumption,*
-
-a phrase made famous by Judea Pearl (Pearl 2009). Instead,
-ChiRho provides a substrate for writing causal assumptions as
-probabilistic programs, and for writing causal questions in terms of
-program transformations.
-
-Additional background reading material
---------------------------------------
-
--  Causal Probabilistic Programming Without Tears
-   https://drive.google.com/file/d/1Uzjg-vX77BdSnAcfpUcb-aIXxhnAPI24/view?usp=sharing
--  Introduction to Pyro: \ http://pyro.ai/examples/intro_long.html
--  Tensor shapes in Pyro: \ http://pyro.ai/examples/tensor_shapes.html
--  A guide to programming with effect handlers in
-   Pyro \ http://pyro.ai/examples/effect_handlers.html
--  Minipyro: \ http://pyro.ai/examples/minipyro.html
--  Reparameterization of Pyro
-   programs: \ https://docs.pyro.ai/en/stable/infer.reparam.html
--  Optional: getting started with
-   NumPyro \ https://num.pyro.ai/en/stable/getting_started.html
-
-
-References
-----------
-Pearl, Judea. *Causality: Models, Reasoning and Inference*. 2nd ed. USA: Cambridge University Press, 2009.
-
-
-.. |Build Status| image:: https://github.com/BasisResearch/chirho/actions/workflows/test.yml/badge.svg
-   :target: https://github.com/BasisResearch/chirho/actions/workflows/test.yml
+*Note*: The inference steps assume some familiarity with `Pyro <https://github.com/pyro-ppl/pyro>`_ and 
+probabilistic programming. The `Pyro repository <https://github.com/pyro-ppl/pyro>`_ contains links 
+to introductory Pyro tutorials.

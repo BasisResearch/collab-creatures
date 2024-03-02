@@ -12,8 +12,6 @@ are illustrated in jupyter notebooks (listed below). Using the package you can:
 
 
 
-TODO: add description
-
 
 Installation
 ------------

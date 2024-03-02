@@ -21,7 +21,7 @@ Using the package you can:
 
 1. **Simulate Artificial Data** of foraging animals (random walkers, foragers following only food trace, foragers following a leader, foragers communicating about the position of food).
 
-2. Use either the simulated or real-world data with (ideally, empirically informed) hyperparameters to **expand the dataset** into one that at each frame assigns various predictor scores to space-time points per forager, such as the presence of visible food trace, appropriate proximity of other foragers, availability of communication, etc.
+2. **Use either the simulated or real-world data** with (ideally, empirically informed) hyperparameters to **expand the dataset** into one that at each frame assigns various predictor scores to space-time points per forager, such as the presence of visible food trace, appropriate proximity of other foragers, availability of communication, etc.
 
 3. Use the expanded data to **profile the foraging strategy using Bayesian inference**.
 
@@ -30,55 +30,37 @@ Using the package you can:
 5. **Build Your Own Dynamical Systems Model** of the compartmentalized data and use it within a Bayesian inferential workflow.
 
 
-
-
--  **Interventional**: *How many COVID-19 hospitalizations will occur if
-   the USA imposes a national mask mandate?*
-
--  **Counterfactual**: *Given that 100,000 people were infected with
-   COVID-19 in the past month, how many would have been infected if a
-   mask mandate had been in place?*
-
--  **Explanation**: *Why were 100,000 people infected with COVID-19 in
-   the past month?*
-
--  **Causal structure discovery**: *What individual attributes influence
-   risk of COVID-19 hospitalization?*
-
-To see how ChiRho supports causal reasoning, take a look at our `Tutorial <https://basisresearch.github.io/chirho/tutorial_i.html>`_.
-
 Installation
 ------------
 
-**Install using pip:**
+**Basic Setup:**
 
-.. code:: sh
+```sh
 
-   pip install chirho
+    git clone git@github.com:BasisResearch/collaborative-intelligence.git
+    cd collaborative-intelligence
+    git checkout main
+    pip install .
+```
 
-**Install from source:**
+**Dev Setup:**
 
-.. code:: sh
+To install dev dependencies for Collab, run the following command:
 
-   git clone git@github.com:BasisResearch/chirho.git
-   cd chirho
-   git checkout master
-   pip install .
+```sh
+pip install -e ".[test]"
+```
 
-**Install with extra packages:**
+** Contributing: **
 
-To install the dependencies required to run the tutorials in
-``examples``/``tutorials`` directories, please use the following
-command:
+Before submitting a pull request, please autoformat code and ensure that unit tests pass locally
 
-.. code:: sh
+```sh
+make format            # runs black and isort
+make lint              # linting
+make tests             # notebook and unit tests
+```
 
-   pip install chirho[extras] 
-
-Make sure that the models come from the same release version of the
-`ChiRho source
-code <https://github.com/BasisResearch/chirho/releases>`__ as you
-have installed.
 
 Getting Started
 ---------------

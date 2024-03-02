@@ -76,40 +76,27 @@ Getting started and notebooks
 All the notebooks are located in the `docs` (especially `docs/foraging`) folder. The following notebooks are available:
 
 
-- `random-hungry-followers.ipynb` uses of the package to simulate data of foraging animals 
-and to use it to profile the foraging strategy (random/food trace focus/followers) using Bayesian inference.
+- `random-hungry-followers.ipynb` uses of the package to simulate data of foraging animals and to use it to profile the foraging strategy (random/food trace focus/followers) using Bayesian inference.
 
-- `communicators_simulations.ipynb`  illustrates the use of the package to simulate data of foraging animals 
-where the animals reveal the position of food to each other.
+- `communicators_simulations.ipynb`  illustrates the use of the package to simulate data of foraging animals where the animals reveal the position of food to each other.
 
-- `communicators_inference.ipynb` shows how to use our toolkit to profile  this foraging strategy 
-using Bayesian inference.
+- `communicators_inference.ipynb` shows how to use our toolkit to profile  this foraging strategy using Bayesian inference.
 
-- `central_park_birds_predictors.ipynb` illustrates how to use the package to expand a real world dataset
-that includes the movement of foraging birds in Central Park, New York, into one that at each frame assigns various 
-predictor scores to space-time points per forager.
+- `central_park_birds_predictors.ipynb` illustrates how to use the package to expand a real world dataset that includes the movement of foraging birds in Central Park, New York, into one that at each frame assigns various  predictor scores to space-time points per forager.
 
-- `central_park_birds_inference.ipynb` contains an example that involves using the expanded data to profile 
-  the proximity to other animals preferences of ducs and sparrows using Bayesian inference.
+- `central_park_birds_inference.ipynb` contains an example that involves using the expanded data to profile the proximity to other animals preferences of ducs and sparrows using Bayesian inference.
 
--  `locust_approximate_pipeline.ipynb` goes through an analogous workflow with a real-world dataset of foraging locust,
-related to `Information integration for decision-making in desert locusts <https://doi.org/10.1016/j.isci.2023.106388>`_ by 
-Günzel, Oberhauser and Couzin-Fuchs.
+-  `locust_approximate_pipeline.ipynb` goes through an analogous workflow with a real-world dataset of foraging locust, related to `Information integration for decision-making in desert locusts <https://doi.org/10.1016/j.isci.2023.106388>`_ by  Günzel, Oberhauser and Couzin-Fuchs.
 
-- `locust_ds_data.ipynb` illustrates how to compartmentalize the locust data in preparation for 
-- Bayesian dynamical systems inference.
+- `locust_ds_data.ipynb` illustrates how to compartmentalize the locust data in preparation for Bayesian dynamical systems inference.
 
-- `locust_ds_class.ipynb` shows how to build a dynamical systems mode of the compartmentalized data and use it 
-within the Bayesian inferential workflow.
+- `locust_ds_class.ipynb` shows how to build a dynamical systems mode of the compartmentalized data and use it within the Bayesian inferential workflow.
 
-- `locust_ds_inference.ipynb` shows how to build a dynamical systems model of the compartmentalized data and use
-it within a Bayesian inferential workflow.
+- `locust_ds_inference.ipynb` shows how to build a dynamical systems model of the compartmentalized data and use it within a Bayesian inferential workflow.
 
-- `locust_ds_validate.ipynb` uses the class we defined to validate the dynamical systems model of the 
-compartmentalized data.
+- `locust_ds_validate.ipynb` uses the class we defined to validate the dynamical systems model of the compartmentalized data.
 
-- `locust_ds_interpret.ipynb` elaborates on a proper way to interpret the inference results of the dynamical 
-systems model.
+- `locust_ds_interpret.ipynb` elaborates on a proper way to interpret the inference results of the dynamical systems model.
   
 
 *Note*: The inference steps assume some familiarity with `Pyro <https://github.com/pyro-ppl/pyro>`_ and 

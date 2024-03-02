@@ -47,18 +47,24 @@ Installation
 
 To install dev dependencies for Collab, run the following command:
 
-.. code:: sh
+.. code-block:: sh
     pip install -e ".[test]"
 
-** Contributing: **
+or 
 
-Before submitting a pull request, please autoformat code and ensure that unit tests pass locally
+.. code-block:: sh
+    pip install -e .[test]
 
-```sh
-make format            # runs black and isort
-make lint              # linting
-make tests             # notebook and unit tests
-```
+
+**Contributing:**
+
+Before submitting a pull request, please autoformat code and ensure that unit tests pass locally:
+
+  .. code-block:: sh
+
+     make format            # runs black and isort
+     make lint              # linting
+     make tests             # notebook and unit tests
 
 
 Getting Started

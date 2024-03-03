@@ -30,6 +30,7 @@ Using the package you can:
 
 5. **Build your own dynamical systems model** of the compartmentalized data and use it within a Bayesian inferential workflow.
 
+*This repository is a work in progress, with more documentation and functionality coming soon. We encourage you to reach out if you're interested in collaborating or contributing* 
 
 Installation
 ------------

@@ -9,7 +9,7 @@ def locust_object_from_data(locustDF, rewardsDF, grid_size, frames):
 
     sim = EmptyObject()
 
-    sim.grid_size = 45
+    sim.grid_size = grid_size
     sim.num_frames = frames
     sim.foragersDF = locustDF
     sim.rewardsDF = rewardsDF
@@ -121,7 +121,7 @@ def load_and_clean_locust(
         locust_subset,
         rewards_subset,
         grid_size=grid_size,
-        frames=subset_ends - subset_starts,
+        frames=len(locust_subset["time"].unique()),  # subset_ends - subset_starts,
     )
 
     loc = locust_object_from_data(

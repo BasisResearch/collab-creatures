@@ -77,7 +77,7 @@ Getting started and notebooks
 All the notebooks are located in the `docs` (especially `docs/foraging`) folder. The following notebooks are available:
 
 
-- `random-hungry-followers.ipynb` uses of the package to simulate data of foraging animals and to use it to profile the foraging strategy (random/food trace focus/followers) using Bayesian inference.
+- `random_hungry_followers.ipynb` uses of the package to simulate data of foraging animals and to use it to profile the foraging strategy (random/food trace focus/followers) using Bayesian inference.
 
 - `communicators_simulations.ipynb`  illustrates the use of the package to simulate data of foraging animals where the animals reveal the position of food to each other.
 

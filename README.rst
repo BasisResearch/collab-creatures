@@ -85,7 +85,7 @@ All the notebooks are located in the `docs` (especially `docs/foraging`) folder.
 
 - `central_park_birds_predictors.ipynb` illustrates how to use the package to expand a real world dataset that includes the movement of foraging birds in Central Park, New York, into one that at each frame assigns various  predictor scores to space-time points per forager.
 
-- `central_park_birds_inference.ipynb` contains an example that involves using the expanded data to profile the proximity to other animals preferences of ducs and sparrows using Bayesian inference.
+- `central_park_birds_inference.ipynb` contains an example that involves using the expanded data to profile the proximity to other animals preferences of ducks and sparrows using Bayesian inference.
 
 -  `locust_approximate_pipeline.ipynb` goes through an analogous workflow with a real-world dataset of foraging locust, related to `Information integration for decision-making in desert locusts <https://doi.org/10.1016/j.isci.2023.106388>`_ by  Günzel, Oberhauser and Couzin-Fuchs.
 

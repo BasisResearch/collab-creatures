@@ -94,7 +94,7 @@ class LocustDS:
                 dill.dump(prior_samples, file)
 
     def run_inference(
-        self, name, num_iterations, lr=0.001, num_samples=150, force=False, save = False
+        self, name, num_iterations, lr=0.001, num_samples=150, force=False, save=False
     ):
         self.file_path = os.path.join(
             self.piecemeal_path,

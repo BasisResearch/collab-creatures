@@ -94,7 +94,7 @@ class LocustDS:
                 dill.dump(prior_samples, file)
 
     def run_inference(
-        self, name, num_iterations, lr=0.001, num_samples=150, force=False
+        self, name, num_iterations, lr=0.001, num_samples=150, force=False, save = False
     ):
         self.file_path = os.path.join(
             self.piecemeal_path,
@@ -127,8 +127,9 @@ class LocustDS:
                 self.init_state, self.start_tensor, self.logging_times
             )
 
-            with open(self.file_path, "wb") as new_file:
-                dill.dump(self.samples, new_file)
+            if save:
+                with open(self.file_path, "wb") as new_file:
+                    dill.dump(self.samples, new_file)
 
     def evaluate(self, samples=None, subset=None, check=True):
         if samples is None:

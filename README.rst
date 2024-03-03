@@ -22,9 +22,9 @@ Using the package you can:
 
 1. **Simulate synthetic data of foraging animals** (random walkers, foragers following only food trace, foragers following a leader, foragers communicating about the position of food).
 
-2. **Use either the simulated or real-world data** with (ideally, empirically informed) hyperparameters to **expand the dataset** into one that at each frame assigns various predictor scores to space-time points per forager, such as the presence of visible food trace, appropriate proximity of other foragers, availability of communication, etc.
+2. **Expand** a (real or simulated) dataset by calculating a set of predictor scores at each location each agent may decide to move to. Scores correspond to a relevant feature agents may value, such as presense of a food trace, proximity to other foragers, and availability of information communicated from other agents.
 
-3. Use the expanded data to **profile the foraging strategy using Bayesian inference**.
+3. Use the expanded data to **profile the foraging strategy using Bayesian inference**, to assess how strongly each feature drives agents' decisions of where to move. 
 
 4. **Compartmentalize synthetic or real-world animal movement data** in preparation for Bayesian dynamical systems inference.
 

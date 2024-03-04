@@ -1,5 +1,0 @@
-client_config_backend: file
-
-oauth_scope: 
-  - https://www.googleapis.com/auth/drive.file
-  - https://www.googleapis.com/auth/drive.readonly

@@ -4,7 +4,7 @@ on:
     schedule:
       - cron: '0 0 * * 6'  # Run at midnight on Saturdays
     push:
-      branches: [ main, staging-* ]
+      branches: [ main ]
     pull_request:
       branches: [ main, staging-* ]
     workflow_dispatch:

@@ -36,7 +36,7 @@ setup(
         "extras": EXTRAS_REQUIRE,
         "test": EXTRAS_REQUIRE
         + [
-            "pytest",
+            "pytest==7.4.3",
             "pytest-cov",
             "pytest-xdist",
             "mypy",

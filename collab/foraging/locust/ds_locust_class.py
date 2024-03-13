@@ -57,14 +57,12 @@ class LocustDS:
         self.validation = {}
 
     def simulate_trajectories(self, true_attraction, true_wander, init_state=None):
-        if init_state is None:
-            init_state = self.init_state
-
+        
         locust_true = LocustDynamics(true_attraction, true_wander)
         with TorchDiffEq(
             method="rk4",
         ), LogTrajectory(self.logging_times) as lt:
-            simulate(locust_true, init_state, self.start_tensor, self.end_tensor)
+            simulate(locust_true, self.init_state, self.start_tensor, self.end_tensor)
 
         self.simulated_traj = lt.trajectory
 
@@ -75,7 +73,7 @@ class LocustDS:
 
     def get_prior_samples(self, num_samples, force=False):
         self.priors_path = os.path.join(
-            self.piecemeal_path, f"priors_sam{num_samples}.pkl"
+            self.piecemeal_path, f"priors_sam{num_samples}_{self.data_code}.pkl"
         )
         if os.path.exists(self.priors_path) and not force:
             with open(self.priors_path, "rb") as file:
@@ -92,6 +90,12 @@ class LocustDS:
 
             with open(self.priors_path, "wb") as file:
                 dill.dump(prior_samples, file)
+
+            
+        for key in self.init_state.keys():
+            assert (
+                self.init_state[key].item() == self.prior_samples[key][0, 0, 0].item()
+            ), "prior predictive inits are wrong"
 
     def run_inference(
         self, name, num_iterations, lr=0.001, num_samples=150, force=False, save=False
@@ -130,6 +134,11 @@ class LocustDS:
             if save:
                 with open(self.file_path, "wb") as new_file:
                     dill.dump(self.samples, new_file)
+
+        for key in self.init_state.keys():
+            assert (
+                self.init_state[key].item() == self.samples[key][0, 0, 0].item()
+            ), "predictive inits are wrong"
 
     def evaluate(self, samples=None, subset=None, check=True):
         if samples is None:

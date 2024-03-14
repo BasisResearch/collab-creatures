@@ -177,7 +177,7 @@ def ds_predictive_plot(
         torch.quantile(state_pred, 0.975, dim=0).squeeze(),
         alpha=0.2,
         color=color,
-        label="95% credible interval",
+        label="95% credible interval of predicted mean",
     )
 
     ax.set_xlabel("time")

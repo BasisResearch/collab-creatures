@@ -142,13 +142,15 @@ class LocustDS:
                 self.init_state[key].item() == self.samples[key][0, 0, 0].item()
             ), "predictive inits are wrong"
 
-    def evaluate(self, samples, subset, check=True, figure=True):
+    def evaluate(self, samples, subset, check=True, figure=True, plot_null_model=True):
 
         uniform_preds = {}
+        uniform_residuals = {}
         uniform_abs_errors = {}
         uniform_sq_errors = {}
 
         mean_preds = {}
+        residuals = {}
         abs_errors = {}
         sq_errors = {}
 
@@ -167,9 +169,13 @@ class LocustDS:
         for i, compartment in enumerate(compartment_colors.keys()):
 
             mean_preds[compartment] = samples[compartment].mean(dim=0)
-            abs_errors[compartment] = torch.abs(
-                subset[f"{compartment}_obs"] - mean_preds[compartment]
+            # ran into a bug here before, hence assertion
+            assert samples[compartment][0, 0, 0] == mean_preds[compartment][0][0]
+
+            residuals[compartment] = (
+                mean_preds[compartment] - subset[f"{compartment}_obs"]
             )
+            abs_errors[compartment] = torch.abs(residuals[compartment])
             sq_errors[compartment] = torch.square(abs_errors[compartment])
 
             uniform_preds[compartment] = (self.N / 6).expand(
@@ -178,9 +184,10 @@ class LocustDS:
 
             assert uniform_preds[compartment].shape == mean_preds[compartment].shape
 
-            uniform_abs_errors[compartment] = torch.abs(
-                subset[f"{compartment}_obs"] - uniform_preds[compartment]
+            uniform_residuals[compartment] = (
+                uniform_preds[compartment] - subset[f"{compartment}_obs"]
             )
+            uniform_abs_errors[compartment] = torch.abs(uniform_residuals[compartment])
             uniform_sq_errors[compartment] = torch.square(
                 uniform_abs_errors[compartment]
             )
@@ -189,15 +196,17 @@ class LocustDS:
                 row = i // 3
                 col = i % 3
                 ax = axs[row, col]
-                ax.scatter(
-                    y=uniform_sq_errors[compartment].flatten(),
-                    x=self.logging_times,
-                    color="grey",
-                    label="inertia",
-                )
+
+                if plot_null_model:
+                    ax.scatter(
+                        y=uniform_residuals[compartment].flatten(),
+                        x=self.logging_times,
+                        color="grey",
+                        label="null model",
+                    )
 
                 ax.scatter(
-                    y=sq_errors[compartment].flatten(),
+                    y=residuals[compartment].flatten(),
                     x=self.logging_times,
                     color=compartment_colors[compartment],
                     label=compartment,
@@ -206,27 +215,37 @@ class LocustDS:
                 ax.set_title(f"{compartment}")
 
         all_sq_errors = torch.cat([tensor for tensor in sq_errors.values()])
-        mse_mean = torch.mean(all_sq_errors).item()
+        all_abs_errors = torch.cat([tensor for tensor in abs_errors.values()])
+        mse = torch.mean(all_sq_errors).item()
+        mae = torch.mean(all_abs_errors).item()
+
         all_uniform_sq_errors = torch.cat(
             [tensor for tensor in uniform_sq_errors.values()]
         )
-        uniform_mse_mean = torch.mean(all_uniform_sq_errors).item()
-        rsqared = 1 - mse_mean / uniform_mse_mean
+        all_uniform_abs_errors = torch.cat(
+            [tensor for tensor in uniform_abs_errors.values()]
+        )
+
+        uniform_mse = torch.mean(all_uniform_sq_errors).item()
+        uniform_mae = torch.mean(all_uniform_abs_errors).item()
+        rsqared = 1 - mse / uniform_mse
 
         if figure:
             fig.suptitle(
-                f"Squared errors vs. time (overall mse: {mse_mean:.2f}, "
-                f"null_mse: {uniform_mse_mean:.2f}, $R^2$: {rsqared:.3f})"
+                f"Residuals vs. time (overall mae: {mae:.2f}, "
+                f"null mae: {uniform_mae:.2f}, $R^2$: {rsqared:.3f})"
             )
             plt.legend()
             sns.despine()
             plt.show()
 
         if check:
+            self.mae = mae
+            self.null_mae = uniform_mae
             self.rsquared = rsqared
 
         else:
-            return {"rsquared": rsqared}
+            return {"mae": mae, "null mae": uniform_mae, "rsquared": rsqared}
 
     def posterior_check(self, samples=None, subset=None, title=None, save=False):
         if title is None:

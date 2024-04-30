@@ -235,6 +235,8 @@ class LocustDS:
                 f"Residuals vs. time (overall mae: {mae:.2f}, "
                 f"null mae: {uniform_mae:.2f}, $R^2$: {rsqared:.3f})"
             )
+            plt.xlabel("time")
+            plt.ylabel("residuals")
             plt.legend()
             sns.despine()
             plt.show()

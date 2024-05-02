@@ -31,7 +31,7 @@ def add_ring(
     _condition = (
         (df_c["state"] == "unclassified")
         & (df_c["_distance"] <= outside_radius)
-        & (df_c["_distance"] > inside_radius)
+        & (df_c["_distance"] >= inside_radius)
     )
     if not divide_by_side:
         df_c.loc[_condition, "state"] = name

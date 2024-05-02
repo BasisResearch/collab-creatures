@@ -6,5 +6,5 @@ isort --check --profile black --diff collab/ tests/
 black --check collab/ tests/
 flake8 collab/ tests/
 nbqa black --check docs/
-nbqa autoflake --recursive --check --nbqa-shell docs/
+nbqa autoflake --nbqa-shell --recursive --check docs/
 nbqa isort --check docs/

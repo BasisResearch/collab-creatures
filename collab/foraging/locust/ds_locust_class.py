@@ -247,7 +247,7 @@ class LocustDS:
             self.rsquared = rsqared
 
         else:
-            return {"mae": mae, "null mae": uniform_mae, "rsquared": rsqared}
+            return {"mae": mae, "null_mae": uniform_mae, "rsquared": rsqared}
 
     def posterior_check(self, samples=None, subset=None, title=None, save=False):
         if title is None:
@@ -302,6 +302,7 @@ class LocustDS:
         force=False,
         save=False,
         name="length",
+        figure=True,
     ):
         self.v_data_path = os.path.join(
             self.root,
@@ -360,5 +361,5 @@ class LocustDS:
             ), "validation inits are wrong"
 
         self.validation[validation_data_code] = self.evaluate(
-            samples=self.v_samples, subset=self.v_subset, check=False
+            samples=self.v_samples, subset=self.v_subset, check=False, figure=figure
         )

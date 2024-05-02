@@ -215,12 +215,11 @@ def bayesian_locust(base_model=LocustDynamics) -> Dynamics[torch.Tensor]:
     with pyro.plate("attr", size=5):
         attraction = pyro.sample(
             "attraction", dist.Uniform(0.00001, 0.1)
-        )  # dist.LogNormal(.3, 8))
+        )  
     with pyro.plate("wond", size=4):
         wander = pyro.sample(
             "wander", dist.Uniform(0.00001, 0.3)
-        )  # dist.LogNormal(.5, 5))
-
+        )  
     locust_model = base_model(attraction, wander)
     return locust_model
 

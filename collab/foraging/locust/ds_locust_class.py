@@ -99,10 +99,8 @@ class LocustDS:
                 self.init_state[key].item() == self.prior_samples[key][0, 0, 0].item()
             ), "prior predictive inits are wrong"
 
-    
-    def plot_multiple_trajectories(self, compartment, num_lines=2, priors = False):
+    def plot_multiple_trajectories(self, compartment, num_lines=2, priors=False):
 
-        
         if not priors:
             samples = self.samples
             title = f"Posterior predictions for compartment {compartment}"
@@ -113,19 +111,13 @@ class LocustDS:
         assert num_lines <= samples[compartment].shape[0]
 
         for line in range(num_lines):
-            trajectory = samples[compartment][line,...].flatten().tolist()
+            trajectory = samples[compartment][line, ...].flatten().tolist()
             x = list(range(self.start, self.end))
-            plt = sns.lineplot(
-                x=x,
-                y=trajectory,
-                color="grey",
-                alpha = .4
-            )
+            plt = sns.lineplot(x=x, y=trajectory, color="grey", alpha=0.4)
             plt.set_title(title)
             plt.set_xlabel("time")
             plt.set_ylabel("count")
             sns.despine()
-
 
     def run_inference(
         self, name, num_iterations, lr=0.001, num_samples=150, force=False, save=False

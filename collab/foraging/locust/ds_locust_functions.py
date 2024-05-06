@@ -150,6 +150,11 @@ class LocustDynamics(pyro.nn.PyroModule):
             + a_searchers_le  # 13+
         ) + epsilon
 
+        # We also have a small $\epsilon$ constant
+        # to avoid numerical issues resulting from
+        # multiplying by zero if the relevant compartments
+        # are empty or if flux terms cancel each other.
+
         dX["edge_r"] = (
             -w_edgers_rl  # 2-
             + w_edgers_lr  # 1+

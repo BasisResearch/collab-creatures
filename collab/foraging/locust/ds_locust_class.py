@@ -112,7 +112,7 @@ class LocustDS:
 
         for line in range(num_lines):
             trajectory = samples[compartment][line, ...].flatten().tolist()
-            x = list(range(self.start *10, self.end * 10, 10))
+            x = list(range(self.start * 10, self.end * 10, 10))
             plt = sns.lineplot(x=x, y=trajectory, color="grey", alpha=0.4)
             plt.set_title(title)
             plt.set_xlabel("time")
@@ -287,7 +287,7 @@ class LocustDS:
         ):
             ds_uncertainty_plot(
                 state_pred=samples[state],
-                time = self.logging_times,
+                time=self.logging_times,
                 data=subset[f"{state}_obs"],
                 ylabel=f"# in {state}",
                 color=color,

@@ -231,6 +231,10 @@ class LocustDS:
                 )
 
                 ax.set_title(f"{compartment}")
+                if row == 1:
+                    ax.set_xlabel("time")
+                if col == 0:
+                    ax.set_ylabel("residuals")
 
         all_sq_errors = torch.cat([tensor for tensor in sq_errors.values()])
         all_abs_errors = torch.cat([tensor for tensor in abs_errors.values()])
@@ -253,8 +257,8 @@ class LocustDS:
                 f"Residuals vs. time (overall mae: {mae:.2f}, "
                 f"null mae: {uniform_mae:.2f}, $R^2$: {rsqared:.3f})"
             )
-            plt.xlabel("time")
-            plt.ylabel("residuals")
+            #plt.xlabel("time")
+            #plt.ylabel("residuals")
             plt.legend()
             sns.despine()
             plt.show()
@@ -275,7 +279,7 @@ class LocustDS:
         if subset is None:
             subset = self.subset
 
-        fig, ax = plt.subplots(2, 3, figsize=(15, 5))
+        fig, ax = plt.subplots(2, 3, figsize=(15, 7))
         ax = ax.flatten()
 
         for i, state, color in zip(

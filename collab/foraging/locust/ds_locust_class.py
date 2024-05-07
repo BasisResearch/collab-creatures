@@ -112,7 +112,7 @@ class LocustDS:
 
         for line in range(num_lines):
             trajectory = samples[compartment][line, ...].flatten().tolist()
-            x = list(range(self.start, self.end))
+            x = list(range(self.start *10, self.end * 10, 10))
             plt = sns.lineplot(x=x, y=trajectory, color="grey", alpha=0.4)
             plt.set_title(title)
             plt.set_xlabel("time")
@@ -271,7 +271,7 @@ class LocustDS:
 
     def posterior_check(self, samples=None, subset=None, title=None, save=False):
         if title is None:
-            title = f"Posterior predictive check ({self.start * 10} to {self.end * 10})"
+            title = f"Posterior predictive check ({self.start * 10} to {self.end * 10} seconds)"
         if samples is None:
             samples = self.samples
         if subset is None:

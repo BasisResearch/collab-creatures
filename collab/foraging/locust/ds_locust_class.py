@@ -108,7 +108,6 @@ class LocustDS:
             samples = self.prior_samples
             title = f"Prior predictions for compartment {compartment}"
 
-
         for line in range(num_lines):
             trajectory = samples[compartment][line, ...].flatten().tolist()
             x = list(range(self.start * 10, self.end * 10, 10))

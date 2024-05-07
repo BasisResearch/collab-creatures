@@ -108,7 +108,6 @@ class LocustDS:
             samples = self.prior_samples
             title = f"Prior predictions for compartment {compartment}"
 
-        assert num_lines <= samples[compartment].shape[0]
 
         for line in range(num_lines):
             trajectory = samples[compartment][line, ...].flatten().tolist()

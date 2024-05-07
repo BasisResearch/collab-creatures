@@ -287,6 +287,7 @@ class LocustDS:
         ):
             ds_uncertainty_plot(
                 state_pred=samples[state],
+                time = self.logging_times,
                 data=subset[f"{state}_obs"],
                 ylabel=f"# in {state}",
                 color=color,

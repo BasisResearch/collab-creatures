@@ -150,6 +150,11 @@ class LocustDynamics(pyro.nn.PyroModule):
             + a_searchers_le  # 13+
         ) + epsilon
 
+        # We also have a small $\epsilon$ constant
+        # to avoid numerical issues resulting from
+        # multiplying by zero if the relevant compartments
+        # are empty or if flux terms cancel each other.
+
         dX["edge_r"] = (
             -w_edgers_rl  # 2-
             + w_edgers_lr  # 1+
@@ -213,14 +218,9 @@ class LocustDynamics(pyro.nn.PyroModule):
 
 def bayesian_locust(base_model=LocustDynamics) -> Dynamics[torch.Tensor]:
     with pyro.plate("attr", size=5):
-        attraction = pyro.sample(
-            "attraction", dist.Uniform(0.00001, 0.1)
-        )  # dist.LogNormal(.3, 8))
+        attraction = pyro.sample("attraction", dist.Uniform(0.00001, 0.1))
     with pyro.plate("wond", size=4):
-        wander = pyro.sample(
-            "wander", dist.Uniform(0.00001, 0.3)
-        )  # dist.LogNormal(.5, 5))
-
+        wander = pyro.sample("wander", dist.Uniform(0.00001, 0.3))
     locust_model = base_model(attraction, wander)
     return locust_model
 

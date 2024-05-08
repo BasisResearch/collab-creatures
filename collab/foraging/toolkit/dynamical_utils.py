@@ -31,7 +31,7 @@ def add_ring(
     _condition = (
         (df_c["state"] == "unclassified")
         & (df_c["_distance"] <= outside_radius)
-        & (df_c["_distance"] > inside_radius)
+        & (df_c["_distance"] >= inside_radius)
     )
     if not divide_by_side:
         df_c.loc[_condition, "state"] = name
@@ -177,7 +177,7 @@ def ds_predictive_plot(
         torch.quantile(state_pred, 0.975, dim=0).squeeze(),
         alpha=0.2,
         color=color,
-        label="95% credible interval",
+        label="95% credible interval of predicted mean",
     )
 
     ax.set_xlabel("time")

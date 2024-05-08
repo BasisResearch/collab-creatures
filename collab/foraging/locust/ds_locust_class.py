@@ -2,6 +2,7 @@ import os
 
 import dill
 import matplotlib.pyplot as plt
+import seaborn as sns
 import torch
 from chirho.dynamical.handlers import LogTrajectory
 from chirho.dynamical.handlers.solver import TorchDiffEq
@@ -52,19 +53,18 @@ class LocustDS:
         # assert self.subset['edge_l_obs'].shape[0] == self.end - self.start
 
         self.init_state = self.c_data["init_state"]
+        self.N = torch.sum((torch.stack(list(self.init_state.values()))))
 
         self.piecemeal_path = os.path.join(self.root, "data/foraging/locust/ds/")
         self.validation = {}
 
     def simulate_trajectories(self, true_attraction, true_wander, init_state=None):
-        if init_state is None:
-            init_state = self.init_state
 
         locust_true = LocustDynamics(true_attraction, true_wander)
         with TorchDiffEq(
             method="rk4",
         ), LogTrajectory(self.logging_times) as lt:
-            simulate(locust_true, init_state, self.start_tensor, self.end_tensor)
+            simulate(locust_true, self.init_state, self.start_tensor, self.end_tensor)
 
         self.simulated_traj = lt.trajectory
 
@@ -75,7 +75,8 @@ class LocustDS:
 
     def get_prior_samples(self, num_samples, force=False):
         self.priors_path = os.path.join(
-            self.piecemeal_path, f"priors_sam{num_samples}.pkl"
+            self.piecemeal_path,
+            f"priors_sam{num_samples}_{self.data_code}_s{self.start}_e{self.end}.pkl",
         )
         if os.path.exists(self.priors_path) and not force:
             with open(self.priors_path, "rb") as file:
@@ -92,6 +93,29 @@ class LocustDS:
 
             with open(self.priors_path, "wb") as file:
                 dill.dump(prior_samples, file)
+
+        for key in self.init_state.keys():
+            assert (
+                self.init_state[key].item() == self.prior_samples[key][0, 0, 0].item()
+            ), "prior predictive inits are wrong"
+
+    def plot_multiple_trajectories(self, compartment, num_lines=2, priors=False):
+
+        if not priors:
+            samples = self.samples
+            title = f"Posterior predictions for compartment {compartment}"
+        else:
+            samples = self.prior_samples
+            title = f"Prior predictions for compartment {compartment}"
+
+        for line in range(num_lines):
+            trajectory = samples[compartment][line, ...].flatten().tolist()
+            x = list(range(self.start * 10, self.end * 10, 10))
+            plt = sns.lineplot(x=x, y=trajectory, color="grey", alpha=0.4)
+            plt.set_title(title)
+            plt.set_xlabel("time")
+            plt.set_ylabel("count")
+            sns.despine()
 
     def run_inference(
         self, name, num_iterations, lr=0.001, num_samples=150, force=False, save=False
@@ -131,77 +155,131 @@ class LocustDS:
                 with open(self.file_path, "wb") as new_file:
                     dill.dump(self.samples, new_file)
 
-    def evaluate(self, samples=None, subset=None, check=True):
-        if samples is None:
-            samples = self.samples
-        if subset is None:
-            subset = self.subset
+        for key in self.init_state.keys():
+            assert (
+                self.init_state[key].item() == self.samples[key][0, 0, 0].item()
+            ), "predictive inits are wrong"
+
+    def evaluate(self, samples, subset, check=True, figure=True, plot_null_model=True):
+
+        uniform_preds = {}
+        uniform_residuals = {}
+        uniform_abs_errors = {}
+        uniform_sq_errors = {}
 
         mean_preds = {}
+        residuals = {}
         abs_errors = {}
         sq_errors = {}
-        maes = {}
-        mses = {}
-        for compartment in [
-            "edge_l",
-            "edge_r",
-            "feed_l",
-            "feed_r",
-            "search_l",
-            "search_r",
-        ]:
-            mean_preds[compartment] = samples[compartment].mean(dim=0)
-            abs_errors[compartment] = torch.abs(
-                subset[f"{compartment}_obs"] - mean_preds[compartment]
-            )
-            sq_errors[compartment] = torch.square(abs_errors[compartment])
-            maes[compartment] = abs_errors[compartment].mean()
-            mses[compartment] = sq_errors[compartment].mean()
-            all_abs_errors = torch.cat([tensor for tensor in abs_errors.values()])
-            all_sq_errors = torch.cat([tensor for tensor in sq_errors.values()])
-            mae_mean = torch.mean(all_abs_errors).item()
-            mse_mean = torch.mean(all_sq_errors).item()
 
-            mean_count_overall = torch.mean(
-                torch.concat([subset[key] for key in subset.keys()])
+        compartment_colors = {
+            "edge_l": "green",
+            "edge_r": "darkgreen",
+            "feed_l": "red",
+            "feed_r": "darkred",
+            "search_l": "orange",
+            "search_r": "darkorange",
+        }
+
+        if figure:
+            fig, axs = plt.subplots(2, 3, figsize=(15, 10))
+
+        for i, compartment in enumerate(compartment_colors.keys()):
+
+            mean_preds[compartment] = samples[compartment].mean(dim=0)
+            # ran into a bug here before, hence assertion
+            assert samples[compartment][0, 0, 0] == mean_preds[compartment][0][0]
+
+            residuals[compartment] = (
+                mean_preds[compartment] - subset[f"{compartment}_obs"]
             )
-            null_mse = torch.mean(
-                torch.concat(
-                    [
-                        torch.pow(torch.abs(subset[key] - mean_count_overall), 2)
-                        for key in self.subset.keys()
-                    ]
+            abs_errors[compartment] = torch.abs(residuals[compartment])
+            sq_errors[compartment] = torch.square(abs_errors[compartment])
+
+            uniform_preds[compartment] = (self.N / 6).expand(
+                mean_preds[compartment].shape
+            )
+
+            assert uniform_preds[compartment].shape == mean_preds[compartment].shape
+
+            uniform_residuals[compartment] = (
+                uniform_preds[compartment] - subset[f"{compartment}_obs"]
+            )
+            uniform_abs_errors[compartment] = torch.abs(uniform_residuals[compartment])
+            uniform_sq_errors[compartment] = torch.square(
+                uniform_abs_errors[compartment]
+            )
+
+            if figure:
+                row = i // 3
+                col = i % 3
+                ax = axs[row, col]
+
+                if plot_null_model:
+                    ax.scatter(
+                        y=uniform_residuals[compartment].flatten(),
+                        x=self.logging_times,
+                        color="grey",
+                        label="null model",
+                    )
+
+                ax.scatter(
+                    y=residuals[compartment].flatten(),
+                    x=self.logging_times,
+                    color=compartment_colors[compartment],
+                    label=compartment,
                 )
+
+                ax.set_title(f"{compartment}")
+                if row == 1:
+                    ax.set_xlabel("time")
+                if col == 0:
+                    ax.set_ylabel("residuals")
+
+        all_sq_errors = torch.cat([tensor for tensor in sq_errors.values()])
+        all_abs_errors = torch.cat([tensor for tensor in abs_errors.values()])
+        mse = torch.mean(all_sq_errors).item()
+        mae = torch.mean(all_abs_errors).item()
+
+        all_uniform_sq_errors = torch.cat(
+            [tensor for tensor in uniform_sq_errors.values()]
+        )
+        all_uniform_abs_errors = torch.cat(
+            [tensor for tensor in uniform_abs_errors.values()]
+        )
+
+        uniform_mse = torch.mean(all_uniform_sq_errors).item()
+        uniform_mae = torch.mean(all_uniform_abs_errors).item()
+        rsqared = 1 - mse / uniform_mse
+
+        if figure:
+            fig.suptitle(
+                f"Residuals vs. time (overall mae: {mae:.2f}, "
+                f"null mae: {uniform_mae:.2f}, $R^2$: {rsqared:.3f})"
             )
-            rsquared = 1 - (mse_mean / null_mse)
+            # plt.xlabel("time")
+            # plt.ylabel("residuals")
+            plt.legend()
+            sns.despine()
+            plt.show()
 
         if check:
-            self.null_mse = null_mse
-            self.mae_mean = mae_mean
-            self.mse_mean = mse_mean
-            self.maes = maes
-            self.mses = mses
-            self.rsquared = rsquared
+            self.mae = mae
+            self.null_mae = uniform_mae
+            self.rsquared = rsqared
 
         else:
-            return {
-                "null_mse": null_mse,
-                "mae_mean": mae_mean,
-                "mse_mean": mse_mean,
-                "maes": maes,
-                "mses": mses,
-                "rsquared": rsquared,
-            }
+            return {"mae": mae, "null_mae": uniform_mae, "rsquared": rsqared}
 
     def posterior_check(self, samples=None, subset=None, title=None, save=False):
         if title is None:
-            title = f"Posterior predictive check ({self.start * 10} to {self.end * 10})"
+            title = f"Posterior predictive check ({self.start * 10} to {self.end * 10} seconds)"
         if samples is None:
             samples = self.samples
         if subset is None:
             subset = self.subset
 
-        fig, ax = plt.subplots(2, 3, figsize=(15, 5))
+        fig, ax = plt.subplots(2, 3, figsize=(15, 7))
         ax = ax.flatten()
 
         for i, state, color in zip(
@@ -211,6 +289,7 @@ class LocustDS:
         ):
             ds_uncertainty_plot(
                 state_pred=samples[state],
+                time=self.logging_times,
                 data=subset[f"{state}_obs"],
                 ylabel=f"# in {state}",
                 color=color,
@@ -244,7 +323,9 @@ class LocustDS:
         lr=0.001,
         num_samples=150,
         force=False,
+        save=False,
         name="length",
+        figure=True,
     ):
         self.v_data_path = os.path.join(
             self.root,
@@ -254,11 +335,9 @@ class LocustDS:
         with open(self.v_data_path, "rb") as f:
             validation_data = dill.load(f)
 
-        self.validation_count_data = validation_data["count_data"]
+        self.v_count_data = validation_data["count_data"]
 
-        self.v_data = get_count_data_subset(
-            self.validation_count_data, self.start, self.end
-        )
+        self.v_data = get_count_data_subset(self.v_count_data, self.start, self.end)
 
         self.v_subset = self.v_data["count_subset"]
         self.v_init_state = self.v_data["init_state"]
@@ -295,9 +374,15 @@ class LocustDS:
                 self.v_init_state, self.start_tensor, self.logging_times
             )
 
-            with open(self.v_file_path, "wb") as new_v_file:
-                dill.dump(self.v_samples, new_v_file)
+            if save:
+                with open(self.v_file_path, "wb") as new_v_file:
+                    dill.dump(self.v_samples, new_v_file)
+
+        for key in self.v_init_state.keys():
+            assert (
+                self.v_init_state[key].item() == self.v_samples[key][0, 0, 0].item()
+            ), "validation inits are wrong"
 
         self.validation[validation_data_code] = self.evaluate(
-            samples=self.v_samples, subset=self.v_subset, check=False
+            samples=self.v_samples, subset=self.v_subset, check=False, figure=figure
         )

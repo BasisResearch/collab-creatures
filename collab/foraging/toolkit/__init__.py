@@ -39,3 +39,7 @@ from .utils import (  # noqa: F401
     update_rewards,
 )
 from .visibility import construct_visibility, visibility_vs_distance  # noqa: F401
+
+from .velocity import add_velocities_to_foragers  # noqa: F401
+
+

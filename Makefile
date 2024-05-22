@@ -5,7 +5,7 @@ format:
 	./scripts/clean.sh
 
 tests: FORCE
-	pytest -v tests
+	python -m pytest -v tests
 	./scripts/test_notebooks.sh
 
 FORCE:

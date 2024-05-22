@@ -1,8 +1,6 @@
 name: Test notebooks
 
 on:
-    schedule:
-      - cron: '0 0 * * 6'  # Run at midnight on Saturdays
     push:
       branches: [ main ]
     pull_request:

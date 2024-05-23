@@ -26,7 +26,7 @@ def test_add_velocities_to_foragers():
 
     sampling_rate = 0.01
 
-    if not "CI" in os.environ:
+    if "CI" not in os.environ:
         path = os.path.join(
             root,
             f"data/foraging/central_park_birds_cleaned_2022/central_park_objects_sampling_rate_{sampling_rate}.pkl",
@@ -61,6 +61,6 @@ def test_add_velocities_to_foragers():
     # for simulated data, just check if the columns are added
     assert foragers[0].shape[1] == 7
 
-    if not "CI" in os.environ:
+    if "CI" not in os.environ:
         add_velocities_to_foragers(ducks_50.foragers)
         assert ducks_50.foragers[0].shape[1] == 6

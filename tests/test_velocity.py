@@ -26,16 +26,16 @@ def test_add_velocities_to_foragers():
 
     sampling_rate = 0.01
 
-    path = os.path.join(
-        root,
-        f"data/foraging/central_park_birds_cleaned_2022/central_park_objects_sampling_rate_{sampling_rate}.pkl",
-    )
+    if not "CI" in os.environ:
+        path = os.path.join(
+            root,
+            f"data/foraging/central_park_birds_cleaned_2022/central_park_objects_sampling_rate_{sampling_rate}.pkl",
+        )
+        with open(path, "rb") as file:
+            central_park_objects = dill.load(file)
 
-    with open(path, "rb") as file:
-        central_park_objects = dill.load(file)
-
-    ducks_objects = central_park_objects[0]
-    ducks_50 = ducks_objects[50]
+        ducks_objects = central_park_objects[0]
+        ducks_50 = ducks_objects[50]
 
     df1 = pd.DataFrame(data1)
     df2 = pd.DataFrame(data2)
@@ -58,8 +58,9 @@ def test_add_velocities_to_foragers():
     foragers = random_foragers_sim.foragers
     add_velocities_to_foragers(foragers)
 
-    add_velocities_to_foragers(ducks_50.foragers)
-
     # for simulated data, just check if the columns are added
     assert foragers[0].shape[1] == 7
-    assert ducks_50.foragers[0].shape[1] == 6
+
+    if not "CI" in os.environ:
+        add_velocities_to_foragers(ducks_50.foragers)
+        assert ducks_50.foragers[0].shape[1] == 6

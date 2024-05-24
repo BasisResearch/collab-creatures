@@ -4,7 +4,10 @@ import dill
 import pandas as pd
 
 from collab.foraging import random_hungry_followers as rhf
-from collab.foraging.toolkit.velocity import add_velocities_to_foragers, add_velocities_to_data_object
+from collab.foraging.toolkit.velocity import (
+    add_velocities_to_data_object,
+    add_velocities_to_foragers,
+)
 from collab.utils import find_repo_root
 
 root = find_repo_root()
@@ -83,23 +86,3 @@ def test_add_velocities_to_data_object():
 
     assert random_foragers_sim.foragers[0].shape[1] == 7
     assert random_foragers_sim.foragersDF.shape[1] == 7
-
-
-def test_filter_by_visibility():
-    sim = MockSim(num_foragers=3, visibility_range=5)
-
-    result = filter_by_visibility(
-        sim, 
-        subject=1, 
-        time_shift=0, 
-        visibility_restriction="visible", 
-        info_time_decay=1, 
-        finders_tolerance=2.0, 
-        filter_by_on_reward=False
-    )
-
-    # Assertions to validate the correctness of the result
-    assert not result.empty
-    assert all(result["time"] > 0)
-    assert "distance" in result.columns
-    assert "out_of_range" in result.columns

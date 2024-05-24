@@ -32,7 +32,6 @@ def derive_predictors(
     random_seed=42,
     visibility_restriction="visible",
     filter_by_on_reward=False,
-
     dropna=True,
 ):
     sim.visibility_restriction = visibility_restriction

@@ -30,10 +30,13 @@ def derive_predictors(
     time_shift=0,
     sampling_rate=1,
     random_seed=42,
-    restrict_to_invisible=True,
+    visibility_restriction="visible",
+    filter_by_on_reward=False,
+
     dropna=True,
 ):
-    sim.restrict_to_invisible = restrict_to_invisible
+    sim.visibility_restriction = visibility_restriction
+    sim.filter_by_on_reward = filter_by_on_reward
 
     grid = generate_grid(sim.grid_size)
 
@@ -102,7 +105,8 @@ def derive_predictors(
             finders_tolerance=finders_tolerance,
             time_shift=time_shift,
             grid=grid,
-            restrict_to_invisible=sim.restrict_to_invisible,
+            visibility_restriction=sim.visibility_restriction,
+            filter_by_on_reward=sim.filter_by_on_reward,
         )
         sim.communicates = com["communicates"]
         sim.communicatesDF = com["communicatesDF"]

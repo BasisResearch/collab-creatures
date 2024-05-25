@@ -30,7 +30,6 @@ def generate_communicates(
             filter_by_on_reward=filter_by_on_reward,
         )
 
-
         if grid is None:
             grid = generate_grid(sim.grid_size)
 

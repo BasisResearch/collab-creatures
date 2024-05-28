@@ -254,8 +254,18 @@ def animate_foragers(
         fig.show()
 
 
+import torch
+import pandas as pd
+import numpy as np
+import plotly.express as px
+from typing import List, Optional
+
 def visualise_forager_predictors(
-    tr, prox, hf, com=None, vel = None, sampling_rate=1, titles=None, x_axis_labels=None
+    outcome: torch.Tensor,
+    predictors: List[torch.Tensor],
+    predictor_names: List[str],
+    outcome_name: str,
+    sampling_rate: float = 1.0,
 ):
     def sample_tensor(tensor, sampling_rate):
         sample_size = int(sampling_rate * len(tensor))
@@ -268,126 +278,38 @@ def visualise_forager_predictors(
             return tr.copy()
 
     if sampling_rate != 1:
-        tr_sub = sample_tensor(tr, sampling_rate)
-        prox_sub = sample_tensor(prox, sampling_rate)
-        hf_sub = sample_tensor(hf, sampling_rate)
-        if com is not None:
-            com_sub = sample_tensor(com, sampling_rate)
-        if vel is not None:
-            vel_sub = sample_tensor(vel, sampling_rate)
+        outcome_sub = sample_tensor(outcome, sampling_rate)
+        predictors_sub = [sample_tensor(predictor, sampling_rate) for predictor in predictors]
     else:
-        tr_sub = custom_copy(tr)
-        prox_sub = custom_copy(prox)
-        hf_sub = custom_copy(hf)
-        if com is not None:
-            com_sub = custom_copy(com)
-        if vel is not None:
-            vel_sub = custom_copy(vel)
+        outcome_sub = custom_copy(outcome)
+        predictors_sub = [custom_copy(predictor) for predictor in predictors]
 
-    df = pd.DataFrame(
-            {"trace": tr_sub, "proximity": prox_sub, "how_far_score": hf_sub}
-        )
+    df = pd.DataFrame({"outcome": outcome_sub})
+    for name, predictor_sub in zip(predictor_names, predictors_sub):
+        df[name] = predictor_sub
 
-    if com is not None:
-        df['communicate'] = com_sub
-
-    if vel is not None:
-        df['velocity'] = vel_sub    
-
-    fig = px.scatter(
-        df,
-        x="trace",
-        y="how_far_score",
-        opacity=0.3,
-        template="presentation",
-        width=700,
-    )
-
-    if titles is None:
-        fig.update_layout(
-            title="Trace",
-            xaxis_title="trace",
-            yaxis_title="how far score",
-        )
-    else:
-        fig.update_layout(
-            title=titles[0],
-            xaxis_title=x_axis_labels[0].lower(),
-            yaxis_title="how far score",
-        )
-
-    fig2 = px.scatter(
-        df,
-        x="proximity",
-        y="how_far_score",
-        opacity=0.3,
-        template="presentation",
-        width=700,
-    )
-
-    if titles is None:
-        fig2.update_layout(
-            title="Proximity",
-            xaxis_title="proximity",
-            yaxis_title="how far score",
-        )
-    else:
-        fig2.update_layout(
-            title=titles[1],
-            xaxis_title=x_axis_labels[1].lower(),
-            yaxis_title="how far score",
-        )
-
-    fig.update_traces(marker={"size": 4})
-    fig2.update_traces(marker={"size": 4})
-
-    fig.update_xaxes(showgrid=False)
-    fig.update_yaxes(showgrid=False)
-    fig2.update_xaxes(showgrid=False)
-    fig2.update_yaxes(showgrid=False)
-
-    fig.show()
-    fig2.show()
-
-    if com is not None:
-        fig3 = px.scatter(
+    for idx, name in enumerate(predictor_names):
+        fig = px.scatter(
             df,
-            title="Communication",
-            x="communicate",
-            y="how_far_score",
+            x=name,
+            y="outcome",
             opacity=0.3,
             template="presentation",
             width=700,
         )
 
-        fig3.update_layout(
-            yaxis_title="how far score",
+        
+        fig.update_layout(
+            title=name.capitalize(),
+            xaxis_title=name,
+            yaxis_title=outcome_name,
         )
-        fig3.update_traces(marker={"size": 4})
-        fig3.update_xaxes(showgrid=False)
-        fig3.update_yaxes(showgrid=False)
+    
+        fig.update_traces(marker={"size": 4})
+        fig.update_xaxes(showgrid=False)
+        fig.update_yaxes(showgrid=False)
+        fig.show()
 
-        fig3.show()
-
-    if vel is not None:
-        fig4 = px.scatter(
-            df,
-            title="Velocity",
-            x="velocity",
-            y="how_far_score",
-            opacity=0.3,
-            template="presentation",
-            width=700,
-        )
-
-        fig4.update_layout(
-            yaxis_title="how far score",
-        )
-        fig4.update_traces(marker={"size": 4})
-        fig4.update_xaxes(showgrid=False)
-        fig4.update_yaxes(showgrid=False)
-
-        fig4.show()
 
 
 def plot_coefs(

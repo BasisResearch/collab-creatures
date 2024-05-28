@@ -1,10 +1,11 @@
 from typing import List
 
-import pandas as pd
-from collab.foraging.toolkit.visibility import filter_by_visibility
-from collab.foraging.toolkit.utils import generate_grid
-from collab.foraging.toolkit.trace import rewards_trace
 import numpy as np
+import pandas as pd
+
+from collab.foraging.toolkit.trace import rewards_trace
+from collab.foraging.toolkit.utils import generate_grid
+from collab.foraging.toolkit.visibility import filter_by_visibility
 
 
 def add_velocities_to_foragers(foragers: List[pd.DataFrame]) -> None:
@@ -37,8 +38,8 @@ def generate_velocity_scores(
             time_shift=time_shift,
             visibility_restriction=visibility_restriction,
             info_time_decay=velocity_time_decay,
-            finders_tolerance=2, # not used in velocity calculations
-            filter_by_on_reward= False, # not used in velocity calculations
+            finders_tolerance=2,  # not used in velocity calculations
+            filter_by_on_reward=False,  # not used in velocity calculations
         )
 
         if grid is None:
@@ -54,15 +55,16 @@ def generate_velocity_scores(
             velocity_score["time"] = t
             velocity_score["velocity_score"] = 0
             velocity_score["velocity_score_standardized"] = 0
-           
 
-            subject_at_t = sim.foragersDF[(sim.foragersDF["forager"] == subject) & (sim.foragersDF["time"] == t)]
+            subject_at_t = sim.foragersDF[
+                (sim.foragersDF["forager"] == subject) & (sim.foragersDF["time"] == t)
+            ]
             subject_x_at_t = subject_at_t["x"].iloc[0]
             subject_y_at_t = subject_at_t["y"].iloc[0]
 
             if slice_t.shape[0] > 0:
-                shifted_velocity_x = list(subject_x_at_t + slice_t['velocity_x'])
-                shifted_velocity_y = list(subject_y_at_t + slice_t['velocity_y'])
+                shifted_velocity_x = list(subject_x_at_t + slice_t["velocity_x"])
+                shifted_velocity_y = list(subject_y_at_t + slice_t["velocity_y"])
 
                 for _step in range(slice_t.shape[0]):
                     velocity_score["velocity_score"] += rewards_trace(
@@ -74,7 +76,8 @@ def generate_velocity_scores(
                     )
 
             velocity_score["velocity_score_standardized"] = (
-                velocity_score["velocity_score"] - velocity_score["velocity_score"].mean()
+                velocity_score["velocity_score"]
+                - velocity_score["velocity_score"].mean()
             ) / velocity_score["velocity_score"].std()
 
             velocity_score["time"] = velocity_score["time"]

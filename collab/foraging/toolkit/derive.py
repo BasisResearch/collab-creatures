@@ -130,4 +130,3 @@ def derive_predictors(
         sim.derivedDF.dropna(inplace=True)
 
     return sim
-

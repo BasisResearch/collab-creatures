@@ -53,10 +53,12 @@ def animate_foragers(
     plot_visibility=0,
     plot_proximity=0,
     plot_communicate=0,
+    plot_velocity=0,
     trace_multiplier=10,
     visibility_multiplier=10,
     proximity_multiplier=10,
     communicate_multiplier=10,
+    velocity_multiplier=10,
     color_by_state=False,
     produce_object=False,
 ):
@@ -98,6 +100,15 @@ def animate_foragers(
         com = com.reset_index(drop=True)
         df = df.reset_index(drop=True)
         df = pd.concat([com, df], axis=0, ignore_index=True, verify_integrity=True)
+
+    if plot_velocity > 0:
+        vel = sim.velocity_scoresDF.copy()
+        vel = vel[vel["forager"] == plot_velocity]
+        vel["who"] = vel["forager"]
+        vel["forager"] = "velocity"
+        vel = vel.reset_index(drop=True)
+        df = df.reset_index(drop=True)
+        df = pd.concat([vel, df], axis=0, ignore_index=True, verify_integrity=True)
 
     if not color_by_state:
         fig = px.scatter(df, x="x", y="y", animation_frame="time", color="forager")
@@ -153,6 +164,21 @@ def animate_foragers(
                     trace.marker.symbol = "square"
                     trace.marker.color = "yellow"
                     trace.showlegend = False
+
+    if plot_velocity > 0:
+        fig.update_traces(showlegend=False, selector=dict(name="velocity"))
+
+        for t in range(0, len(fig.frames)):
+            selected_rows = vel[(vel["time"] == t + 1)]
+            for trace in fig.frames[t].data:
+                if trace.name == "velocity":
+                    trace.marker.symbol = "circle"
+                    trace.marker.color = "red"
+                    trace.showlegend = False
+                    trace.marker.size = (
+                        selected_rows["velocity_score"] * velocity_multiplier
+                    )
+                    trace.marker.opacity = 0.3
 
     if plot_communicate > 0:
         fig.update_traces(showlegend=False, selector=dict(name="communicate"))
@@ -229,10 +255,10 @@ def animate_foragers(
 
 
 def visualise_forager_predictors(
-    tr, prox, hf, com=None, vis_sampling_rate=1, titles=None, x_axis_labels=None
+    tr, prox, hf, com=None, vel = None, sampling_rate=1, titles=None, x_axis_labels=None
 ):
-    def sample_tensor(tensor, vis_sampling_rate):
-        sample_size = int(vis_sampling_rate * len(tensor))
+    def sample_tensor(tensor, sampling_rate):
+        sample_size = int(sampling_rate * len(tensor))
         return np.random.choice(tensor, size=sample_size, replace=False)
 
     def custom_copy(tr):
@@ -241,32 +267,32 @@ def visualise_forager_predictors(
         else:
             return tr.copy()
 
-    if vis_sampling_rate != 1:
-        tr_sub = sample_tensor(tr, vis_sampling_rate)
-        prox_sub = sample_tensor(prox, vis_sampling_rate)
-        hf_sub = sample_tensor(hf, vis_sampling_rate)
+    if sampling_rate != 1:
+        tr_sub = sample_tensor(tr, sampling_rate)
+        prox_sub = sample_tensor(prox, sampling_rate)
+        hf_sub = sample_tensor(hf, sampling_rate)
         if com is not None:
-            com_sub = sample_tensor(com, vis_sampling_rate)
+            com_sub = sample_tensor(com, sampling_rate)
+        if vel is not None:
+            vel_sub = sample_tensor(vel, sampling_rate)
     else:
         tr_sub = custom_copy(tr)
         prox_sub = custom_copy(prox)
         hf_sub = custom_copy(hf)
         if com is not None:
             com_sub = custom_copy(com)
+        if vel is not None:
+            vel_sub = custom_copy(vel)
 
-    if com is not None:
-        df = pd.DataFrame(
-            {
-                "trace": tr_sub,
-                "proximity": prox_sub,
-                "communicate": com_sub,
-                "how_far_score": hf_sub,
-            }
-        )
-    else:
-        df = pd.DataFrame(
+    df = pd.DataFrame(
             {"trace": tr_sub, "proximity": prox_sub, "how_far_score": hf_sub}
         )
+
+    if com is not None:
+        df['communicate'] = com_sub
+
+    if vel is not None:
+        df['velocity'] = vel_sub    
 
     fig = px.scatter(
         df,
@@ -343,6 +369,26 @@ def visualise_forager_predictors(
 
         fig3.show()
 
+    if vel is not None:
+        fig4 = px.scatter(
+            df,
+            title="Velocity",
+            x="velocity",
+            y="how_far_score",
+            opacity=0.3,
+            template="presentation",
+            width=700,
+        )
+
+        fig4.update_layout(
+            yaxis_title="how far score",
+        )
+        fig4.update_traces(marker={"size": 4})
+        fig4.update_xaxes(showgrid=False)
+        fig4.update_yaxes(showgrid=False)
+
+        fig4.show()
+
 
 def plot_coefs(
     samples, title, nbins=20, ann_start_y=100, ann_break_y=50, generate_object=False
@@ -399,100 +445,3 @@ def plot_coefs(
     if generate_object:
         return fig_coefs
 
-
-# def visualise_forager_predictors(tr, prox, hf, com=None, vis_sampling_rate=1):
-#     def sample_tensor(tensor, vis_sampling_rate):
-#         sample_size = int(vis_sampling_rate * len(tensor))
-#         return np.random.choice(tensor, size=sample_size, replace=False)
-
-#     def custom_copy(tr):
-#         if isinstance(tr, torch.Tensor):
-#             return tr.clone()
-#         else:
-#             return tr.copy()
-
-#     if vis_sampling_rate != 1:
-#         tr_sub = sample_tensor(tr, vis_sampling_rate)
-#         prox_sub = sample_tensor(prox, vis_sampling_rate)
-#         hf_sub = sample_tensor(hf, vis_sampling_rate)
-#         if com is not None:
-#             com_sub = sample_tensor(com, vis_sampling_rate)
-#     else:
-#         tr_sub = custom_copy(tr)
-#         prox_sub = custom_copy(prox)
-#         hf_sub = custom_copy(hf)
-#         if com is not None:
-#             com_sub = custom_copy(com)
-
-#     if com is not None:
-#         df = pd.DataFrame(
-#             {
-#                 "trace": tr_sub,
-#                 "proximity": prox_sub,
-#                 "communicate": com_sub,
-#                 "how_far_score": hf_sub,
-#             }
-#         )
-#     else:
-#         df = pd.DataFrame(
-#             {"trace": tr_sub, "proximity": prox_sub, "how_far_score": hf_sub}
-#         )
-
-#     fig = px.scatter(
-#         df,
-#         x="trace",
-#         y="how_far_score",
-#         opacity=0.3,
-#         template="presentation",
-#         width=700,
-#     )
-#     fig.update_layout(
-#         title="Trace",
-#         xaxis_title="trace",
-#         yaxis_title="how far score",
-#     )
-
-#     fig2 = px.scatter(
-#         df,
-#         x="proximity",
-#         y="how_far_score",
-#         opacity=0.3,
-#         template="presentation",
-#         width=700,
-#     )
-#     fig2.update_layout(
-#         title="Proximity",
-#         xaxis_title="proximity",
-#         yaxis_title="how far score",
-#     )
-
-#     fig.update_traces(marker={"size": 4})
-#     fig2.update_traces(marker={"size": 4})
-
-#     fig.update_xaxes(showgrid=False)
-#     fig.update_yaxes(showgrid=False)
-#     fig2.update_xaxes(showgrid=False)
-#     fig2.update_yaxes(showgrid=False)
-
-#     fig.show()
-#     fig2.show()
-
-#     if com is not None:
-#         fig3 = px.scatter(
-#             df,
-#             title="Communication",
-#             x="communicate",
-#             y="how_far_score",
-#             opacity=0.3,
-#             template="presentation",
-#             width=700,
-#         )
-
-#         fig3.update_layout(
-#             yaxis_title="how far score",
-#         )
-#         fig3.update_traces(marker={"size": 4})
-#         fig3.update_xaxes(showgrid=False)
-#         fig3.update_yaxes(showgrid=False)
-
-#         fig3.show()

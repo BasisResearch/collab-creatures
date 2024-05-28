@@ -75,10 +75,13 @@ def generate_velocity_scores(
                         velocity_spatial_decay,
                     )
 
-            velocity_score["velocity_score_standardized"] = (
-                velocity_score["velocity_score"]
-                - velocity_score["velocity_score"].mean()
-            ) / velocity_score["velocity_score"].std()
+            if velocity_score["velocity_score"].sum() != 0:
+                velocity_score["velocity_score_standardized"] = (
+                    velocity_score["velocity_score"]
+                    - velocity_score["velocity_score"].mean()
+                ) / velocity_score["velocity_score"].std()
+            else:
+                velocity_score["velocity_score_standardized"] = 0
 
             velocity_score["time"] = velocity_score["time"]
 

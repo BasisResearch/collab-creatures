@@ -18,6 +18,7 @@ def add_how_far_squared_scaled(sim):
             # print(how_far[b][t].head(n=1))
             _hf = how_far[b][t]
             _hf["how_far_squared"] = (_hf["x"] - x_new) ** 2 + (_hf["y"] - y_new) ** 2
+            _hf["how_far"] = np.sqrt(_hf["how_far_squared"])
             _hf["how_far_squared_scaled"] = (
                 -_hf["how_far_squared"]
                 / (2 * (sim.step_size_max + sim.visibility_range) ** 2)
@@ -25,6 +26,7 @@ def add_how_far_squared_scaled(sim):
             )
 
         how_far[b][sim.num_frames - 1]["how_far_squared"] = np.nan
+        how_far[b][sim.num_frames - 1]["how_far"] = np.nan
         how_far[b][sim.num_frames - 1]["how_far_squared_scaled"] = np.nan
 
     sim.how_far = how_far

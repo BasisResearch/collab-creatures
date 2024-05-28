@@ -24,18 +24,18 @@ def derive_predictors(
     optimal=4,
     proximity_decay=1,
     generate_communicates_indicator=True,
-    info_time_decay=3,
-    info_spatial_decay=0.15,
-    finders_tolerance=2,
     time_shift=0,
     sampling_rate=1,
     random_seed=42,
-    visibility_restriction="visible",
-    filter_by_on_reward=False,
+    communicate_visibility_restriction="invisible",
+    communicate_filter_by_on_reward=False,
+    communicate_info_time_decay=3,
+    communicate_info_spatial_decay=0.15,
+    communicate_finders_tolerance=2,
     dropna=True,
 ):
-    sim.visibility_restriction = visibility_restriction
-    sim.filter_by_on_reward = filter_by_on_reward
+    sim.communicate_visibility_restriction = communicate_visibility_restriction
+    sim.communicate_filter_by_on_reward = communicate_filter_by_on_reward
 
     grid = generate_grid(sim.grid_size)
 
@@ -99,13 +99,13 @@ def derive_predictors(
         derivation_logger.info("starting to generate communicates")
         com = generate_communicates(
             sim,
-            info_time_decay,
-            info_spatial_decay,
-            finders_tolerance=finders_tolerance,
+            communicate_info_time_decay,
+            communicate_info_spatial_decay,
+            finders_tolerance=communicate_finders_tolerance,
             time_shift=time_shift,
             grid=grid,
-            visibility_restriction=sim.visibility_restriction,
-            filter_by_on_reward=sim.filter_by_on_reward,
+            visibility_restriction=sim.communicate_visibility_restriction,
+            filter_by_on_reward=sim.communicate_filter_by_on_reward,
         )
         sim.communicates = com["communicates"]
         sim.communicatesDF = com["communicatesDF"]
@@ -131,5 +131,3 @@ def derive_predictors(
 
     return sim
 
-
-# note: there exists a non-approximate version in the archive, if need be

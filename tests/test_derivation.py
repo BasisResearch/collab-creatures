@@ -59,5 +59,4 @@ def test_hungry_derivation():
     hungry_test_data = pd.read_csv(path)
 
     assert hungry_sim_derived.derivedDF.shape[0] == hungry_test_data.shape[0]
-    assert hungry_sim_derived.derivedDF.shape[1] == 15 
-
+    assert hungry_sim_derived.derivedDF.shape[1] == 15

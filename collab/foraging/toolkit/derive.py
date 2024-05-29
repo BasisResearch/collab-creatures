@@ -148,14 +148,14 @@ def derive_predictors(
         sim.velocity_scores = vs["velocity_scores"]
         sim.velocity_scoresDF = vs["velocity_scoresDF"]
 
-
         sim.derivedDF = sim.derivedDF.merge(sim.velocity_scoresDF, how="left")
 
         sim.derivedDF["velocity_score"].fillna(0, inplace=True)
-        sim.velocity_scoresDF.loc[:, "time"] = sim.velocity_scoresDF["time"] - time_shift
+        sim.velocity_scoresDF.loc[:, "time"] = (
+            sim.velocity_scoresDF["time"] - time_shift
+        )
 
         derivation_logger.info("velocity done")
-
 
     pd.set_option("mode.chained_assignment", None)
     sim.rewardsDF.loc[:, "time"] = sim.rewardsDF["time"] - time_shift

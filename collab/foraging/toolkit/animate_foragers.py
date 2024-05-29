@@ -1,3 +1,5 @@
+from typing import List
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -254,18 +256,13 @@ def animate_foragers(
         fig.show()
 
 
-import torch
-import pandas as pd
-import numpy as np
-import plotly.express as px
-from typing import List, Optional
-
 def visualise_forager_predictors(
     outcome: torch.Tensor,
     predictors: List[torch.Tensor],
     predictor_names: List[str],
     outcome_name: str,
     sampling_rate: float = 1.0,
+    titles=None,
 ):
     def sample_tensor(tensor, sampling_rate):
         sample_size = int(sampling_rate * len(tensor))
@@ -279,7 +276,9 @@ def visualise_forager_predictors(
 
     if sampling_rate != 1:
         outcome_sub = sample_tensor(outcome, sampling_rate)
-        predictors_sub = [sample_tensor(predictor, sampling_rate) for predictor in predictors]
+        predictors_sub = [
+            sample_tensor(predictor, sampling_rate) for predictor in predictors
+        ]
     else:
         outcome_sub = custom_copy(outcome)
         predictors_sub = [custom_copy(predictor) for predictor in predictors]
@@ -298,18 +297,18 @@ def visualise_forager_predictors(
             width=700,
         )
 
-        
+        title = titles[idx] if titles else name
+
         fig.update_layout(
-            title=name.capitalize(),
+            title=title.capitalize(),
             xaxis_title=name,
             yaxis_title=outcome_name,
         )
-    
+
         fig.update_traces(marker={"size": 4})
         fig.update_xaxes(showgrid=False)
         fig.update_yaxes(showgrid=False)
         fig.show()
-
 
 
 def plot_coefs(
@@ -366,4 +365,3 @@ def plot_coefs(
 
     if generate_object:
         return fig_coefs
-

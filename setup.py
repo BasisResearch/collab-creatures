@@ -27,7 +27,7 @@ setup(
         "Source": "https://github.com/BasisResearch/collaborative-intelligence",
     },
     install_requires=[
-        "pyro-ppl>=1.8.5", "pandas", "plotly", "plotly.express", 
+        "pyro-ppl>=1.8.5", "pandas==2.2.1", "plotly", "plotly.express", 
         "torch", "scipy", "scikit-learn",
         "matplotlib>=3.8.2", "numpyro", "dill", "torchdiffeq",
         "chirho @ git+https://github.com/BasisResearch/chirho.git#egg=chirho"

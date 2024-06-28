@@ -4,7 +4,10 @@ import dill
 import pandas as pd
 
 from collab.foraging import random_hungry_followers as rhf
-from collab.foraging.toolkit.velocity import add_velocities_to_foragers
+from collab.foraging.toolkit.velocity import (
+    add_velocities_to_data_object,
+    add_velocities_to_foragers,
+)
 from collab.utils import find_repo_root
 
 root = find_repo_root()
@@ -64,3 +67,22 @@ def test_add_velocities_to_foragers():
     if "CI" not in os.environ:
         add_velocities_to_foragers(ducks_50.foragers)
         assert ducks_50.foragers[0].shape[1] == 6
+
+
+def test_add_velocities_to_data_object():
+
+    random_foragers_sim = rhf.RandomForagers(
+        grid_size=40,
+        probabilities=[1, 2, 3, 2, 1, 2, 3, 2, 1],
+        num_foragers=3,
+        num_frames=10,
+        num_rewards=15,
+        grab_range=3,
+    )
+
+    random_foragers_sim()
+
+    add_velocities_to_data_object(random_foragers_sim)
+
+    assert random_foragers_sim.foragers[0].shape[1] == 7
+    assert random_foragers_sim.foragersDF.shape[1] == 7

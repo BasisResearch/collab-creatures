@@ -41,6 +41,7 @@ from .utils import (  # noqa: F401
 from .velocity import (  # noqa: F401
     add_velocities_to_data_object,
     add_velocities_to_foragers,
+    generate_velocity_scores,
 )
 from .visibility import (  # noqa: F401
     construct_visibility,

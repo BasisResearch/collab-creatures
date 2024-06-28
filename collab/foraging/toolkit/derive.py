@@ -7,6 +7,10 @@ from collab.foraging.toolkit.how_far import add_how_far_squared_scaled
 from collab.foraging.toolkit.proximity import generate_proximity_score
 from collab.foraging.toolkit.trace import rewards_to_trace
 from collab.foraging.toolkit.utils import generate_grid
+from collab.foraging.toolkit.velocity import (
+    add_velocities_to_data_object,
+    generate_velocity_scores,
+)
 from collab.foraging.toolkit.visibility import construct_visibility
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
@@ -23,19 +27,29 @@ def derive_predictors(
     getting_worse=1.5,
     optimal=4,
     proximity_decay=1,
-    generate_communicates_indicator=True,
-    info_time_decay=3,
-    info_spatial_decay=0.15,
-    finders_tolerance=2,
+    dropna=True,
     time_shift=0,
     sampling_rate=1,
     random_seed=42,
-    visibility_restriction="visible",
-    filter_by_on_reward=False,
-    dropna=True,
+    # communicates
+    generate_communicates_indicator=False,
+    communicate_visibility_restriction="invisible",
+    communicate_filter_by_on_reward=False,
+    communicate_info_time_decay=3,
+    communicate_info_spatial_decay=0.15,
+    communicate_finders_tolerance=2,
+    # velocity
+    generate_velocity_indicator=False,
+    velocity_time_decay=3,
+    velocity_spatial_decay=0.15,
+    velocity_visibility_restriction="visible",
 ):
-    sim.visibility_restriction = visibility_restriction
-    sim.filter_by_on_reward = filter_by_on_reward
+    sim.communicate_visibility_restriction = communicate_visibility_restriction
+    sim.communicate_filter_by_on_reward = communicate_filter_by_on_reward
+
+    sim.velocity_time_decay = velocity_time_decay
+    sim.velocity_spatial_decay = velocity_spatial_decay
+    sim.velocity_visibility_restriction = velocity_visibility_restriction
 
     grid = generate_grid(sim.grid_size)
 
@@ -99,13 +113,13 @@ def derive_predictors(
         derivation_logger.info("starting to generate communicates")
         com = generate_communicates(
             sim,
-            info_time_decay,
-            info_spatial_decay,
-            finders_tolerance=finders_tolerance,
+            communicate_info_time_decay,
+            communicate_info_spatial_decay,
+            finders_tolerance=communicate_finders_tolerance,
             time_shift=time_shift,
             grid=grid,
-            visibility_restriction=sim.visibility_restriction,
-            filter_by_on_reward=sim.filter_by_on_reward,
+            visibility_restriction=sim.communicate_visibility_restriction,
+            filter_by_on_reward=sim.communicate_filter_by_on_reward,
         )
         sim.communicates = com["communicates"]
         sim.communicatesDF = com["communicatesDF"]
@@ -116,6 +130,32 @@ def derive_predictors(
         sim.communicatesDF.loc[:, "time"] = sim.communicatesDF["time"] - time_shift
 
         derivation_logger.info("communicates done")
+
+    if generate_velocity_indicator:
+        derivation_logger.info("starting to generate velocity")
+
+        add_velocities_to_data_object(sim)
+
+        vs = generate_velocity_scores(
+            sim,
+            velocity_time_decay=sim.velocity_time_decay,
+            velocity_spatial_decay=sim.velocity_spatial_decay,
+            time_shift=time_shift,
+            grid=grid,
+            visibility_restriction=sim.velocity_visibility_restriction,
+        )
+
+        sim.velocity_scores = vs["velocity_scores"]
+        sim.velocity_scoresDF = vs["velocity_scoresDF"]
+
+        sim.derivedDF = sim.derivedDF.merge(sim.velocity_scoresDF, how="left")
+
+        sim.derivedDF["velocity_score"].fillna(0, inplace=True)
+        sim.velocity_scoresDF.loc[:, "time"] = (
+            sim.velocity_scoresDF["time"] - time_shift
+        )
+
+        derivation_logger.info("velocity done")
 
     pd.set_option("mode.chained_assignment", None)
     sim.rewardsDF.loc[:, "time"] = sim.rewardsDF["time"] - time_shift
@@ -130,6 +170,3 @@ def derive_predictors(
         sim.derivedDF.dropna(inplace=True)
 
     return sim
-
-
-# note: there exists a non-approximate version in the archive, if need be

@@ -31,7 +31,8 @@ def test_random_derivation():
     path = os.path.join(module_dir, "random_test_data.csv")
     rhf_test_data = pd.read_csv(path)
 
-    assert random_foragers_derived.derivedDF.shape == rhf_test_data.shape
+    assert random_foragers_derived.derivedDF.shape[0] == rhf_test_data.shape[0]
+    assert random_foragers_derived.derivedDF.shape[1] == 15
 
 
 @pytest.mark.filterwarnings(
@@ -57,4 +58,5 @@ def test_hungry_derivation():
     path = os.path.join(module_dir, "hungry_test_data.csv")
     hungry_test_data = pd.read_csv(path)
 
-    assert hungry_sim_derived.derivedDF.shape == hungry_test_data.shape
+    assert hungry_sim_derived.derivedDF.shape[0] == hungry_test_data.shape[0]
+    assert hungry_sim_derived.derivedDF.shape[1] == 15

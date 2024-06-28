@@ -42,6 +42,9 @@ def generate_velocity_scores(
             filter_by_on_reward=False,  # not used in velocity calculations
         )
 
+        # Transformations should be here
+
+        
         if grid is None:
             grid = generate_grid(sim.grid_size)
 

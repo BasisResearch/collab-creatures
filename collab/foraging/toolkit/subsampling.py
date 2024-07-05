@@ -20,6 +20,7 @@ def subset_frames_evenly_spaced(df_raw, desired_frames=300):
     return df
 
 
+# this needs work
 def rescale_to_grid(df, size):
     def rescale_column(column, size=size):
         mapped = (column - column.min()) / (column.max() - column.min())

@@ -21,19 +21,20 @@ def subset_frames_evenly_spaced(df_raw, desired_frames=300):
 
 
 # updated function to allow user to pass min and max
-def rescale_to_grid(df, size, gridMax=None, gridMin=None):
-    def rescale_column(column, size=size, gridMax=None, gridMin=None):
-        if gridMax is None:
-            gridMax = column.max()
+def rescale_to_grid(df, size, gridMin=None, gridMax=None):
+    def rescale_column(column, size=size, gridMin=None, gridMax=None):
         if gridMin is None:
             gridMin = column.min()
+        
+        if gridMax is None:
+            gridMax = column.max()
 
         mapped = (column - gridMin) / (gridMax - gridMin)
         rescaled = np.floor(mapped * (size - 1)) + 1
         return rescaled
 
-    df["x"] = rescale_column(df["x"], size, gridMax, gridMin)
-    df["y"] = rescale_column(df["y"], size, gridMax, gridMin)
+    df["x"] = rescale_column(df["x"], size, gridMin, gridMax)
+    df["y"] = rescale_column(df["y"], size, gridMin, gridMax)
     return df
 
 

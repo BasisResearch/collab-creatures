@@ -85,8 +85,6 @@ def load_and_clean_locust(
     # grid thinning half body size (4/2cm) = 2cm
     # the arena is 90cm diameter
 
-
-    
     def rescale_to_grid(column, size):
         mapped = (column + 1) / 2
         rescaled = mapped

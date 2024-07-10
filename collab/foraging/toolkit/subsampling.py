@@ -20,8 +20,8 @@ def subset_frames_evenly_spaced(df_raw, desired_frames=300):
     return df
 
 
-# this needs work
-def rescale_to_grid(df, size,gridMax=None, gridMin=None):
+# updated function to allow user to pass min and max
+def rescale_to_grid(df, size, gridMax=None, gridMin=None):
     def rescale_column(column, size=size, gridMax=None, gridMin=None):
         if gridMax is None:
             gridMax = column.max()

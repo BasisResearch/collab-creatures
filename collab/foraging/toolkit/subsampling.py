@@ -25,7 +25,7 @@ def rescale_to_grid(df, size, gridMin=None, gridMax=None):
     def rescale_column(column, size=size, gridMin=None, gridMax=None):
         if gridMin is None:
             gridMin = column.min()
-        
+
         if gridMax is None:
             gridMax = column.max()
 

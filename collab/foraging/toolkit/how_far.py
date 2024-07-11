@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-
+##PP_comment: cannot concatenate diff. experiment frames without missing fish directly -- how_far_score requires x[t+1] in the calculation 
 def add_how_far_squared_scaled(sim):
     foragers = sim.foragers
     how_far = sim.visibility.copy()

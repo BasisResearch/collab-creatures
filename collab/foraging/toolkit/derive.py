@@ -164,13 +164,15 @@ def derive_predictors(
         derivation_logger.info("velocity done")
 
     pd.set_option("mode.chained_assignment", None)
-    sim.rewardsDF.loc[:, "time"] = sim.rewardsDF["time"] - time_shift
-    sim.foragersDF.loc[:, "time"] = sim.foragersDF["time"] - time_shift
-    sim.tracesDF.loc[:, "time"] = sim.tracesDF["time"] - time_shift
-    sim.visibilityDF.loc[:, "time"] = sim.visibilityDF["time"] - time_shift
-    sim.proximityDF.loc[:, "time"] = sim.proximityDF["time"] - time_shift
-    sim.how_farDF.loc[:, "time"] = sim.how_farDF["time"] - time_shift
-    sim.derivedDF.loc[:, "time"] = sim.derivedDF["time"] - time_shift
+    
+    ##PP_edit : bandaid-y fix is to just turn this off for now as I am not time shifting
+    # sim.rewardsDF.loc[:, "time"] = sim.rewardsDF["time"] - time_shift
+    # sim.foragersDF.loc[:, "time"] = sim.foragersDF["time"] - time_shift
+    # sim.tracesDF.loc[:, "time"] = sim.tracesDF["time"] - time_shift
+    # sim.visibilityDF.loc[:, "time"] = sim.visibilityDF["time"] - time_shift
+    # sim.proximityDF.loc[:, "time"] = sim.proximityDF["time"] - time_shift
+    # sim.how_farDF.loc[:, "time"] = sim.how_farDF["time"] - time_shift
+    # sim.derivedDF.loc[:, "time"] = sim.derivedDF["time"] - time_shift
 
     if dropna:
         sim.derivedDF.dropna(inplace=True)

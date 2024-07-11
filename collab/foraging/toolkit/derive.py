@@ -19,7 +19,7 @@ derivation_logger = logging.getLogger(__name__)
 
 # import foraging_toolkit as ft
 
-
+##PP_comment : Need a way to turn off rewards calculations in cases with no foraging behavior 
 def derive_predictors(
     sim,
     rewards_decay=0.5,
@@ -43,6 +43,7 @@ def derive_predictors(
     velocity_time_decay=3,
     velocity_spatial_decay=0.15,
     velocity_visibility_restriction="visible",
+    generate_rewards_trace = True
 ):
     sim.communicate_visibility_restriction = communicate_visibility_restriction
     sim.communicate_filter_by_on_reward = communicate_filter_by_on_reward
@@ -57,19 +58,6 @@ def derive_predictors(
 
     sim.grid = grid
 
-    tr = rewards_to_trace(
-        sim.rewards,
-        sim.grid_size,
-        sim.num_frames,
-        rewards_decay,
-        time_shift=time_shift,
-        grid=grid,
-    )
-
-    sim.traces = tr["traces"]
-    sim.tracesDF = tr["tracesDF"]
-    derivation_logger.info("traces done")
-
     vis = construct_visibility(
         sim.foragers,
         sim.grid_size,
@@ -81,6 +69,24 @@ def derive_predictors(
     sim.visibility = vis["visibility"]
     sim.visibilityDF = vis["visibilityDF"]
     derivation_logger.info("visibility done")
+
+    ##PP_edit : bandaid-y fix 
+    if generate_rewards_trace:
+        tr = rewards_to_trace(
+            sim.rewards,
+            sim.grid_size,
+            sim.num_frames,
+            rewards_decay,
+            time_shift=time_shift,
+            grid=grid,
+        )
+
+        sim.traces = tr["traces"]
+        sim.tracesDF = tr["tracesDF"]
+        derivation_logger.info("traces done")
+    else:
+        sim.traces = None
+        sim.tracesDF = sim.visibilityDF
 
     prox = generate_proximity_score(
         sim.foragers,

@@ -45,6 +45,7 @@ def derive_predictors(
     velocity_visibility_restriction="visible",
     generate_rewards_trace = True
 ):
+    
     sim.communicate_visibility_restriction = communicate_visibility_restriction
     sim.communicate_filter_by_on_reward = communicate_filter_by_on_reward
 

@@ -1,5 +1,7 @@
 # local_window function
+
 FUNCTION local_window(...):
+    
     Inputs: 
         foragers : (x,y) positions of foragers grouped by forager index (list of DataFrames)
         grid_size : number of grid points (int)

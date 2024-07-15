@@ -63,6 +63,7 @@ def local_window(...):
 
 # Template for calculating a general predictor
 def generate_predictor_X (...):
+
     Specifications:
         - Function needs to return predictors for all frames in the data. For edge cases where certain quanities don't exist (i.e. t=0 or t=-1), function must return nan values for the predictors
         - Function should be able to handle nan values in data (arising due to tracking errors in experiments) and return nan values for the corresponding frames   

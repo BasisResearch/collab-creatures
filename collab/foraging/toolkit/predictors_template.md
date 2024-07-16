@@ -1,10 +1,11 @@
-# Design of local_window function
+# Design of generate_local_window function
 
-def local_window(...):
+def generate_local_window(...):
     
     Inputs: 
         foragers_object : data object (result of simulation or from experiments)
-        ##PP comment : I think it is cleaner & more robust to pass the data object (the attributes of which can be accessed in the function, eg: foragers_object.foragerDF, foragers_object.grid_size) unless there are any specific objections?
+        ##PP_comment : I think it is cleaner & more robust to pass the data object (the attributes of which can be accessed in the function, eg: foragers_object.foragerDF, foragers_object.grid_size) unless there are any specific objections?
+        ##PP_comment : Can use functools.singledispatch to allow function to take both kinds of inputs -- might be an overkill though
         sampling_rate : fraction of grid points to keep (float [0,1])
         window_size : radius over which predictor scores are to be calculated (int)
         random_sample : True (random sample of grid points) or False (evenly spaced sample. useful for debugging!)
@@ -74,6 +75,7 @@ def generate_predictor_X (...):
         interaction_length : 
             radius of influence if predictor depends on the state of other foragers. Defaults to window_size, but it is useful to keep it separate for clarity and special cases (int)
         params: other parameters specific to the predictor
+        ##PP_comment : in generate_all_predictors I am saving specified predictor values to the foragers_object before calling generate_predictor_X, so potentially these parameters can just be accessed from foragers_object, and don't need to be passed separately to the function 
 
     Returns:
         predictor_X_DF : 
@@ -119,10 +121,76 @@ def generate_predictor_X (...):
 
         return predictor_X, predictor_X_DF
 
+# Template for a combined generate_all_predictors function
+
+def generate_all_predictors(...):
+
+    Specifications:
+        - The function calculates all predictors as specified in "predictors" by calling individual generate_predictor_X() functions
+        - The outputs of every generate_predictor_X() call is added as an attribute to the foragers_object 
+        - ##PP_comment: What should this function return? forager_object is modified in place so it is not necessary to return it. Can return a combined predictorsDF? Both?
+
+    Inputs:
+        foragers_object : data object (from simulation or experiments)
+        predictors : list of strings, e.g ["visibility", "proximity", "rewards"] 
+        # arguments for local_window
+            sampling_rate 
+            window_size 
+            random_sample 
+            fixed_sample 
+            random_seed
+        # arguments for each predictor type, e.g.:
+            proximity_preferred_distance
+            proximity_decay
+
+            ##PP_comment: as the number of predictors increase, it will be hard to keep track of all the parameters, so can establish a convention that names of parameters specific to a particular predictor start with a predictor identifier 
+            ##PP_comment: I need to understand what exactly time_shift is doing and where to implement it [potentially just need to implement it in local_windows]
+            
+    Returns:
+        foragers_object : modified foragers_object which contains all computed predictors as attributes
+        predictorsDF : a combined DataFrame containing all computed predictor values for each forager and time step at all selected grid points
+
+    Psuedocode implementation: 
+        #save local_windows parameter values as attributes of the foragers_object, e.g. 
+        foragers_object.window_size = window_size
+        ...
+
+        #generate local_windows
+        local_windows, local_windowsDF = generate_local_windows(...)
+
+        #add outputs to foragers_object
+        foragers_object.local_windows = local_windows
+        foragers_object.local_windowsDF = local_windowsDF
+
+        list_predictorDFs = []
+
+        #repeated code chunks to compute each predictor if selected
+        if "predictor_X" in predictors:
+            #save specified parameter values as attributes of the foragers_object
+            ...
+
+            #calculate predictor value
+            predictor_X, predictor_X_DF = generate_predictor_X(foragers_object, local_windows, ...)
+
+            #add outputs to foragers_object
+            ...
+
+            #append to list_predictorsDFs
+            list_predictorDFs.append(predictor_X_DF)
+
+        #generate predictorsDF by merging DFs in list_predictorsDF
+        ...
+
+        return foragers_object, predictorsDF
+
+
         
+
+            
 
                     
                     
+
 
 
 

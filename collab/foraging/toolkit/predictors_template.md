@@ -121,7 +121,7 @@ def generate_predictor_X (...):
 
         return predictor_X, predictor_X_DF
 
-# Template for a combined generate_all_predictors function
+# Design of generate_all_predictors function
 
 def generate_all_predictors(...):
 
@@ -145,7 +145,7 @@ def generate_all_predictors(...):
 
             ##PP_comment: as the number of predictors increase, it will be hard to keep track of all the parameters, so can establish a convention that names of parameters specific to a particular predictor start with a predictor identifier 
             ##PP_comment: I need to understand what exactly time_shift is doing and where to implement it [potentially just need to implement it in local_windows]
-            
+
     Returns:
         foragers_object : modified foragers_object which contains all computed predictors as attributes
         predictorsDF : a combined DataFrame containing all computed predictor values for each forager and time step at all selected grid points

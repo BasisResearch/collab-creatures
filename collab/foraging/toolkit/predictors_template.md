@@ -6,14 +6,17 @@ def generate_local_window(...):
         foragers_object : data object (result of simulation or from experiments)
         ##PP_comment : I think it is cleaner & more robust to pass the data object (the attributes of which can be accessed in the function, eg: foragers_object.foragerDF, foragers_object.grid_size) unless there are any specific objections?
         ##PP_comment : Can use functools.singledispatch to allow function to take both kinds of inputs -- might be an overkill though
+        ##EM_comment : update var name
         sampling_rate : fraction of grid points to keep (float [0,1])
         window_size : radius over which predictor scores are to be calculated (int)
         random_sample : True (random sample of grid points) or False (evenly spaced sample. useful for debugging!)
+        ##EM_comment : keep sample fixed always
         fixed_sample :
             True => grid points are sampled once and fixed in time
             False => grid points are sampled at every time step (##PP_comment : do they need to be the same across foragers? Whether to keep the grid points consistent across foragers would depend on how exactly inference is implemented. TBD)
         random_seed: for reproducibility (int)
         ##PP_comment: construct_visibility() takes additional arguments start,end,time_shift. what is the use case for these arguments, and is it important to include them in this function?
+        ##RU/EM_comment : have extra function to first crop data object. don't have these arguments. if it gets very annoying w backward compatibility -- revisit .  
 
     Returns: 
         local_windowsDF:
@@ -25,6 +28,7 @@ def generate_local_window(...):
             List grouped by forager index (length: num_foragers). Each element of the list is a list of num_frames DataFrames (each DataFrame has length : n_points * sampling_rate, columns: "x","y","time","forager") 
 
         ##PPcomment: saw that all predictor functions return data in both formats. Should we choose one or keep both?
+        ##RU/EM_comment : only output local_windows. make sure no existing functions need the DF 
 
     Psuedocode implementation:
         #set random seed
@@ -36,9 +40,12 @@ def generate_local_window(...):
         ...
 
         #initialize a common grid
+        ##RU/EM_comment : pass a constraint function f(x,y) to model inaccessible points in the grid. find eligible points BEFORE subsample 
         grid = get_grid(grid_size, sampling_rate, random_sample) #a function that first generates a DataFrame of grid points and then subsamples from it either randomly or evenly depending on value of random_sample
 
         local_windows = []
+        ##RU/EM_comment : nan handling!! Empty local_window for missing frames. Raise warning to preprocess? (also at point of object creation)
+
         for f in range(num_foragers): 
             local_windows_f = []
             for t in range(num_frames):
@@ -69,6 +76,7 @@ def generate_predictor_X (...):
     Specifications:
         - Function needs to return predictors for all frames in the data. For edge cases where certain quanities don't exist (i.e. t=0 or t=-1), function must return nan values for the predictors
         - Function should be able to handle nan values in data (arising due to tracking errors in experiments) and return nan values for the corresponding frames   
+        ##RU/EM_comment : if local_window is empty -- return empty element! 
 
     Inputs:
         foragers_object : data object (from simulation or experiments)

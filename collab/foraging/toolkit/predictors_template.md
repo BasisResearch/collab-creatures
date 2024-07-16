@@ -63,6 +63,7 @@ def generate_local_window(...):
 
 
 # Template for calculating a general predictor
+##PP_comment : do we want to enforce this template using abstract classes?
 def generate_predictor_X (...):
 
     Specifications:

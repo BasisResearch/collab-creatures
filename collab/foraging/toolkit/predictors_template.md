@@ -1,6 +1,7 @@
 ##PP_comment : should we continue to name everything wrt foraging? (eg, foragerDF, forager_object, etc.)
 
 # General specifications for nan handling 
+
 Two reasons why nans may arise: 
     - Real experimental data can have missing values for animal positions either due to tracking errors (but animal still in frame) or due to animals leaving the frame
     - Derived quantities (such as velocity, how_far_score) that depend on past/future positions may not be defined for edge cases, leading to nans for predictors that depend on them 
@@ -34,7 +35,8 @@ def generate_local_window(...):
         ##EM_comment : keep sample fixed in time always **RESOLVED** by removing fixed_sample argument
         random_seed: for reproducibility (int)
         ##PP_comment: construct_visibility() takes additional arguments start,end,time_shift. what is the use case for these arguments, and is it important to include them in this function? **RESOLVED** see below
-        ##RU/EM_comment : have a separate function to first crop data object and pass to generate_all_predictors. if it gets very annoying w backward compatibility -- revisit.  
+        ##RU/EM_comment : have a separate function to first crop data object and pass to generate_all_predictors. if it gets very annoying w backward compatibility -- revisit.
+        drop_all_missing_frames : False (only drop frames of missing forager) True (drop frames for all foragers) 
 
     Returns: 
         local_windows : 
@@ -54,26 +56,39 @@ def generate_local_window(...):
 
         #initialize a common grid
         ##RU/EM_comment : pass a constraint function f(x,y) to model inaccessible points in the grid. find eligible points BEFORE subsample 
-
         grid = get_grid(grid_size, sampling_fraction, random_sample) #a function that first generates a DataFrame of grid points and then subsamples from it either randomly or evenly depending on value of random_sample
 
         local_windows = []
-        ##RU/EM_comment : nan handling!! Empty local_window for missing frames. Raise warning to preprocess? (also at point of object creation)
+        ##RU/EM_comment : nan handling!! Empty local_window for missing frames. Raise warning to preprocess? (also at point of object creation) **RESOLVED** w/ two types of behavior depending on drop_all_missing_frames
+    
+        #identify time_points where any forager is missing
+        nan_time_points_all = []
+        if drop_all_missing_frames:
+            nan_time_points_all=foragersDF["time"][foragersDF["x"].isna()].unique().to_list()
 
         for f in range(num_foragers): 
-            local_windows_f = []
-            for t in range(num_frames):
-                #copy grid
-                g = grid.copy()
+            local_windows_f = [[] for _ in range(num_frames)]
 
-                #calculate distance of points in g to the current position of forager f
-                ...
-                #select grid points with distance < window_size
-                ...
-                #append DataFrame of selected grid points to local_windows_f
-                ...
+            #find time points where forager's positional data is missing 
+            nan_time_points_f=foragers[f]["time"][foragers[f]["x"].isna()].to_list()
 
-            #save local_windows_f to local_windows
+            #find frames for which local_windows should be computed
+            compute_frames = (set(range(num_frames)) - set(nan_time_points_f))-set(nan_time_points_all)
+            
+            for t in compute_frames:
+                    #copy grid
+                    g = grid.copy()
+
+                    #calculate distance of points in g to the current position of forager f
+                    ...
+
+                    #select grid points with distance < window_size
+                    ...
+
+                    #update the corresponding element of local_windows_f to DF with selected grid points
+                    ...
+
+            #add local_windows_f to local_windows
             local_windows.append(local_windows_f)
         
         return local_windows
@@ -85,9 +100,9 @@ def generate_local_window(...):
 def generate_predictor_X (...):
 
     Specifications:
-        - Function needs to return predictors for all frames in the data. For edge cases where certain quanities don't exist (i.e. t=0 or t=-1), function must return nan values for the predictors
-        - Function should be able to handle nan values in data (arising due to tracking errors in experiments) and return nan values for the corresponding frames   
-        ##RU/EM_comment : if local_window is empty -- return empty element! 
+        - When a forager is missing, i.e. local_windows[f][t]=[], ensure predictor_X[f][t]=[]
+        - Elements of predictor_X[f][t] are nans when derived quanties are not defined   
+        ##RU/EM_comment : if local_window is empty -- return empty element! **RESOLVED** handling of missing data follows local_windows
 
     Inputs:
         foragers_object : data object (from simulation or experiments)
@@ -111,28 +126,30 @@ def generate_predictor_X (...):
 
         for f in range(num_foragers):
             for t in range(num_frames):
-                #add a column for predictor value
-                predictor_X[f][t]["predictor_X"] = 0 
+                #calculate predictor scores if grid is not empty
+                if predictor_X[f][t]:
+                    #add a column for predictor value
+                    predictor_X[f][t]["predictor_X"] = 0 
 
-                #if predictor depends on the state of other foragers, identify which foragers can influence
-                    #find forager_to_forager_distances at time t 
+                    #if predictor depends on the state of other foragers, identify which foragers can influence
+                        #find forager_to_forager_distances at time t 
+                        ...
+                        #find index of foragers with distance < interation_length (ignore foragers with missing positional data)
+                        ...
+                        ##PP_comment : we could use existing function filter_by_visibility() here but that combines visibility w/ rewards so might be better to separate these and define new functions for this purpose
+
+                    #grab relevant state variables from selected foragers (e.g., distance, velocity etc)
                     ...
-                    #find index of foragers with distance < interation_length
+
+                    #additively combine predictor values corresponding to each selected forager
+                    for f_i in selected_foragers:
+                        predictor_X[f][t]["predictor_X"] += predictor_X_calculator(...)
+                        ##PP_comments:
+                            - predictor_X_calculator(...) takes in grid point locations (predictor_X[f][t]["x", "y"]), forager f variables, relevant forager f_i variables (+ other params) and calculates the value of the predictor at every grid point based on the chosen functional form of the predictor
+                            - this function must return nan values when derived quantities (eg. v) are not defined
+
+                    #normalize predictor values if needed
                     ...
-                    ##PP_comment : we could use existing function filter_by_visibility() here but that combines visibility w/ rewards so might be better to separate these and define new functions for this purpose
-
-                #grab relevant state variables from selected foragers (e.g., distance, velocity etc)
-                ...
-
-                #additively combine predictor values corresponding to each selected forager
-                for f_i in selected_foragers:
-                    predictor_X[f][t]["predictor_X"] += predictor_X_calculator(...)
-                    ##PP_comments:
-                        - predictor_X_calculator(...) takes in grid point locations (predictor_X[f][t]["x", "y"]), forager f variables, relevant forager f_i variables (+ other params) and calculates the value of the predictor at every grid point based on the chosen functional form of the predictor
-                        - this function must be able to handle nan values of the primary and derived quantites (x, y, v, etc)
-
-                #normalize predictor values if needed
-                ...
 
         return predictor_X
 
@@ -153,6 +170,7 @@ def generate_all_predictors(...):
             window_size 
             random_sample  
             random_seed
+            drop_all_missing_frames
         # arguments for each predictor type, e.g.:
             proximity_preferred_distance
             proximity_decay

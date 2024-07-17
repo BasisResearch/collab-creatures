@@ -1,3 +1,25 @@
+##PP_comment : should we continue to name everything wrt foraging? (eg, foragerDF, forager_object, etc.)
+
+# General specifications for nan handling 
+Two reasons why nans may arise: 
+    - Real experimental data can have missing values for animal positions either due to tracking errors (but animal still in frame) or due to animals leaving the frame
+    - Derived quantities (such as velocity, how_far_score) that depend on past/future positions may not be defined for edge cases, leading to nans for predictors that depend on them 
+
+Code design plan to work with nans:
+    - object_from_data(...) raises a warning if there are nan values in data 
+    - generate_local_windows(...): 
+        - Default behavior: set local_windows[f][t]=[] for all timepoints that forager f's location is missing & raise warning 
+        - Optional behavior: set local_windows[:][t]=[], i.e insert an empty element for *all* foragers when *any* forager is missing
+    - Handling of missing data while calculating predictor values follows the lead of generate_local_windows(...):
+        - add_quantity_X_to_data(...) adds nan values both for frames when positional data is missing and when derived quantities are not defined
+        - If local_windows[f][t] is empty (indicates that predictor values should not be calculated):
+            - generate_predictor_X(...) inserts an empty element in predictor_X (i.e. predictor[f][t] = [] )
+        - If local_windows[f][t] is not empty:
+            - identify other foragers that influence predictor values - here, only consider foragers whose positional data exists (even if their derived quantities are nans)
+            - predictor_X_calculator(...) returns nans if relevant derived quantities of focal or influential foragers are not defined
+    - generate_DF_from_list(predictor_X) throws away all empty elements in predictor_X (but keeps DFs with nans)
+    - merged_predictor_DFs(predictor_X,predictor_Y,...) : generates combined DF and deletes all rows where *any* predictor values are nan for inference
+
 # Design of generate_local_window function
 
 def generate_local_window(...):
@@ -59,6 +81,7 @@ def generate_local_window(...):
 
 # Template for calculating a general predictor
 ##PP_comment : do we want to enforce this template using abstract classes?
+
 def generate_predictor_X (...):
 
     Specifications:

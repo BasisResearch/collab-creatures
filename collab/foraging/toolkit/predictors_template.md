@@ -6,7 +6,7 @@ def generate_local_window(...):
         foragers_object : data object (result of simulation or from experiments)
         ##PP_comment : I think it is cleaner & more robust to pass the data object (the attributes of which can be accessed in the function, eg: foragers_object.foragerDF, foragers_object.grid_size) unless there are any specific objections?
         ##PP_comment : Can use functools.singledispatch to allow function to take both kinds of inputs -- might be an overkill though
-        sampling_fraction : fraction of grid points to keep (float [0,1]) ##EM_comment : update var name. **RESOLVED**
+        sampling_fraction : fraction of grid points to keep (float [0,1]) ##EM_comment : update var name. __RESOLVED__
         window_size : radius over which predictor scores are to be calculated (int)
         random_sample : True (random sample of grid points) or False (evenly spaced sample. useful for debugging!)
         ##EM_comment : keep sample fixed always *RESOLVED* by removing fixed_sample argument

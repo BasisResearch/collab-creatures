@@ -6,25 +6,20 @@ def generate_local_window(...):
         foragers_object : data object (result of simulation or from experiments)
         ##PP_comment : I think it is cleaner & more robust to pass the data object (the attributes of which can be accessed in the function, eg: foragers_object.foragerDF, foragers_object.grid_size) unless there are any specific objections?
         ##PP_comment : Can use functools.singledispatch to allow function to take both kinds of inputs -- might be an overkill though
-        sampling_fraction : fraction of grid points to keep (float [0,1]) ##EM_comment : update var name. __RESOLVED__
+        sampling_fraction : fraction of grid points to keep (float [0,1]) ##EM_comment : update var name. **RESOLVED**
         window_size : radius over which predictor scores are to be calculated (int)
         random_sample : True (random sample of grid points) or False (evenly spaced sample. useful for debugging!)
-        ##EM_comment : keep sample fixed always *RESOLVED* by removing fixed_sample argument
+        ##EM_comment : keep sample fixed in time always **RESOLVED** by removing fixed_sample argument
         random_seed: for reproducibility (int)
-        ##PP_comment: construct_visibility() takes additional arguments start,end,time_shift. what is the use case for these arguments, and is it important to include them in this function? *RESOLVED* see below
+        ##PP_comment: construct_visibility() takes additional arguments start,end,time_shift. what is the use case for these arguments, and is it important to include them in this function? **RESOLVED** see below
         ##RU/EM_comment : have a separate function to first crop data object and pass to generate_all_predictors. if it gets very annoying w backward compatibility -- revisit.  
 
     Returns: 
-        local_windowsDF:
-            DataFrame containing gridpoints to compute predictor scores over, for each forager at each time step.
-            DataFrame will have 4 columns : "x", "y", "time", "forager"
-            Let n_points be the number of grid points within a radius of window_size. Length of this DataFrame roughly would be (n_points * sampling_fraction * num_foragers * num_frames), barring any edge cases.
-
         local_windows : 
-            List grouped by forager index (length: num_foragers). Each element of the list is a list of num_frames DataFrames (each DataFrame has length : n_points * sampling_fraction, columns: "x","y","time","forager") 
+            List grouped by forager index (length: num_foragers). Each element of the list is a list of num_frames DataFrames (each DataFrame has length : (number of points within window_size) * sampling_fraction (barring edge cases!), columns: "x","y","time","forager") containing grid points to compute predictor scores over  
 
-        ##PPcomment: saw that all predictor functions return data in both formats. Should we choose one or keep both?
-        ##RU/EM_comment : only output local_windows. make sure no existing functions need the DF. *RESOLVED* by only returning lists from all functions
+        ##PPcomment: saw that all predictor functions return data in list and flattened DataFrame formats. Should we choose one or keep both?
+        ##RU/EM_comment : only output local_windows. make sure no existing functions need the DF. **RESOLVED** by only returning lists from all functions
 
     Psuedocode implementation:
         #set random seed
@@ -37,6 +32,7 @@ def generate_local_window(...):
 
         #initialize a common grid
         ##RU/EM_comment : pass a constraint function f(x,y) to model inaccessible points in the grid. find eligible points BEFORE subsample 
+
         grid = get_grid(grid_size, sampling_fraction, random_sample) #a function that first generates a DataFrame of grid points and then subsamples from it either randomly or evenly depending on value of random_sample
 
         local_windows = []
@@ -55,10 +51,10 @@ def generate_local_window(...):
                 #append DataFrame of selected grid points to local_windows_f
                 ...
 
-            #append local_windows_f to local_windows
+            #save local_windows_f to local_windows
+            local_windows.append(local_windows_f)
         
-        # compute local_windowsDF by concatenating local_windows
-        return local_windows, local_windowsDF
+        return local_windows
 
 
 # Template for calculating a general predictor
@@ -79,10 +75,8 @@ def generate_predictor_X (...):
         ##PP_comment : in generate_all_predictors I am saving specified predictor values to the foragers_object before calling generate_predictor_X, so potentially these parameters can just be accessed from foragers_object, and don't need to be passed separately to the function 
 
     Returns:
-        predictor_X_DF : 
-            DataFrame (of the same shape as local_windowsDF) containing a column with predictor values for each grid point
         predictor_X : 
-            List of DataFrames (grouped by forager index and frames) containing predictor values for each grid points (same structure as local_windows)
+            List of DataFrames (grouped by forager index and frames) containing predictor values for all grid points (same structure as local_windows)
 
 
     Psuedocode implementation: 
@@ -117,10 +111,7 @@ def generate_predictor_X (...):
                 #normalize predictor values if needed
                 ...
 
-        #generate predictor_X_DF by concatenating predictor_X
-        ...
-
-        return predictor_X, predictor_X_DF
+        return predictor_X
 
 # Design of generate_all_predictors function
 
@@ -144,11 +135,11 @@ def generate_all_predictors(...):
             proximity_decay
 
             ##PP_comment: as the number of predictors increase, it will be hard to keep track of all the parameters, so can establish a convention that names of parameters specific to a particular predictor start with a predictor identifier 
-            ##PP_comment: I need to understand what exactly time_shift is doing and where to implement it [potentially just need to implement it in local_windows]
+            ##PP_comment: I need to understand what exactly time_shift is doing and where to implement it [potentially just need to implement it in local_windows] **RESOLVED** decided to not implement time_shift 
 
     Returns:
         foragers_object : modified foragers_object which contains all computed predictors as attributes
-        predictorsDF : a combined DataFrame containing all computed predictor values for each forager and time step at all selected grid points
+        all_predictors_DF : a combined DataFrame containing all computed predictor values for each forager and time step at all selected grid points
 
     Psuedocode implementation: 
         #save local_windows parameter values as attributes of the foragers_object, e.g. 
@@ -156,13 +147,12 @@ def generate_all_predictors(...):
         ...
 
         #generate local_windows
-        local_windows, local_windowsDF = generate_local_windows(...)
+        local_windows = generate_local_windows(...)
 
-        #add outputs to foragers_object
+        #add output to foragers_object
         foragers_object.local_windows = local_windows
-        foragers_object.local_windowsDF = local_windowsDF
 
-        list_predictorDFs = []
+        all_predictors_list = []
 
         #repeated code chunks to compute each predictor if selected
         if "predictor_X" in predictors:
@@ -170,18 +160,18 @@ def generate_all_predictors(...):
             ...
 
             #calculate predictor value
-            predictor_X, predictor_X_DF = generate_predictor_X(foragers_object, local_windows, ...)
+            predictor_X = generate_predictor_X(foragers_object, local_windows, ...)
 
             #add outputs to foragers_object
-            ...
+            foragers_object.predictor_X = predictor_X
 
             #append to list_predictorsDFs
-            list_predictorDFs.append(predictor_X_DF)
+            all_predictors_list.append(predictor_X)
 
-        #generate predictorsDF by merging DFs in list_predictorsDF
+        #generate all_predictors_DF by creating DFs for individual predictors in all_predictors_list, and then merging them
         ...
 
-        return foragers_object, predictorsDF
+        return foragers_object, all_predictors_DF
 
 
         

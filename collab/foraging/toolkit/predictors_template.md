@@ -11,12 +11,12 @@ Code design plan to work with nans:
 
 - object_from_data(...) raises a warning if there are nan values in data 
 - generate_local_windows(...): 
-    - Default behavior: set local_windows[f][t]=[] for all timepoints that forager f's location is missing & raise warning 
+    - Default behavior: set local_windows[f][t]=[] for all timepoints t that forager f's location is missing & raise warning 
     - Optional behavior: set local_windows[:][t]=[], i.e insert an empty element for *all* foragers when *any* forager is missing
 - Handling of missing data while calculating predictor values follows the lead of generate_local_windows(...):
     - add_quantity_X_to_data(...) adds nan values both for frames when positional data is missing and when derived quantities are not defined
     - If local_windows[f][t] is empty (indicates that predictor values should not be calculated):
-        - generate_predictor_X(...) inserts an empty element in predictor_X (i.e. predictor[f][t] = [] )
+        - generate_predictor_X(...) returns an empty element in predictor_X for corresponding frame (i.e. predictor[f][t] = [] )
     - If local_windows[f][t] is not empty:
         - identify other foragers that influence predictor values - here, only consider foragers whose positional data exists (even if their derived quantities are nans)
         - predictor_X_calculator(...) returns nans if relevant derived quantities of focal or influential foragers are not defined
@@ -48,9 +48,6 @@ def generate_local_window(...):
         ##RU/EM_comment : only output local_windows. make sure no existing functions need the DF. **RESOLVED** by only returning lists from all functions
 
     Psuedocode implementation:
-        #set random seed
-        ...
-
         #grab relevant parameters, e.g
         foragers = foragers_object.foragers
         grid_size = foragers_object.grid_size
@@ -58,9 +55,8 @@ def generate_local_window(...):
 
         #initialize a common grid
         ##RU/EM_comment : pass a constraint function f(x,y) to model inaccessible points in the grid. find eligible points BEFORE subsample 
-        grid = get_grid(grid_size, sampling_fraction, random_sample) #a function that first generates a DataFrame of grid points and then subsamples from it either randomly or evenly depending on value of random_sample
+        grid = get_grid(grid_size, sampling_fraction, random_sample, random_seed) #a function that first generates a DataFrame of grid points and then subsamples from it either randomly or evenly depending on value of random_sample
 
-        local_windows = []
         ##RU/EM_comment : nan handling!! Empty local_window for missing frames. Raise warning to preprocess? (also at point of object creation) **RESOLVED** w/ two types of behavior depending on drop_all_missing_frames
     
         #identify time_points where any forager is missing
@@ -68,6 +64,7 @@ def generate_local_window(...):
         if drop_all_missing_frames:
             nan_time_points_all=foragersDF["time"][foragersDF["x"].isna()].unique().to_list()
 
+        local_windows = []
         for f in range(num_foragers): 
             local_windows_f = [[] for _ in range(num_frames)]
 
@@ -95,6 +92,30 @@ def generate_local_window(...):
         
         return local_windows
 
+# Design of get_grid function 
+def get_grid(...):
+
+    Inputs:
+        grid_size: size of grid (int)
+        sampling_fraction: fraction of grid points to keep (float [0,1]) 
+        random_sample: True (sample grid points randomly) or False (sample evenly)
+        constraint: Optional function to model inaccessible points in grid (for eg, tank boundaries). Function returns True for accessible points
+        random_seed: for reproducibility
+
+    Returns:
+        grid : DataFrame with 2 columns "x", "y" of selected grid points where predictors can be calculated 
+
+    Psuedocode implementation: 
+    #set random seed
+    ...
+
+    #generate grid of all points
+    grid = list(product(range(1, grid_size+ 1), repeat=2)) 
+    grid =pd.DataFrame(grid, columns=["x", "y"])
+
+    #only keep accessible points 
+    grid = grid[constraint(grid["x"],grid["y])]
+    
 
 # Template for calculating a general predictor
 ##PP_comment : do we want to enforce this template using abstract classes?
@@ -140,9 +161,6 @@ def generate_predictor_X (...):
                         ...
                         ##PP_comment : we could use existing function filter_by_visibility() here but that combines visibility w/ rewards so might be better to separate these and define new functions for this purpose
 
-                    #grab relevant state variables from selected foragers (e.g., distance, velocity etc)
-                    ...
-
                     #additively combine predictor values corresponding to each selected forager
                     for f_i in selected_foragers:
                         predictor_X[f][t]["predictor_X"] += predictor_X_calculator(...)
@@ -182,7 +200,7 @@ def generate_all_predictors(...):
 
     Returns:
         foragers_object : modified foragers_object which contains all computed predictors as attributes
-        all_predictors_DF : a combined DataFrame containing all computed predictor values for each forager and time step at all selected grid points
+        all_predictors_DF : a combined DataFrame containing all computed predictor values for each forager and time step at all selected grid points, with nans filtered out 
 
     Psuedocode implementation: 
         #save local_windows parameter values as attributes of the foragers_object, e.g. 
@@ -208,7 +226,7 @@ def generate_all_predictors(...):
             #add outputs to foragers_object
             foragers_object.predictor_X = predictor_X
 
-            #append to list_predictorsDFs
+            #add to all_predictors_list
             all_predictors_list.append(predictor_X)
 
         #generate all_predictors_DF by creating DFs for individual predictors in all_predictors_list, and then merging them

@@ -11,17 +11,17 @@ Code design plan to work with nans:
 
 - object_from_data(...) raises a warning if there are nan values in data 
 - generate_local_windows(...): 
-    - Default behavior: set local_windows[f][t]=[] for all timepoints t that forager f's location is missing & raise warning 
-    - Optional behavior: set local_windows[:][t]=[], i.e insert an empty element for *all* foragers when *any* forager is missing
+    - Default behavior: set local_windows[f][t]=None for all timepoints t that forager f's location is missing & raise warning 
+    - Optional behavior: set local_windows[:][t]=None, i.e insert a None element for *all* foragers when *any* forager is missing
 - Handling of missing data while calculating predictor values follows the lead of generate_local_windows(...):
     - add_quantity_X_to_data(...) adds nan values both for frames when positional data is missing and when derived quantities are not defined
-    - If local_windows[f][t] is empty (indicates that predictor values should not be calculated):
-        - generate_predictor_X(...) returns an empty element in predictor_X for corresponding frame (i.e. predictor[f][t] = [] )
+    - If local_windows[f][t] is None (indicates that predictor values should not be calculated):
+        - generate_predictor_X(...) returns an empty element in predictor_X for corresponding frame (i.e. predictor[f][t] = None )
     - If local_windows[f][t] is not empty:
         - identify other foragers that influence predictor values - here, only consider foragers whose positional data exists (even if their derived quantities are nans)
         - predictor_X_calculator(...) returns nans if relevant derived quantities of focal or influential foragers are not defined
-- generate_DF_from_list(predictor_X) throws away all empty elements in predictor_X (but keeps DFs with nans)
-- merged_predictor_DFs(predictor_X,predictor_Y,...) : generates combined DF and deletes all rows where *any* predictor values are nan for inference
+- generate_DF_from_predictor(...) throws away all empty elements in predictor_X (but keeps DFs with nans)
+- generate_combined_predictorDF(...) : generates combined DF and (optional) deletes all rows where *any* predictor values are nan for inference 
 
 # Design of generate_local_window function
 
@@ -39,6 +39,7 @@ def generate_local_window(...):
         ##PP_comment: construct_visibility() takes additional arguments start,end,time_shift. what is the use case for these arguments, and is it important to include them in this function? **RESOLVED** see below
         ##RU/EM_comment : have a separate function to first crop data object and pass to generate_all_predictors. if it gets very annoying w backward compatibility -- revisit.
         drop_all_missing_frames : False (only drop frames of missing forager) True (drop frames for all foragers) 
+        constraint: Optional function to model inaccessible points in grid (for eg, tank boundaries). Function returns True for accessible points
 
     Returns: 
         local_windows : 
@@ -54,8 +55,8 @@ def generate_local_window(...):
         ...
 
         #initialize a common grid
-        ##RU/EM_comment : pass a constraint function f(x,y) to model inaccessible points in the grid. find eligible points BEFORE subsample 
-        grid = get_grid(grid_size, sampling_fraction, random_sample, random_seed) #a function that first generates a DataFrame of grid points and then subsamples from it either randomly or evenly depending on value of random_sample
+        ##RU/EM_comment : pass a constraint function f(x,y) to model inaccessible points in the grid. find eligible points BEFORE subsample **RESOLVED** see implementation below
+        grid = get_grid(grid_size, sampling_fraction, random_sample, random_seed,constraint) #a function that first generates a DataFrame of grid points and then subsamples from it either randomly or evenly depending on value of random_sample
 
         ##RU/EM_comment : nan handling!! Empty local_window for missing frames. Raise warning to preprocess? (also at point of object creation) **RESOLVED** w/ two types of behavior depending on drop_all_missing_frames
     
@@ -66,12 +67,13 @@ def generate_local_window(...):
 
         local_windows = []
         for f in range(num_foragers): 
-            local_windows_f = [[] for _ in range(num_frames)]
+            #initialize local_windows_f to None
+            local_windows_f = [None for _ in range(num_frames)]
 
             #find time points where forager's positional data is missing 
             nan_time_points_f=foragers[f]["time"][foragers[f]["x"].isna()].to_list()
 
-            #find frames for which local_windows should be computed
+            #find frames for which local windows need to be computed
             compute_frames = (set(range(num_frames)) - set(nan_time_points_f))-set(nan_time_points_all)
             
             for t in compute_frames:
@@ -84,8 +86,11 @@ def generate_local_window(...):
                     #select grid points with distance < window_size
                     ...
 
-                    #update the corresponding element of local_windows_f to DF with selected grid points
+                    #add forager and time info to the DF
                     ...
+
+                    #update the corresponding element of local_windows_f to DF with computed grid points
+                    local_windows_f[t] = computed_grid_points
 
             #add local_windows_f to local_windows
             local_windows.append(local_windows_f)
@@ -99,23 +104,33 @@ def get_grid(...):
         grid_size: size of grid (int)
         sampling_fraction: fraction of grid points to keep (float [0,1]) 
         random_sample: True (sample grid points randomly) or False (sample evenly)
-        constraint: Optional function to model inaccessible points in grid (for eg, tank boundaries). Function returns True for accessible points
         random_seed: for reproducibility
+        constraint: Optional function to model inaccessible points in grid (for eg, tank boundaries). Function returns True for accessible points
 
     Returns:
         grid : DataFrame with 2 columns "x", "y" of selected grid points where predictors can be calculated 
 
     Psuedocode implementation: 
-    #set random seed
-    ...
-
     #generate grid of all points
     grid = list(product(range(1, grid_size+ 1), repeat=2)) 
     grid =pd.DataFrame(grid, columns=["x", "y"])
 
-    #only keep accessible points 
-    grid = grid[constraint(grid["x"],grid["y])]
+    #only keep accessible points
+    if constraint is not None: 
+        grid = grid[constraint(grid["x"],grid["y])]
     
+    #example of a constraint function - for a circular tank centered at the grid center
+    #    def constraint(x,y,grid_size):
+    #        return (x-grid_size/2 - 0.5)**2 + (y-grid_size/2-0.5)**2 < grid_size**2
+    
+    #subsample the grid
+    if random_sample:
+        grid = grid.sample(frac=sampling_fraction,random_state=random_seed) ##PP_comment: there are ways to get random samples that cover the space evenly (for eg: stratified sampling, Poisson disk, etc) do we want to implement that?
+    else:
+        drop = np.floor(np.sqrt(1/(sampling_fraction))) ##PP_comment: the need to convert to int severely limits the range of the true sampling_fraction. Probably doesn't matter since we are only using this for debugging
+        ind = grid["x"]%drop==0 & grid["y"]%drop==0
+        grid = grid[ind]
+    return grid
 
 # Template for calculating a general predictor
 ##PP_comment : do we want to enforce this template using abstract classes?
@@ -150,7 +165,7 @@ def generate_predictor_X (...):
         for f in range(num_foragers):
             for t in range(num_frames):
                 #calculate predictor scores if grid is not empty
-                if predictor_X[f][t]:
+                if predictor_X[f][t] is not None:
                     #add a column for predictor value
                     predictor_X[f][t]["predictor_X"] = 0 
 
@@ -194,13 +209,13 @@ def generate_all_predictors(...):
         # arguments for each predictor type, e.g.:
             proximity_preferred_distance
             proximity_decay
-
+            ...
             ##PP_comment: as the number of predictors increase, it will be hard to keep track of all the parameters, so can establish a convention that names of parameters specific to a particular predictor start with a predictor identifier 
             ##PP_comment: I need to understand what exactly time_shift is doing and where to implement it [potentially just need to implement it in local_windows] **RESOLVED** decided to not implement time_shift 
-
+            dropna : True (filter out rows with nans in combined_predictorDF) or False (keep nans)
     Returns:
         foragers_object : modified foragers_object which contains all computed predictors as attributes
-        all_predictors_DF : a combined DataFrame containing all computed predictor values for each forager and time step at all selected grid points, with nans filtered out 
+        combined_predictorDF : a combined DataFrame containing all computed predictor values for each forager and time step at all selected grid points, with nans filtered out 
 
     Psuedocode implementation: 
         #save local_windows parameter values as attributes of the foragers_object, e.g. 
@@ -213,7 +228,7 @@ def generate_all_predictors(...):
         #add output to foragers_object
         foragers_object.local_windows = local_windows
 
-        all_predictors_list = []
+        list_predictors = []
 
         #repeated code chunks to compute each predictor if selected
         if "predictor_X" in predictors:
@@ -227,15 +242,34 @@ def generate_all_predictors(...):
             foragers_object.predictor_X = predictor_X
 
             #add to all_predictors_list
-            all_predictors_list.append(predictor_X)
+            list_predictors.append(predictor_X)
 
-        #generate all_predictors_DF by creating DFs for individual predictors in all_predictors_list, and then merging them
-        ...
+        #generate combined_predictorDF
+        combined_predictorDF = generate_combined_predictorDF(list_predictors,dropna)
 
-        return foragers_object, all_predictors_DF
+        #save to object
+        foragers_object.combined_predictorDF = combined_predictorDF
 
+        return foragers_object, combined_predictorDF
 
+# Design of DataFrame merging functions
+
+def generate_DF_from_predictor(predictor_X):
+
+    return pd.concat([pd.concat(p, axis=0) for p in predictor_X], axis=0) #this automatically ignores None elements! 
         
+def generate_combined_predictorDF(list_predictors,dropna):
+
+    list_predictorDFs = [generate_DF_from_predictor(p) for p in list_predictors]
+    combined_predictorDF = list_predictorDFs[0]
+
+    for i in range(1,len(list_predictorDFs)):
+        combined_predictorDF = combined_predictorDF.merge(list_predictorDFs[i],how='inner')
+
+    if dropna:
+        combined_predictorDF.dropna()
+
+    return combined_predictorDF
 
             
 

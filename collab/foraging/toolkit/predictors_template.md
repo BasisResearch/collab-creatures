@@ -1,11 +1,13 @@
 ##PP_comment : should we continue to name everything wrt foraging? (eg, foragerDF, forager_object, etc.)
+##EM/RU_comment : "agentDF" or "all_data_object" **BACKLOG**
+##RU_comment : define a "data_object" class for streamling object creation **BACKLOG**
 
 # General specifications for nan handling 
 
 Two reasons why nans may arise: 
 
 - Real experimental data can have missing values for animal positions either due to tracking errors (but animal still in frame) or due to animals leaving the frame
-- Derived quantities (such as velocity, how_far_score) that depend on past/future positions may not be defined for edge cases, leading to nans for predictors that depend on them 
+- Derived quantities (such as velocity, how_far_score) that depend on past/future positions may not be defined for edge cases, leading to nans for predictors that depend on them. 
 
 Code design plan to work with nans:
 
@@ -38,6 +40,7 @@ def generate_local_window(...):
         random_seed: for reproducibility (int)
         ##PP_comment: construct_visibility() takes additional arguments start,end,time_shift. what is the use case for these arguments, and is it important to include them in this function? **RESOLVED** see below
         ##RU/EM_comment : have a separate function to first crop data object and pass to generate_all_predictors. if it gets very annoying w backward compatibility -- revisit.
+        ##PP_comment: better variable name? skip_all_incomplete_frames 
         drop_all_missing_frames : False (only drop frames of missing forager) True (drop frames for all foragers) 
         constraint: Optional function to model inaccessible points in grid (for eg, tank boundaries). Function returns True for accessible points
 
@@ -125,6 +128,7 @@ def get_grid(...):
     
     #subsample the grid
     if random_sample:
+        ##EM_comment : sample without shuffling order 
         grid = grid.sample(frac=sampling_fraction,random_state=random_seed) ##PP_comment: there are ways to get random samples that cover the space evenly (for eg: stratified sampling, Poisson disk, etc) do we want to implement that?
     else:
         drop = np.floor(np.sqrt(1/(sampling_fraction))) ##PP_comment: the need to convert to int severely limits the range of the true sampling_fraction. Probably doesn't matter since we are only using this for debugging
@@ -157,6 +161,7 @@ def generate_predictor_X (...):
 
     Psuedocode implementation: 
         #compute any secondary attributes of the data object if necessary (eg. velocity)
+        ##EM/RU_comment : check if column exists first 
         add_quantity_X_to_object(...)
 
         #initialize output variable
@@ -175,15 +180,19 @@ def generate_predictor_X (...):
                         #find index of foragers with distance < interation_length (ignore foragers with missing positional data)
                         ...
                         ##PP_comment : we could use existing function filter_by_visibility() here but that combines visibility w/ rewards so might be better to separate these and define new functions for this purpose
+                        ##EM/RU_comment : write down a filter function which takes a constraint 
+                        ## RU_comment: different velocity mechanisms could be implemented by using different transformation functions after the filter function (before additive looping). So we could have the same _velocity_predictor() function with a bunch wrappers for different mechanisms
 
                     #additively combine predictor values corresponding to each selected forager
                     for f_i in selected_foragers:
+                        ##EM_comment : rename predictor_X_calculator_pairwise if relevant
                         predictor_X[f][t]["predictor_X"] += predictor_X_calculator(...)
                         ##PP_comments:
                             - predictor_X_calculator(...) takes in grid point locations (predictor_X[f][t]["x", "y"]), forager f variables, relevant forager f_i variables (+ other params) and calculates the value of the predictor at every grid point based on the chosen functional form of the predictor
+                            - treat divide-by-zeros on a case-to-case basis 
                             - this function must return nan values when derived quantities (eg. v) are not defined
 
-                    #normalize predictor values if needed
+                    #normalize predictor values if needed. (z score it) 
                     ...
 
         return predictor_X
@@ -191,6 +200,9 @@ def generate_predictor_X (...):
 # Design of generate_all_predictors function
 
 def generate_all_predictors(...):
+##RU_comment : this should also scale all the predictors (across foragers and time), and add that as a column in combined_predictorsDF 
+##RU_comment : this a dict of dicts ("function_kwargs") as arguments instead of individual params
+##RU_comment : instead of passing predictors, we infer which predictors to compute from function_kwargs. this can have multiple runs of the same predictor with different parameters (convention "predictorX_*" to name the different versions )
 
     Specifications:
         - The function calculates all predictors as specified in "predictors" by calling individual generate_predictor_X() functions
@@ -199,6 +211,7 @@ def generate_all_predictors(...):
 
     Inputs:
         foragers_object : data object (from simulation or experiments)
+        ##EM_comment : modifying in place might break if code is run in parallel?
         predictors : list of strings, e.g ["visibility", "proximity", "rewards"] 
         # arguments for local_window
             sampling_fraction
@@ -206,6 +219,7 @@ def generate_all_predictors(...):
             random_sample  
             random_seed
             drop_all_missing_frames
+            constraint
         # arguments for each predictor type, e.g.:
             proximity_preferred_distance
             proximity_decay
@@ -230,6 +244,7 @@ def generate_all_predictors(...):
 
         list_predictors = []
 
+        ##EM_comment : pick function given the regular expression, so users don't need to modify derive predictors
         #repeated code chunks to compute each predictor if selected
         if "predictor_X" in predictors:
             #save specified parameter values as attributes of the foragers_object
@@ -240,13 +255,16 @@ def generate_all_predictors(...):
 
             #add outputs to foragers_object
             foragers_object.predictor_X = predictor_X
-
+            ## RU_comment : save predictors as a dictionary!
+                foragers_object.predictors["velocity_10"] = predictor_X
             #add to all_predictors_list
             list_predictors.append(predictor_X)
 
         #generate combined_predictorDF
         combined_predictorDF = generate_combined_predictorDF(list_predictors,dropna)
 
+        ##RU_comment : also add scaled columns for predictors 
+        
         #save to object
         foragers_object.combined_predictorDF = combined_predictorDF
 

@@ -200,6 +200,7 @@ def generate_predictor_X (...):
 # Design of generate_all_predictors function
 
 def generate_all_predictors(...):
+
 ##RU_comment : this should also scale all the predictors (across foragers and time), and add that as a column in combined_predictorsDF 
 ##RU_comment : this a dict of dicts ("function_kwargs") as arguments instead of individual params
 ##RU_comment : instead of passing predictors, we infer which predictors to compute from function_kwargs. this can have multiple runs of the same predictor with different parameters (convention "predictorX_*" to name the different versions )
@@ -264,7 +265,7 @@ def generate_all_predictors(...):
         combined_predictorDF = generate_combined_predictorDF(list_predictors,dropna)
 
         ##RU_comment : also add scaled columns for predictors 
-        
+
         #save to object
         foragers_object.combined_predictorDF = combined_predictorDF
 

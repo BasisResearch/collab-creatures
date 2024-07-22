@@ -1,6 +1,14 @@
-##PP_comment : should we continue to name everything wrt foraging? (eg, foragerDF, forager_object, etc.)
-##EM/RU_comment : "agentDF" or "all_data_object" **BACKLOG**
-##RU_comment : define a "data_object" class for streamling object creation **BACKLOG**
+# General plan for generate_predictor functions:
+
+    - First define underscored versions of functions (_generate_predictor_X(..)) which take in specific attributes of foragers_object, and parameters to compute predictors
+    - Then write wrapper functions generate_predictor_X(..) that only take the foragers_object, access relevant quantities from it, and then call _generate_predictor_X(..) 
+    - Both of these functions will take an additional argument "predictor_ID" which decides what name to save the predictor using (useful for the case when we want to simulataneously test the same predictor with different parameters, eg: "velocity_10", "velocity_20", etc )
+
+PROBLEMS WITH THIS PLAN:
+
+    - _generate_local_windows(...) should still be given a foragers_object, so it can access grid_size, etc. from the object as we need to enforce that the grid_size is the same as that used to create the foragers_object otherwise results don't make sense (don't have grid_size be an exposed parameter). It also needs both the DF and foragers object for computations (maybe it's okay that we have to pass both?)
+    - for predictors that require computation of secondary quantities like velocity, we cannot add these quantities to the object unless it is passed to the function (but maybe we don't need to?)
+    - We cannot have a single "filter_by_interaction_distance" function that takes in a general constraint that works for both cases like foragers on reward, or of specific age, because such functions would need additional attributes of the foragers_object (such as rewardsDF) that are not originally passed to _generate_predictor_X(..). So one option is to have different "filter_by" functions for different cases, or only have generate_predictor_X(...).
 
 # General specifications for nan handling 
 
@@ -25,48 +33,33 @@ Code design plan to work with nans:
 - generate_DF_from_predictor(...) throws away all empty elements in predictor_X (but keeps DFs with nans)
 - generate_combined_predictorDF(...) : generates combined DF and (optional) deletes all rows where *any* predictor values are nan for inference 
 
-# Design of generate_local_window function
+# Design of local_windows (& related) functions
 
-def generate_local_window(...):
+def _generate_local_windows(...):
     
     Inputs: 
-        foragers_object : data object (result of simulation or from experiments)
-        ##PP_comment : I think it is cleaner & more robust to pass the data object (the attributes of which can be accessed in the function, eg: foragers_object.foragerDF, foragers_object.grid_size) unless there are any specific objections?
-        ##PP_comment : Can use functools.singledispatch to allow function to take both kinds of inputs -- might be an overkill though
-        sampling_fraction : fraction of grid points to keep (float [0,1]) ##EM_comment : update var name. **RESOLVED**
+        foragers : list of positional DFs for each forager
+        foragersDF : flattened positional DF for all foragers
+        grid_size : size of grid used to rescale forager positional data (int)
+        sampling_fraction : fraction of grid points to keep (float [0,1]) 
         window_size : radius over which predictor scores are to be calculated (int)
-        random_sample : True (random sample of grid points) or False (evenly spaced sample. useful for debugging!)
-        ##EM_comment : keep sample fixed in time always **RESOLVED** by removing fixed_sample argument
         random_seed: for reproducibility (int)
-        ##PP_comment: construct_visibility() takes additional arguments start,end,time_shift. what is the use case for these arguments, and is it important to include them in this function? **RESOLVED** see below
-        ##RU/EM_comment : have a separate function to first crop data object and pass to generate_all_predictors. if it gets very annoying w backward compatibility -- revisit.
-        ##PP_comment: better variable name? skip_all_incomplete_frames 
-        drop_all_missing_frames : False (only drop frames of missing forager) True (drop frames for all foragers) 
-        constraint: Optional function to model inaccessible points in grid (for eg, tank boundaries). Function returns True for accessible points
+        skip_incomplete_frames : False (only skip frames of the missing forager) or True (skip frames for all foragers) 
+        grid_constraint: Optional function to model inaccessible points in grid (for eg, tank boundaries). Function returns True for accessible points
 
     Returns: 
         local_windows : 
             List grouped by forager index (length: num_foragers). Each element of the list is a list of num_frames DataFrames (each DataFrame has length : (number of points within window_size) * sampling_fraction (barring edge cases!), columns: "x","y","time","forager") containing grid points to compute predictor scores over  
 
-        ##PPcomment: saw that all predictor functions return data in list and flattened DataFrame formats. Should we choose one or keep both?
-        ##RU/EM_comment : only output local_windows. make sure no existing functions need the DF. **RESOLVED** by only returning lists from all functions
-
     Psuedocode implementation:
-        #grab relevant parameters, e.g
-        foragers = foragers_object.foragers
-        grid_size = foragers_object.grid_size
-        ...
 
         #initialize a common grid
-        ##RU/EM_comment : pass a constraint function f(x,y) to model inaccessible points in the grid. find eligible points BEFORE subsample **RESOLVED** see implementation below
-        grid = get_grid(grid_size, sampling_fraction, random_sample, random_seed,constraint) #a function that first generates a DataFrame of grid points and then subsamples from it either randomly or evenly depending on value of random_sample
-
-        ##RU/EM_comment : nan handling!! Empty local_window for missing frames. Raise warning to preprocess? (also at point of object creation) **RESOLVED** w/ two types of behavior depending on drop_all_missing_frames
+        grid = get_grid(grid_size, sampling_fraction, random_seed, grid_constraint) #a function that first generates a DataFrame of valid grid points and then subsamples from it randomly 
     
         #identify time_points where any forager is missing
-        nan_time_points_all = []
-        if drop_all_missing_frames:
-            nan_time_points_all=foragersDF["time"][foragersDF["x"].isna()].unique().to_list()
+        missing_time_points_all = []
+        if skip_incomplete_frames:
+            missing_time_points_all=foragersDF["time"][foragersDF["x"].isna()].unique().to_list()
 
         local_windows = []
         for f in range(num_foragers): 
@@ -74,10 +67,10 @@ def generate_local_window(...):
             local_windows_f = [None for _ in range(num_frames)]
 
             #find time points where forager's positional data is missing 
-            nan_time_points_f=foragers[f]["time"][foragers[f]["x"].isna()].to_list()
+            missing_time_points_f=foragers[f]["time"][foragers[f]["x"].isna()].to_list()
 
             #find frames for which local windows need to be computed
-            compute_frames = (set(range(num_frames)) - set(nan_time_points_f))-set(nan_time_points_all)
+            compute_frames = (set(range(num_frames)) - set(missing_time_points_f))-set(missing_time_points_all)
             
             for t in compute_frames:
                     #copy grid
@@ -100,15 +93,29 @@ def generate_local_window(...):
         
         return local_windows
 
-# Design of get_grid function 
+##
+def generate_local_windows(foragers_object):
+
+    #grab relevant attributes of data_object
+    foragers = foragers_object.foragers
+    foragersDF = foragers_object.foragersDF
+    grid_size = foragers_object.grid_size
+
+    #grab parameters specific to local_windows
+    params = foragers_object.predictor_params["local_windows"] #this returns a dictionary
+
+    #call hidden function with keyword arguments
+    return _generate_local_windows(foragers=foragers,foragersDF=foragersDF,grid_size=grid_size,**params)
+
+
+##
 def get_grid(...):
 
     Inputs:
         grid_size: size of grid (int)
         sampling_fraction: fraction of grid points to keep (float [0,1]) 
-        random_sample: True (sample grid points randomly) or False (sample evenly)
         random_seed: for reproducibility
-        constraint: Optional function to model inaccessible points in grid (for eg, tank boundaries). Function returns True for accessible points
+        grid_constraint: Optional function to model inaccessible points in grid (for eg, tank boundaries). Function returns True for accessible points
 
     Returns:
         grid : DataFrame with 2 columns "x", "y" of selected grid points where predictors can be calculated 
@@ -119,40 +126,32 @@ def get_grid(...):
     grid =pd.DataFrame(grid, columns=["x", "y"])
 
     #only keep accessible points
-    if constraint is not None: 
-        grid = grid[constraint(grid["x"],grid["y])]
+    if grid_constraint is not None: 
+        grid = grid[grid_constraint(grid["x"],grid["y])]
     
     #example of a constraint function - for a circular tank centered at the grid center
     #    def constraint(x,y,grid_size):
     #        return (x-grid_size/2 - 0.5)**2 + (y-grid_size/2-0.5)**2 < grid_size**2
     
     #subsample the grid
-    if random_sample:
-        ##EM_comment : sample without shuffling order 
-        grid = grid.sample(frac=sampling_fraction,random_state=random_seed) ##PP_comment: there are ways to get random samples that cover the space evenly (for eg: stratified sampling, Poisson disk, etc) do we want to implement that?
-    else:
-        drop = np.floor(np.sqrt(1/(sampling_fraction))) ##PP_comment: the need to convert to int severely limits the range of the true sampling_fraction. Probably doesn't matter since we are only using this for debugging
-        ind = grid["x"]%drop==0 & grid["y"]%drop==0
-        grid = grid[ind]
-    return grid
+    grid = grid.sample(frac=sampling_fraction,random_state=random_seed)
 
-# Template for calculating a general predictor
-##PP_comment : do we want to enforce this template using abstract classes?
+    return grid.sort_index()
+
+# Template for _generate_predictor_X (& related) functions: 
 
 def generate_predictor_X (...):
 
     Specifications:
         - When a forager is missing, i.e. local_windows[f][t]=[], ensure predictor_X[f][t]=[]
         - Elements of predictor_X[f][t] are nans when derived quanties are not defined   
-        ##RU/EM_comment : if local_window is empty -- return empty element! **RESOLVED** handling of missing data follows local_windows
 
     Inputs:
-        foragers_object : data object (from simulation or experiments)
+        foragers_object : data object from simulations or experiments 
         local_windows: list of DataFrames (grouped by forager index and frames), each containing grid points to calculate predictors over
         interaction_length : 
             radius of influence if predictor depends on the state of other foragers. Defaults to window_size, but it is useful to keep it separate for clarity and special cases (int)
         params: other parameters specific to the predictor
-        ##PP_comment : in generate_all_predictors I am saving specified predictor values to the foragers_object before calling generate_predictor_X, so potentially these parameters can just be accessed from foragers_object, and don't need to be passed separately to the function 
 
     Returns:
         predictor_X : 
@@ -161,8 +160,8 @@ def generate_predictor_X (...):
 
     Psuedocode implementation: 
         #compute any secondary attributes of the data object if necessary (eg. velocity)
-        ##EM/RU_comment : check if column exists first 
-        add_quantity_X_to_object(...)
+        if quantity_X not in foragers[0].columns:
+            compute_quantity_X(...)
 
         #initialize output variable
         predictor_X = local_windows.copy()
@@ -185,8 +184,7 @@ def generate_predictor_X (...):
 
                     #additively combine predictor values corresponding to each selected forager
                     for f_i in selected_foragers:
-                        ##EM_comment : rename predictor_X_calculator_pairwise if relevant
-                        predictor_X[f][t]["predictor_X"] += predictor_X_calculator(...)
+                        predictor_X[f][t]["predictor_X"] += predictor_X_pairwise_calculator(...)
                         ##PP_comments:
                             - predictor_X_calculator(...) takes in grid point locations (predictor_X[f][t]["x", "y"]), forager f variables, relevant forager f_i variables (+ other params) and calculates the value of the predictor at every grid point based on the chosen functional form of the predictor
                             - treat divide-by-zeros on a case-to-case basis 

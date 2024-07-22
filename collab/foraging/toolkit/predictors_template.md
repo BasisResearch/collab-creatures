@@ -7,7 +7,7 @@
 PROBLEMS WITH THIS PLAN:
 
     - _generate_local_windows(...) should still be given a foragers_object, so it can access grid_size, etc. from the object as we need to enforce that the grid_size is the same as that used to create the foragers_object otherwise results don't make sense (don't have grid_size be an exposed parameter). It also needs both the DF and foragers object for computations (maybe it's okay that we have to pass both?)
-    - for predictors that require computation of secondary quantities like velocity, we cannot add these quantities to the object unless it is passed to the function (but maybe we don't need to?)
+    - for predictors that require computation of secondary quantities like velocity, we cannot add these quantities to the object unless it is passed to the function (but maybe we don't need to? or alternately, hidden function can return both predictor and derived quantity. exposed function adds derived quantity to foragers_object)
     - We cannot have a single "filter_by_interaction_distance" function that takes in a general constraint that works for both cases like foragers on reward, or of specific age, because such functions would need additional attributes of the foragers_object (such as rewardsDF) that are not originally passed to _generate_predictor_X(..). So one option is to have different "filter_by" functions for different cases, or only have generate_predictor_X(...).
 
 # General specifications for nan handling 
@@ -96,16 +96,13 @@ def _generate_local_windows(...):
 ##
 def generate_local_windows(foragers_object):
 
-    #grab relevant attributes of data_object
-    foragers = foragers_object.foragers
-    foragersDF = foragers_object.foragersDF
-    grid_size = foragers_object.grid_size
-
     #grab parameters specific to local_windows
     params = foragers_object.predictor_params["local_windows"] #this returns a dictionary
 
     #call hidden function with keyword arguments
-    return _generate_local_windows(foragers=foragers,foragersDF=foragersDF,grid_size=grid_size,**params)
+    local_windows =  _generate_local_windows(foragers=foragers_object.foragers, foragersDF=foragers_object.foragersDF, grid_size=foragers_object.grid_size, **params)
+
+    return local_windows
 
 
 ##
@@ -140,15 +137,13 @@ def get_grid(...):
 
 # Template for _generate_predictor_X (& related) functions: 
 
-def generate_predictor_X (...):
-
-    Specifications:
-        - When a forager is missing, i.e. local_windows[f][t]=[], ensure predictor_X[f][t]=[]
-        - Elements of predictor_X[f][t] are nans when derived quanties are not defined   
+def _generate_predictor_X (...):
 
     Inputs:
-        foragers_object : data object from simulations or experiments 
+        foragers : list of positional DFs of each forager 
+        foragersDF : flattened DF of positions for each forager
         local_windows: list of DataFrames (grouped by forager index and frames), each containing grid points to calculate predictors over
+        predictor_ID : name to be used for the predictor
         interaction_length : 
             radius of influence if predictor depends on the state of other foragers. Defaults to window_size, but it is useful to keep it separate for clarity and special cases (int)
         params: other parameters specific to the predictor
@@ -156,12 +151,13 @@ def generate_predictor_X (...):
     Returns:
         predictor_X : 
             List of DataFrames (grouped by forager index and frames) containing predictor values for all grid points (same structure as local_windows)
-
+        quantity_X:
+            Derived quantities (datatype TBD)
 
     Psuedocode implementation: 
         #compute any secondary attributes of the data object if necessary (eg. velocity)
-        if quantity_X not in foragers[0].columns:
-            compute_quantity_X(...)
+        if "quantity_X" not in foragers[0].columns:
+            quantity_X = compute_quantity_X(...)
 
         #initialize output variable
         predictor_X = local_windows.copy()
@@ -171,29 +167,46 @@ def generate_predictor_X (...):
                 #calculate predictor scores if grid is not empty
                 if predictor_X[f][t] is not None:
                     #add a column for predictor value
-                    predictor_X[f][t]["predictor_X"] = 0 
+                    predictor_X[f][t][predictor_ID] = 0 
 
                     #if predictor depends on the state of other foragers, identify which foragers can influence
-                        #find forager_to_forager_distances at time t 
-                        ...
-                        #find index of foragers with distance < interation_length (ignore foragers with missing positional data)
-                        ...
-                        ##PP_comment : we could use existing function filter_by_visibility() here but that combines visibility w/ rewards so might be better to separate these and define new functions for this purpose
-                        ##EM/RU_comment : write down a filter function which takes a constraint 
-                        ## RU_comment: different velocity mechanisms could be implemented by using different transformation functions after the filter function (before additive looping). So we could have the same _velocity_predictor() function with a bunch wrappers for different mechanisms
-
+                    interaction_partners = filter_by_interaction_distance(foragersDF, f, t, interaction_length)
+                      
                     #additively combine predictor values corresponding to each selected forager
-                    for f_i in selected_foragers:
-                        predictor_X[f][t]["predictor_X"] += predictor_X_pairwise_calculator(...)
+                    for f_i in interaction_partners:
+                        predictor_X[f][t][predictor_ID] += predictor_X_pairwise_calculator(...)
                         ##PP_comments:
                             - predictor_X_calculator(...) takes in grid point locations (predictor_X[f][t]["x", "y"]), forager f variables, relevant forager f_i variables (+ other params) and calculates the value of the predictor at every grid point based on the chosen functional form of the predictor
                             - treat divide-by-zeros on a case-to-case basis 
                             - this function must return nan values when derived quantities (eg. v) are not defined
 
-                    #normalize predictor values if needed. (z score it) 
+                    #normalize predictor values if needed. (z score it over grid points) 
                     ...
 
-        return predictor_X
+        return quantity_X, predictor_X
+
+##
+def generate_predictor_X(foragers_object, predictor_ID):
+
+    #grab relevant parameters
+    params = foragers_object.predictor_params[predictor_ID] #this returns a dictionary
+
+    quantity_X, predictor_X = _generate_predictor_X(foragers=foragers_object.foragers, foragersDF=foragers_object.foragersDF, local_windows=foragers_object.local_windows, predictor_ID=predictor_ID, **params)
+
+    #add quantity_X to foragers_object
+    ...
+
+    return predictor_X
+
+##
+def filter_by_interaction_distance(foragersDF, f, t, interaction_length):
+
+    positions = foragersDF[foragersDF["time"]==t].copy()
+    distances = (positions["x"] - positions["x"][f])**2 + (positions["y"] - positions["y"][f])**2
+    distances[f] = np.nan
+    forager_ind = positions.loc[distances<interaction_length**2, "forager"].tolist()
+
+    return forager_ind
 
 # Design of generate_all_predictors function
 

@@ -97,7 +97,7 @@ def _generate_local_windows(...):
 def generate_local_windows(foragers_object):
 
     #grab parameters specific to local_windows
-    params = foragers_object.predictor_params["local_windows"] #this returns a dictionary
+    params = foragers_object.local_windows_kwargs
 
     #call hidden function with keyword arguments
     local_windows =  _generate_local_windows(foragers=foragers_object.foragers, foragersDF=foragers_object.foragersDF, grid_size=foragers_object.grid_size, **params)
@@ -189,7 +189,7 @@ def _generate_predictor_X (...):
 def generate_predictor_X(foragers_object, predictor_ID):
 
     #grab relevant parameters
-    params = foragers_object.predictor_params[predictor_ID] #this returns a dictionary
+    params = foragers_object.predictor_kwargs[predictor_ID] #this returns a dictionary
 
     quantity_X, predictor_X = _generate_predictor_X(foragers=foragers_object.foragers, foragersDF=foragers_object.foragersDF, local_windows=foragers_object.local_windows, predictor_ID=predictor_ID, **params)
 
@@ -216,66 +216,48 @@ def generate_all_predictors(...):
 ##RU_comment : this a dict of dicts ("function_kwargs") as arguments instead of individual params
 ##RU_comment : instead of passing predictors, we infer which predictors to compute from function_kwargs. this can have multiple runs of the same predictor with different parameters (convention "predictorX_*" to name the different versions )
 
-    Specifications:
-        - The function calculates all predictors as specified in "predictors" by calling individual generate_predictor_X() functions
-        - The outputs of every generate_predictor_X() call is added as an attribute to the foragers_object 
-        - ##PP_comment: What should this function return? forager_object is modified in place so it is not necessary to return it. Can return a combined predictorsDF? Both?
-
     Inputs:
         foragers_object : data object (from simulation or experiments)
-        ##EM_comment : modifying in place might break if code is run in parallel?
-        predictors : list of strings, e.g ["visibility", "proximity", "rewards"] 
-        # arguments for local_window
-            sampling_fraction
-            window_size 
-            random_sample  
-            random_seed
-            drop_all_missing_frames
-            constraint
-        # arguments for each predictor type, e.g.:
-            proximity_preferred_distance
-            proximity_decay
-            ...
-            ##PP_comment: as the number of predictors increase, it will be hard to keep track of all the parameters, so can establish a convention that names of parameters specific to a particular predictor start with a predictor identifier 
-            ##PP_comment: I need to understand what exactly time_shift is doing and where to implement it [potentially just need to implement it in local_windows] **RESOLVED** decided to not implement time_shift 
-            dropna : True (filter out rows with nans in combined_predictorDF) or False (keep nans)
+        local_windows_kwargs : dictionary of keyword arguments for local_windows 
+            local_windows_kwargs = {"sampling_fraction":5, "window_size":30, ...}
+        predictor_kwargs : nested dictionary of keyword arguments for all the predictors to be computed. we can have multiple versions of the same predictor (with different parameters) by using underscores in the naming. i.e.  ["visibility", "proximity_10", "proximity_20_2"]. 
+        !!! The part of the string before the first underscore indicates the predictor type !!!
+            predictor_kwargs = {
+                "proximity_10" : {"optimal_dist":10, "decay":1, ...},
+                "proximity_20" : {"optimal_dist":20, "decay":2, ...},
+            }
+        dropna : True (filter out rows with nans in combined_predictorDF) or False (keep nans)
+        add_scaled_scores :  True (include scaled values of predictors) or False 
+
     Returns:
-        foragers_object : modified foragers_object which contains all computed predictors as attributes
-        combined_predictorDF : a combined DataFrame containing all computed predictor values for each forager and time step at all selected grid points, with nans filtered out 
+        foragers_object : modified foragers_object which contains all computed predictors in a dictionary
+        combined_predictorDF : a combined DataFrame containing all computed predictor values for each forager and time step at all selected grid points
 
     Psuedocode implementation: 
-        #save local_windows parameter values as attributes of the foragers_object, e.g. 
-        foragers_object.window_size = window_size
-        ...
-
-        #generate local_windows
-        local_windows = generate_local_windows(...)
-
-        #add output to foragers_object
+        #save chosen parameters to object
+        foragers_object.local_windows_kwargs = local_windows_kwargs
+        foragers_object.predictor_kwargs = predictor_kwargs
+        
+        #generate local_windows and add to object
+        local_windows = generate_local_windows(foragers_object)
         foragers_object.local_windows = local_windows
 
-        list_predictors = []
+        computed_predictors = {}
 
-        ##EM_comment : pick function given the regular expression, so users don't need to modify derive predictors
-        #repeated code chunks to compute each predictor if selected
-        if "predictor_X" in predictors:
-            #save specified parameter values as attributes of the foragers_object
-            ...
+        for predictor_ID in predictor_kwargs:
+            predictor_type = predictor_ID.split('_')[0]
+            function_name = f"generate_{predictor_type}_predictor"
 
-            #calculate predictor value
-            predictor_X = generate_predictor_X(foragers_object, local_windows, ...)
+            #How to fetch the correct generating function depends on how functions are organised into files / imported. Eg, if we save all generate_predictor_X() functions in a single file generate_predictors.py and import that as "gen_pred" into the file with derive predictors
+            generate_predictor_function = getattr(gen_pred,function_name)
 
-            #add outputs to foragers_object
-            foragers_object.predictor_X = predictor_X
-            ## RU_comment : save predictors as a dictionary!
-                foragers_object.predictors["velocity_10"] = predictor_X
-            #add to all_predictors_list
-            list_predictors.append(predictor_X)
+            computed_predictors[predictor_ID] = generate_predictor_function(foragers_object, predictorID)
+        
+        #save computed_predictors to object
+        foragers_object.predictors = computed_predictors
 
         #generate combined_predictorDF
-        combined_predictorDF = generate_combined_predictorDF(list_predictors,dropna)
-
-        ##RU_comment : also add scaled columns for predictors 
+        combined_predictorDF = generate_combined_predictorDF(computed_predictors,dropna,add_scaled_scores)
 
         #save to object
         foragers_object.combined_predictorDF = combined_predictorDF
@@ -288,9 +270,9 @@ def generate_DF_from_predictor(predictor_X):
 
     return pd.concat([pd.concat(p, axis=0) for p in predictor_X], axis=0) #this automatically ignores None elements! 
         
-def generate_combined_predictorDF(list_predictors,dropna):
+def generate_combined_predictorDF(dict_predictors,dropna,add_scaled_scores):
 
-    list_predictorDFs = [generate_DF_from_predictor(p) for p in list_predictors]
+    list_predictorDFs = [generate_DF_from_predictor(p) for p in dict_predictors.values()]
     combined_predictorDF = list_predictorDFs[0]
 
     for i in range(1,len(list_predictorDFs)):
@@ -298,6 +280,13 @@ def generate_combined_predictorDF(list_predictors,dropna):
 
     if dropna:
         combined_predictorDF.dropna()
+
+    #scale predictor columns
+    if add_scaled_scores:
+        for predictor_ID in dict_predictors.keys():
+            column_min = np.nanmin(combined_predictorDF[predictor_ID])
+            column_max = np.nanmax(combined_predictorDF[predictor_ID])
+            combined_predictorDF[f"{predictor_ID}_scaled"] = (combined_predictorDF[predictor_ID] - column_min)/(column_max - column_min)
 
     return combined_predictorDF
 

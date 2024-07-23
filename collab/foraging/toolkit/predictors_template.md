@@ -212,10 +212,6 @@ def filter_by_interaction_distance(foragersDF, f, t, interaction_length):
 
 def generate_all_predictors(...):
 
-##RU_comment : this should also scale all the predictors (across foragers and time), and add that as a column in combined_predictorsDF 
-##RU_comment : this a dict of dicts ("function_kwargs") as arguments instead of individual params
-##RU_comment : instead of passing predictors, we infer which predictors to compute from function_kwargs. this can have multiple runs of the same predictor with different parameters (convention "predictorX_*" to name the different versions )
-
     Inputs:
         foragers_object : data object (from simulation or experiments)
         local_windows_kwargs : dictionary of keyword arguments for local_windows 

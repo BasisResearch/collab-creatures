@@ -240,14 +240,14 @@ def generate_all_predictors(...):
 
         computed_predictors = {}
 
-        for predictor_ID in predictor_kwargs:
+        for predictor_ID in predictor_kwargs.keys():
             predictor_type = predictor_ID.split('_')[0]
             function_name = f"generate_{predictor_type}_predictor"
 
             #How to fetch the correct generating function depends on how functions are organised into files / imported. Eg, if we save all generate_predictor_X() functions in a single file generate_predictors.py and import that as "gen_pred" into the file with derive predictors
             generate_predictor_function = getattr(gen_pred,function_name)
 
-            computed_predictors[predictor_ID] = generate_predictor_function(foragers_object, predictorID)
+            computed_predictors[predictor_ID] = generate_predictor_function(foragers_object, predictor_ID)
         
         #save computed_predictors to object
         foragers_object.predictors = computed_predictors

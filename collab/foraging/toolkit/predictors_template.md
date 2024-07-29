@@ -1,37 +1,49 @@
-# General plan for generate_predictor functions:
+# Rewrite of object_from_data function as a class instantiation 
 
-    - First define underscored versions of functions (_generate_predictor_X(..)) which take in specific attributes of foragers_object, and parameters to compute predictors
-    - Then write wrapper functions generate_predictor_X(..) that only take the foragers_object, access relevant quantities from it, and then call _generate_predictor_X(..) 
-    - Both of these functions will take an additional argument "predictor_ID" which decides what name to save the predictor using (useful for the case when we want to simulataneously test the same predictor with different parameters, eg: "velocity_10", "velocity_20", etc )
+class dataObject:
+    def __init__(self, foragersDF, grid_size=None, rewardsDF=None, frames=None):
+        if frames is None:
+            frames = foragersDF["time"].nunique()
 
-PROBLEMS WITH THIS PLAN:
+        if grid_size is None:
+            grid_size = int(max(max(foragersDF["x"]), max(foragersDF["y"])))
 
-    - _generate_local_windows(...) should still be given a foragers_object, so it can access grid_size, etc. from the object as we need to enforce that the grid_size is the same as that used to create the foragers_object otherwise results don't make sense (don't have grid_size be an exposed parameter). It also needs both the DF and foragers object for computations (maybe it's okay that we have to pass both?)
-    - for predictors that require computation of secondary quantities like velocity, we cannot add these quantities to the object unless it is passed to the function (but maybe we don't need to? or alternately, hidden function can return both predictor and derived quantity. exposed function adds derived quantity to foragers_object)
-    - We cannot have a single "filter_by_interaction_distance" function that takes in a general constraint that works for both cases like foragers on reward, or of specific age, because such functions would need additional attributes of the foragers_object (such as rewardsDF) that are not originally passed to _generate_predictor_X(..). So one option is to have different "filter_by" functions for different cases, or only have generate_predictor_X(...).
+        self.grid_size = grid_size
+        self.num_frames = frames
+        self.foragersDF = foragersDF
+        if self.foragersDF["forager"].min() == 0:
+            self.foragersDF["forager"] = self.foragersDF["forager"] + 1
 
-# General specifications for nan handling 
+        self.foragers = [group for _, group in foragersDF.groupby("forager")]
 
-Two reasons why nans may arise: 
+        if rewardsDF is not None:
+            self.rewardsDF = rewardsDF
+            self.rewards = [group for _, group in rewardsDF.groupby("time")]
 
-- Real experimental data can have missing values for animal positions either due to tracking errors (but animal still in frame) or due to animals leaving the frame
-- Derived quantities (such as velocity, how_far_score) that depend on past/future positions may not be defined for edge cases, leading to nans for predictors that depend on them. 
+        self.num_foragers = len(sim.foragers)
 
-Code design plan to work with nans:
+    def calculate_step_size_max(self):
+        step_maxes = []
 
-- object_from_data(...) raises a warning if there are nan values in data 
-- generate_local_windows(...): 
-    - Default behavior: set local_windows[f][t]=None for all timepoints t that forager f's location is missing & raise warning 
-    - Optional behavior: set local_windows[:][t]=None, i.e insert a None element for *all* foragers when *any* forager is missing
-- Handling of missing data while calculating predictor values follows the lead of generate_local_windows(...):
-    - add_quantity_X_to_data(...) adds nan values both for frames when positional data is missing and when derived quantities are not defined
-    - If local_windows[f][t] is None (indicates that predictor values should not be calculated):
-        - generate_predictor_X(...) returns an empty element in predictor_X for corresponding frame (i.e. predictor[f][t] = None )
-    - If local_windows[f][t] is not empty:
-        - identify other foragers that influence predictor values - here, only consider foragers whose positional data exists (even if their derived quantities are nans)
-        - predictor_X_calculator(...) returns nans if relevant derived quantities of focal or influential foragers are not defined
-- generate_DF_from_predictor(...) throws away all empty elements in predictor_X (but keeps DFs with nans)
-- generate_combined_predictorDF(...) : generates combined DF and (optional) deletes all rows where *any* predictor values are nan for inference 
+        for b in range(len(self.foragers)):
+            df = self.foragers[b]
+            step_maxes.append(
+                max(
+                    max(
+                        [
+                            abs(df["x"].iloc[t + 1] - df["x"].iloc[t])
+                            for t in range(len(df) - 1)
+                        ]
+                    ),
+                    max(
+                        [
+                            abs(df["y"].iloc[t + 1] - df["y"].iloc[t])
+                            for t in range(len(df) - 1)
+                        ]
+                    ),
+                )
+            )
+        self.step_size_max = max(step_maxes)
 
 # Design of local_windows (& related) functions
 
@@ -146,6 +158,10 @@ def _generate_predictor_X (...):
         predictor_ID : name to be used for the predictor
         interaction_length : 
             radius of influence if predictor depends on the state of other foragers. Defaults to window_size, but it is useful to keep it separate for clarity and special cases (int)
+        interaction_constraint: 
+            (Optional) function that takes a list of foragers within interaction length and applies additional constraints on it 
+        interaction_constraint_params :
+            Dictionary of parameters for constraint function 
         params: other parameters specific to the predictor
 
     Returns:
@@ -170,7 +186,7 @@ def _generate_predictor_X (...):
                     predictor_X[f][t][predictor_ID] = 0 
 
                     #if predictor depends on the state of other foragers, identify which foragers can influence
-                    interaction_partners = filter_by_interaction_distance(foragersDF, f, t, interaction_length)
+                    interaction_partners = filter_by_interaction_distance(foragersDF, f, t, interaction_length,interaction_constraint, interaction_constraint_params)
                       
                     #additively combine predictor values corresponding to each selected forager
                     for f_i in interaction_partners:
@@ -199,14 +215,14 @@ def generate_predictor_X(foragers_object, predictor_ID):
     return predictor_X
 
 ##
-def filter_by_interaction_distance(foragersDF, f, t, interaction_length):
-
+def filter_by_interaction_distance(foragersDF, f, t, interaction_length, interaction_constraint=None, interaction_constraint_params: dict = None):
     positions = foragersDF[foragersDF["time"]==t].copy()
     distances = (positions["x"] - positions["x"][f])**2 + (positions["y"] - positions["y"][f])**2
     distances[f] = np.nan
     forager_ind = positions.loc[distances<interaction_length**2, "forager"].tolist()
-
-    return forager_ind
+    if interaction_constraint is not None:
+        foragers_ind = interaction_constraint(forager_ind, f, t, foragersDF, **interaction_constraint_parameters)
+    return foragers_ind
 
 # Design of generate_all_predictors function
 
@@ -221,6 +237,7 @@ def generate_all_predictors(...):
             predictor_kwargs = {
                 "proximity_10" : {"optimal_dist":10, "decay":1, ...},
                 "proximity_20" : {"optimal_dist":20, "decay":2, ...},
+                "proximity_w_constraint" : {...,"interaction_constraint" : constraint_function, "interaction_constraint_params": {"rewardsDF" : foragers_object.rewardsDF,...}}
             }
         dropna : True (filter out rows with nans in combined_predictorDF) or False (keep nans)
         add_scaled_scores :  True (include scaled values of predictors) or False 

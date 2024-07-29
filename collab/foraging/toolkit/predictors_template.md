@@ -222,6 +222,7 @@ def generate_predictor_X(foragers_object, predictor_ID):
 
 ##
 def filter_by_interaction_distance(foragersDF, f, t, interaction_length, interaction_constraint=None, interaction_constraint_params: dict = None):
+
     positions = foragersDF[foragersDF["time"]==t].copy()
     distances = (positions["x"] - positions["x"][f])**2 + (positions["y"] - positions["y"][f])**2
     distances[f] = np.nan

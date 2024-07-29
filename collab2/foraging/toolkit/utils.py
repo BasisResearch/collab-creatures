@@ -18,10 +18,6 @@ class dataObject:
 
         self.grid_size = grid_size
         self.num_frames = frames
-
-        if foragersDF.isna.any():
-            warnings.warn(f"Missing values in data. Specify handling by modifying skip_incomplete_frames argument to generate_all_predictors", UserWarning)
-
         self.foragersDF = foragersDF
 
         if self.foragersDF["forager"].min() == 0:
@@ -35,6 +31,13 @@ class dataObject:
 
         self.num_foragers = len(self.foragers)
 
+        #raise warning if all foragers are not present in any frame 
+        for f in range(self.num_foragers):
+            missing = set(range(self.num_frames)) - set(self.foragers[f]["time"][self.foragers[f]["x"].notna()].to_list())
+            if missing :
+                warnings.warn(f"Incomplete frames in data. Specify handling of missing data using skip_incomplete_frames argument to generate_all_predictors")
+                break
+        
     def calculate_step_size_max(self):
         step_maxes = []
 

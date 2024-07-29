@@ -5,7 +5,58 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy.signal import find_peaks
+import warnings
 
+#define a class for streamlining object creation 
+class dataObject:
+    def __init__(self, foragersDF, grid_size=None, rewardsDF=None, frames=None):
+        if frames is None:
+            frames = foragersDF["time"].nunique()
+
+        if grid_size is None:
+            grid_size = int(max(max(foragersDF["x"]), max(foragersDF["y"])))
+
+        self.grid_size = grid_size
+        self.num_frames = frames
+
+        if foragersDF.isna.any():
+            warnings.warn(f"Missing values in data. Specify handling by modifying skip_incomplete_frames argument to generate_all_predictors", UserWarning)
+
+        self.foragersDF = foragersDF
+
+        if self.foragersDF["forager"].min() == 0:
+            self.foragersDF["forager"] = self.foragersDF["forager"] + 1
+
+        self.foragers = [group for _, group in foragersDF.groupby("forager")]
+
+        if rewardsDF is not None:
+            self.rewardsDF = rewardsDF
+            self.rewards = [group for _, group in rewardsDF.groupby("time")]
+
+        self.num_foragers = len(self.foragers)
+
+    def calculate_step_size_max(self):
+        step_maxes = []
+
+        for b in range(len(self.foragers)):
+            df = self.foragers[b]
+            step_maxes.append(
+                max(
+                    max(
+                        [
+                            abs(df["x"].iloc[t + 1] - df["x"].iloc[t])
+                            for t in range(len(df) - 1)
+                        ]
+                    ),
+                    max(
+                        [
+                            abs(df["y"].iloc[t + 1] - df["y"].iloc[t])
+                            for t in range(len(df) - 1)
+                        ]
+                    ),
+                )
+            )
+        self.step_size_max = max(step_maxes)
 
 def object_from_data(
     foragersDF,

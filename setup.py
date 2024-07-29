@@ -4,6 +4,7 @@ from setuptools import find_packages, setup
 VERSION = "0.1.0"
 
 
+##PP_question : This does not load either collab or collab2 as a package. What needs to change?
 
 # examples/tutorials/notebooks
 EXTRAS_REQUIRE = [

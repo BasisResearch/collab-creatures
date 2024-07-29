@@ -12,6 +12,7 @@ class dataObject:
         self.grid_size = grid_size
         self.num_frames = frames
 
+        #TODO: update this so that omissions also count as missing data 
         if foragersDF.isna.any():
             warnings.warn(f"Missing values in data. Specify handling by modifying skip_incomplete_frames argument to generate_all_predictors", UserWarning)
 
@@ -73,22 +74,30 @@ def _generate_local_windows(...):
 
         #initialize a common grid
         grid = get_grid(grid_size, sampling_fraction, random_seed, grid_constraint) #a function that first generates a DataFrame of valid grid points and then subsamples from it randomly 
-    
-        #identify time_points where any forager is missing
-        missing_time_points_all = []
+
+        ##PP_comment: updated this so that data doesn't need to be padded with nans after a forager exits the frame
+        
+        #identify time points where each foragers is present
+        present_frames = []
+        for f in range(num_foragers):
+            present_frames.append(foragers[f]["time"][foragers[f]["x"].notna()].to_list())
+
+        #identify time points where ALL foragers are present 
+        all_present_frames = []
         if skip_incomplete_frames:
-            missing_time_points_all=foragersDF["time"][foragersDF["x"].isna()].unique().to_list()
+            set_present_frames = [set(_) for _ in present_frames]
+            all_present_frames = set.intersection(*set_present_frames)
 
         local_windows = []
         for f in range(num_foragers): 
             #initialize local_windows_f to None
             local_windows_f = [None for _ in range(num_frames)]
 
-            #find time points where forager's positional data is missing 
-            missing_time_points_f=foragers[f]["time"][foragers[f]["x"].isna()].to_list()
-
             #find frames for which local windows need to be computed
-            compute_frames = (set(range(num_frames)) - set(missing_time_points_f))-set(missing_time_points_all)
+            if skip_incomplete_frames:
+                compute_frames = all_present_frames
+            else:
+                compute_frames = present_frames[f]
             
             for t in compute_frames:
                     #copy grid

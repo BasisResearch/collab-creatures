@@ -1,6 +1,7 @@
 # Rewrite of object_from_data function as a class instantiation 
 
 class dataObject:
+
     def __init__(self, foragersDF, grid_size=None, rewardsDF=None, frames=None):
         if frames is None:
             frames = foragersDF["time"].nunique()
@@ -10,7 +11,12 @@ class dataObject:
 
         self.grid_size = grid_size
         self.num_frames = frames
+
+        if foragersDF.isna.any():
+            warnings.warn(f"Missing values in data. Specify handling by modifying skip_incomplete_frames argument to generate_all_predictors", UserWarning)
+
         self.foragersDF = foragersDF
+
         if self.foragersDF["forager"].min() == 0:
             self.foragersDF["forager"] = self.foragersDF["forager"] + 1
 

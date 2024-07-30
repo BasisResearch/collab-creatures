@@ -3,6 +3,7 @@ import random
 import numpy as np
 
 
+##PP_question : While subsampling frames in this way, the time interval between each consecutive frame is hard to know (not constant) 
 def subset_frames_evenly_spaced(df_raw, desired_frames=300):
     df = df_raw.copy()
     print("original_frames:", df["time"].max())

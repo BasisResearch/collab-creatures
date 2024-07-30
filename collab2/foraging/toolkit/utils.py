@@ -30,6 +30,10 @@ class dataObject:
             self.rewards = [group for _, group in rewardsDF.groupby("time")]
 
         self.num_foragers = len(self.foragers)
+        
+        #raise warning if nan values in DataFrame
+        if foragersDF["x"].isna().any():
+            warnings.warn(f"Nan values in data. Specify handling of missing data using skip_incomplete_frames argument to generate_all_predictors")
 
         #raise warning if all foragers are not present in any frame 
         for f in range(self.num_foragers):

@@ -65,64 +65,6 @@ class dataObject:
             )
         self.step_size_max = max(step_maxes)
 
-def object_from_data(
-    foragersDF,
-    grid_size=None,
-    rewardsDF=None,
-    frames=None,
-    calculate_step_size_max=False,
-):
-    if frames is None:
-        frames = foragersDF["time"].nunique()
-
-    if grid_size is None:
-        grid_size = int(max(max(foragersDF["x"]), max(foragersDF["y"])))
-
-    class EmptyObject:
-        pass
-
-    sim = EmptyObject()
-
-    sim.grid_size = grid_size
-    sim.num_frames = frames
-    sim.foragersDF = foragersDF
-    if sim.foragersDF["forager"].min() == 0:
-        sim.foragersDF["forager"] = sim.foragersDF["forager"] + 1
-
-    sim.foragers = [group for _, group in foragersDF.groupby("forager")]
-
-    if rewardsDF is not None:
-        sim.rewardsDF = rewardsDF
-        sim.rewards = [group for _, group in rewardsDF.groupby("time")]
-
-    sim.num_foragers = len(sim.foragers)
-
-    if calculate_step_size_max:
-        step_maxes = []
-
-        for b in range(len(sim.foragers)):
-            df = sim.foragers[b]
-            step_maxes.append(
-                max(
-                    max(
-                        [
-                            abs(df["x"].iloc[t + 1] - df["x"].iloc[t])
-                            for t in range(len(df) - 1)
-                        ]
-                    ),
-                    max(
-                        [
-                            abs(df["y"].iloc[t + 1] - df["y"].iloc[t])
-                            for t in range(len(df) - 1)
-                        ]
-                    ),
-                )
-            )
-        sim.step_size_max = max(step_maxes)
-
-    return sim
-
-
 def foragers_to_forager_distances(obj):
     distances = []
     foragers = obj.foragers

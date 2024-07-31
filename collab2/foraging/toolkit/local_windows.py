@@ -2,7 +2,7 @@ from itertools import product
 import pandas as pd
 import numpy as np
 from typing import Callable, Any
- 
+
 def get_grid(grid_size : int =90, sampling_fraction : float =1.0, random_seed : int =0, grid_constraint: Callable[[pd.DataFrame, pd.DataFrame, Any], pd.DataFrame] =None, grid_constraint_params : dict = None):
    #generate grid of all points
     grid = list(product(range(1, grid_size+ 1), repeat=2)) 
@@ -55,17 +55,19 @@ def _generate_local_windows(foragers : list, foragersDF : pd.DataFrame, grid_siz
                 g = grid.copy()
 
                 #calculate distance of points in g to the current position of forager f
-                g["distance"] = np.sqrt((g["x"] - foragers[f].loc(foragers[f]["time"]==t,"x"))**2 + (g["y"] - foragers[f].loc(foragers[f]["time"]==t,"y"))**2)
+                g["distance_to_f"] = np.sqrt((g["x"] - foragers[f].query("time == @t")["x"].values)**2 + (g["y"] - foragers[f].query("time == @t")["y"].values)**2)
 
                 #select grid points with distance < window_size
-                g = g[g["distance"]<=window_size]
+                g = g[g["distance_to_f"]<=window_size]
 
                 #add forager and time info to the DF
-                g["time"] = t
-                g["forager"] = f
+                #TODO : using assign here because everything else triggers a copy on write warning ??
+                g=g.assign(time = t) 
+                g=g.assign(forager = f)
 
                 #update the corresponding element of local_windows_f to DF with computed grid points
-                local_windows_f[t] = g 
+                # time starts at 1! 
+                local_windows_f[t-1] = g 
 
         #add local_windows_f to local_windows
         local_windows.append(local_windows_f)

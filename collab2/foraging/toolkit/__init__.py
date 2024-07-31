@@ -35,7 +35,6 @@ from .utils import (  # noqa: F401
     distances_and_peaks,
     foragers_to_forager_distances,
     generate_grid,
-    object_from_data,
     update_rewards,
     dataObject ##PP_question : Is there a workaround to manually adding each new function to the init file?
 

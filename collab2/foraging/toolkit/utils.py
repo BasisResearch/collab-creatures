@@ -36,8 +36,10 @@ class dataObject:
             warnings.warn(f"Nan values in data. Specify handling of missing data using skip_incomplete_frames argument to generate_all_predictors")
 
         #raise warning if all foragers are not present in any frame 
+        all_frames = foragersDF["time"].unique() #need this as frames need not start from 0 
+
         for f in range(self.num_foragers):
-            missing = set(range(self.num_frames)) - set(self.foragers[f]["time"][self.foragers[f]["x"].notna()].to_list())
+            missing = set(all_frames) - set(self.foragers[f]["time"][self.foragers[f]["x"].notna()].to_list())
             if missing :
                 warnings.warn(f"Incomplete frames in data. Specify handling of missing data using skip_incomplete_frames argument to generate_all_predictors")
                 break

@@ -20,6 +20,7 @@ class dataObject:
         self.num_frames = frames
         self.foragersDF = foragersDF
 
+        ##PP_comment : why do we want foragers to start at 1?
         if self.foragersDF["forager"].min() == 0:
             self.foragersDF["forager"] = self.foragersDF["forager"] + 1
 

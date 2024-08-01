@@ -2,7 +2,7 @@
 from itertools import product
 import pandas as pd
 import numpy as np
-from typing import Callable, Any
+from typing import Callable, Any, List
 
 def get_grid(grid_size : int =90, sampling_fraction : float =1.0, random_seed : int =0, 
              grid_constraint: Callable[[pd.DataFrame, pd.DataFrame, Any], pd.DataFrame] =None, grid_constraint_params : dict = None) -> pd.DataFrame:
@@ -21,7 +21,7 @@ def get_grid(grid_size : int =90, sampling_fraction : float =1.0, random_seed : 
 
     return grid
 
-def _generate_local_windows(foragers : list, grid_size : int, num_foragers : int, num_frames : int, window_size : float, sampling_fraction : float = 1.0, random_seed : int =0, 
+def _generate_local_windows(foragers : List[pd.DataFrame], grid_size : int, num_foragers : int, num_frames : int, window_size : float, sampling_fraction : float = 1.0, random_seed : int =0, 
                             skip_incomplete_frames : bool = False, grid_constraint : Callable[[pd.DataFrame, pd.DataFrame, Any], pd.DataFrame] =None, grid_constraint_params : dict = None) -> pd.DataFrame:
     
     #Note: args grid_size, num_foragers, num_frames are not exposed to users but set to values inherited from foragers_object by generate_local_windows

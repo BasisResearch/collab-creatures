@@ -52,5 +52,6 @@ from .visibility import (  # noqa: F401
 
 from .local_windows import (
     get_grid,
-    _generate_local_windows
+    _generate_local_windows,
+    generate_local_windows
 )

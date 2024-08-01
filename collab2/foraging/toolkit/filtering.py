@@ -1,10 +1,10 @@
 import pandas as pd
 import numpy as np
-from typing import Callable, Any
+from typing import Callable, Any, List
 
 ##PP_comment : even with passing constraint params as a dictionary, we might have a limitation : we cannot have a constraint that depends on quantities derived within the predictor function (eg, fastest v) 
 # One workaround could be to locally (i.e. within the function) modify foragersDF with the derived quantities and pass that to the constraint function via filter_by_distance
-def filter_by_distance(foragersDF : pd.DataFrame, f : int, t : int, interaction_length : float, interaction_constraint : Callable[[list,int,int,pd.DataFrame,Any],list[int]] = None, interaction_constraint_params : dict = None)->list[int]:
+def filter_by_distance(foragersDF : pd.DataFrame, f : int, t : int, interaction_length : float, interaction_constraint : Callable[[List[int],int,int,pd.DataFrame,Any],List[int]] = None, interaction_constraint_params : dict = None)->List[int]:
     positions = foragersDF[foragersDF["time"]==t].copy()
     positions["distance"] = np.sqrt((positions["x"] - positions.loc[positions["forager"] == f,"x"].values)**2 + (positions["y"] - positions.loc[positions["forager"] == f,"y"].values)**2)
     positions.loc[positions["forager"]==f,"distance"] = np.nan

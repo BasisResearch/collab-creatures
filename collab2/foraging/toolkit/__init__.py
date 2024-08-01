@@ -35,7 +35,7 @@ from .utils import (  # noqa: F401
     distances_and_peaks,
     foragers_to_forager_distances,
     generate_grid,
-    object_from_data,
+    dataObject,
     update_rewards,
 )
 from .velocity import (  # noqa: F401

@@ -5,45 +5,50 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy.signal import find_peaks
+import warnings
 
+#define a class for streamlining object creation 
+class dataObject:
+    def __init__(self, foragersDF, grid_size=None, rewardsDF=None, frames=None):
+        if frames is None:
+            frames = foragersDF["time"].nunique()
 
-def object_from_data(
-    foragersDF,
-    grid_size=None,
-    rewardsDF=None,
-    frames=None,
-    calculate_step_size_max=False,
-):
-    if frames is None:
-        frames = foragersDF["time"].nunique()
+        if grid_size is None:
+            grid_size = int(max(max(foragersDF["x"]), max(foragersDF["y"])))
 
-    if grid_size is None:
-        grid_size = int(max(max(foragersDF["x"]), max(foragersDF["y"])))
+        self.grid_size = grid_size
+        self.num_frames = frames
+        self.foragersDF = foragersDF
 
-    class EmptyObject:
-        pass
+        if self.foragersDF["forager"].min() == 0:
+            self.foragersDF["forager"] = self.foragersDF["forager"] + 1
 
-    sim = EmptyObject()
+        self.foragers = [group for _, group in foragersDF.groupby("forager")]
 
-    sim.grid_size = grid_size
-    sim.num_frames = frames
-    sim.foragersDF = foragersDF
-    if sim.foragersDF["forager"].min() == 0:
-        sim.foragersDF["forager"] = sim.foragersDF["forager"] + 1
+        if rewardsDF is not None:
+            self.rewardsDF = rewardsDF
+            self.rewards = [group for _, group in rewardsDF.groupby("time")]
 
-    sim.foragers = [group for _, group in foragersDF.groupby("forager")]
+        self.num_foragers = len(self.foragers)
+        
+        #raise warning if nan values in DataFrame
+        if foragersDF["x"].isna().any():
+            warnings.warn(f"Nan values in data. Specify handling of missing data using skip_incomplete_frames argument to generate_all_predictors")
 
-    if rewardsDF is not None:
-        sim.rewardsDF = rewardsDF
-        sim.rewards = [group for _, group in rewardsDF.groupby("time")]
+        #raise warning if all foragers are not present in any frame 
+        all_frames = foragersDF["time"].unique() #need this as frames need not start from 0 
 
-    sim.num_foragers = len(sim.foragers)
-
-    if calculate_step_size_max:
+        for f in range(self.num_foragers):
+            missing = set(all_frames) - set(self.foragers[f]["time"][self.foragers[f]["x"].notna()].to_list())
+            if missing :
+                warnings.warn(f"Incomplete frames in data. Specify handling of missing data using skip_incomplete_frames argument to generate_all_predictors")
+                break
+        
+    def calculate_step_size_max(self):
         step_maxes = []
 
-        for b in range(len(sim.foragers)):
-            df = sim.foragers[b]
+        for b in range(len(self.foragers)):
+            df = self.foragers[b]
             step_maxes.append(
                 max(
                     max(
@@ -60,9 +65,7 @@ def object_from_data(
                     ),
                 )
             )
-        sim.step_size_max = max(step_maxes)
-
-    return sim
+        self.step_size_max = max(step_maxes)
 
 
 def foragers_to_forager_distances(obj):

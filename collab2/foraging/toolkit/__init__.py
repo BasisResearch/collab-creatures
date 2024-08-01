@@ -54,3 +54,7 @@ from .local_windows import (
     _generate_local_windows,
     generate_local_windows
 )
+
+from .filtering import(
+    filter_by_distance
+)

@@ -19,7 +19,7 @@ setup(
     name="collab",
     version=VERSION,
     description="Tools for animal behavior foraging modeling.",
-    packages=find_packages(include=["collab", "collab.*"]),
+    packages=find_packages(include=["collab", "collab.*", "collab2", "collab2.*"]),
     author="Basis",
     url="https://www.basis.ai/",
     project_urls={

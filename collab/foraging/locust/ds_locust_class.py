@@ -59,7 +59,6 @@ class LocustDS:
         self.validation = {}
 
     def simulate_trajectories(self, true_attraction, true_wander, init_state=None):
-
         locust_true = LocustDynamics(true_attraction, true_wander)
         with TorchDiffEq(
             method="rk4",
@@ -100,7 +99,6 @@ class LocustDS:
             ), "prior predictive inits are wrong"
 
     def plot_multiple_trajectories(self, compartment, num_lines=2, priors=False):
-
         if not priors:
             samples = self.samples
             title = f"Posterior predictions for compartment {compartment}"
@@ -161,7 +159,6 @@ class LocustDS:
             ), "predictive inits are wrong"
 
     def evaluate(self, samples, subset, check=True, figure=True, plot_null_model=True):
-
         uniform_preds = {}
         uniform_residuals = {}
         uniform_abs_errors = {}
@@ -185,7 +182,6 @@ class LocustDS:
             fig, axs = plt.subplots(2, 3, figsize=(15, 10))
 
         for i, compartment in enumerate(compartment_colors.keys()):
-
             mean_preds[compartment] = samples[compartment].mean(dim=0)
             # ran into a bug here before, hence assertion
             assert samples[compartment][0, 0, 0] == mean_preds[compartment][0][0]

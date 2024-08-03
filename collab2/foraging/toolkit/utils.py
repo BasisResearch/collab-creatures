@@ -7,7 +7,7 @@ import pandas as pd
 from scipy.signal import find_peaks
 import warnings
 
-#define a class for streamlining object creation 
+#define a class to streamline object creation 
 class dataObject:
     def __init__(self, foragersDF, grid_size=None, rewardsDF=None, frames=None):
         if frames is None:
@@ -20,7 +20,7 @@ class dataObject:
         self.num_frames = frames
         self.foragersDF = foragersDF
 
-        ##PP_comment : why do we want foragers to start at 1?
+        ##PP_TODO : change start at 1 to start at 0
         if self.foragersDF["forager"].min() == 0:
             self.foragersDF["forager"] = self.foragersDF["forager"] + 1
 
@@ -38,6 +38,7 @@ class dataObject:
 
         #raise warning if all foragers are not present in any frame 
         all_frames = foragersDF["time"].unique() #need this as frames need not start from 0 
+        ##PP_TODO revise once we start at 0
 
         for f in range(self.num_foragers):
             missing = set(all_frames) - set(self.foragers[f]["time"][self.foragers[f]["x"].notna()].to_list())

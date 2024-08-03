@@ -34,7 +34,7 @@ class dataObject:
         
         #raise warning if nan values in DataFrame
         if foragersDF["x"].isna().any():
-            warnings.warn(f"Nan values in data. Specify handling of missing data using skip_incomplete_frames argument to generate_all_predictors")
+            warnings.warn(f"Nan values in data. Specify handling of missing data using `skip_incomplete_frames` argument to `generate_all_predictors`")
 
         #raise warning if all foragers are not present in any frame 
         all_frames = foragersDF["time"].unique() #need this as frames need not start from 0 
@@ -43,7 +43,7 @@ class dataObject:
         for f in range(self.num_foragers):
             missing = set(all_frames) - set(self.foragers[f]["time"][self.foragers[f]["x"].notna()].to_list())
             if missing :
-                warnings.warn(f"Incomplete frames in data. Specify handling of missing data using skip_incomplete_frames argument to generate_all_predictors")
+                warnings.warn(f"Incomplete frames in data. Specify handling of missing data using `skip_incomplete_frames` argument to `generate_all_predictors`")
                 break
         
     def calculate_step_size_max(self):

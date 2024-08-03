@@ -43,7 +43,7 @@ class dataObject:
         for f in range(self.num_foragers):
             missing = set(all_frames) - set(self.foragers[f]["time"][self.foragers[f]["x"].notna()].to_list())
             if missing :
-                warnings.warn(f"Incomplete frames in data. Specify handling of missing data using `skip_incomplete_frames` argument to `generate_all_predictors`")
+                warnings.warn(f"Incomplete frames in data encoutered for agent {f}. Specify handling of missing data using `skip_incomplete_frames` argument to `generate_all_predictors`")
                 break
         
     def calculate_step_size_max(self):

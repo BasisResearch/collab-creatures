@@ -46,6 +46,8 @@ def rescale_to_grid(df_raw : pd.DataFrame, size : int, gridMin: float = None, gr
 
         mapped = (column - gridMin) / (gridMax - gridMin)
         rescaled = np.floor(mapped * size) 
+        rescaled[rescaled > size - 1] = size - 1
+        rescaled[rescaled < 0] = 0
 
         return rescaled
     

@@ -19,7 +19,7 @@ class dataObject:
             frames = foragersDF["time"].nunique()
 
         if grid_size is None:
-            grid_size = int(max(max(foragersDF["x"]), max(foragersDF["y"])))
+            grid_size = foragersDF.loc[:,["x","y"]].max(axis=None) + 1
 
         self.grid_size = grid_size
         self.num_frames = frames

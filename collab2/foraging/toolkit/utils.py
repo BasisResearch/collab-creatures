@@ -9,7 +9,12 @@ import warnings
 
 #define a class to streamline object creation 
 class dataObject:
-    def __init__(self, foragersDF : pd.DataFrame, grid_size : int =None, rewardsDF : pd.DataFrame =None, frames : int=None):
+    def __init__(self, foragersDF : pd.DataFrame, grid_size : int = None, rewardsDF : pd.DataFrame = None, frames : int = None):
+        """
+        Requirements for foragersDF :
+            - Required columns "x" : float, "y" : float, "time" : int, "forager" :int
+            - Frame numbers and forager indices must start at 0
+        """
         if frames is None:
             frames = foragersDF["time"].nunique()
 
@@ -18,34 +23,36 @@ class dataObject:
 
         self.grid_size = grid_size
         self.num_frames = frames
-        self.foragersDF = foragersDF
 
-        ##PP_TODO : change start at 1 to start at 0
-        if self.foragersDF["forager"].min() == 0:
-            self.foragersDF["forager"] = self.foragersDF["forager"] + 1
+        #raise warning if nan values in DataFrame
+        if foragersDF.isna().any(axis=None):
+            warnings.warn(f"Nan values in data. Specify handling of missing data using `skip_incomplete_frames` argument to `generate_all_predictors`")
 
-        self.foragers = [group for _, group in foragersDF.groupby("forager")]
+        #group dfs by forager index
+        foragers = [group for _, group in foragersDF.groupby("forager")]
+        self.num_foragers = len(foragers)
+        
+        #add nans for any omitted frames & raise warning
+        all_frames = range(self.num_frames)
+        for f in range(self.num_foragers):
+            missing = set(all_frames) - set(foragers[f]["time"])
+            if missing :
+                warnings.warn(f"Missing frames encountered for forager {f}, adding NaN fillers. Specify handling of missing data using `skip_incomplete_frames` argument to `generate_all_predictors`")
+                filler_rows = pd.DataFrame({"time" : list(missing), "forager" : [f]*len(missing)})
+                foragers[f] = pd.concat([foragers[f],filler_rows]) #adds nan values for all other columns automatically
+            
+            #sort by time
+            foragers[f].sort_values("time",ignore_index=True,inplace=True)
 
+        #save to object
+        self.foragers = foragers
+        self.foragersDF = pd.concat(foragers,ignore_index=True)
+
+        #add rewards
         if rewardsDF is not None:
             self.rewardsDF = rewardsDF
             self.rewards = [group for _, group in rewardsDF.groupby("time")]
-
-        self.num_foragers = len(self.foragers)
-        
-        #raise warning if nan values in DataFrame
-        if foragersDF["x"].isna().any() or foragersDF["y"].isna().any():
-            warnings.warn(f"Nan values in data. Specify handling of missing data using `skip_incomplete_frames` argument to `generate_all_predictors`")
-
-        #raise warning if a forager is not tracked for all frames 
-        all_frames = foragersDF["time"].unique() #need this as frames need not start from 0 
-        ##PP_TODO revise once we start at 0
-
-        for f in range(self.num_foragers):
-            missing = set(all_frames) - set(self.foragers[f]["time"][self.foragers[f]["x"].notna()].to_list())
-            if missing :
-                warnings.warn(f"Incomplete frames in data encoutered for agent {f}. Specify handling of missing data using `skip_incomplete_frames` argument to `generate_all_predictors`")
-                break
-        
+     
     def calculate_step_size_max(self):
         step_maxes = []
 
@@ -152,12 +159,6 @@ def distances_and_peaks(distances, bins=40, x_min=None, x_max=None):
             fontsize=10,
             color="red",
         )
-
-
-def generate_grid(grid_size):
-    grid = list(product(range(1, grid_size + 1), repeat=2))
-    return pd.DataFrame(grid, columns=["x", "y"])
-
 
 # remove rewards eaten by foragers in proximity
 def update_rewards(sim, rewards, foragers, start=1, end=None):

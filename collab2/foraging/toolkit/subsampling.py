@@ -1,6 +1,6 @@
 import random
-
 import numpy as np
+import pandas as pd
 
 
 def subset_frames_evenly_spaced(df_raw, desired_frames=300):
@@ -19,15 +19,22 @@ def subset_frames_evenly_spaced(df_raw, desired_frames=300):
 
     return df
 
+# updated function to allow user to pass gridMin and gridMax
+def rescale_to_grid(df : pd.DataFrame = None, size : int = None, gridMin: float = None, gridMax: float = None):
+    def rescale_column(column : pd.DataFrame = None, size : int = size, gridMin : float = None, gridMax : float = None ):
+        if gridMin is None:
+            gridMin = column.min()
 
-def rescale_to_grid(df, size):
-    def rescale_column(column, size=size):
-        mapped = (column - column.min()) / (column.max() - column.min())
+        if gridMax is None:
+            gridMax = column.max()
+
+        mapped = (column - gridMin) / (gridMax - gridMin)
         rescaled = np.floor(mapped * (size - 1)) + 1
+
         return rescaled
 
-    df["x"] = rescale_column(df["x"], size)
-    df["y"] = rescale_column(df["y"], size)
+    df["x"] = rescale_column(df["x"], size, gridMin, gridMax)
+    df["y"] = rescale_column(df["y"], size, gridMin, gridMax)
     return df
 
 

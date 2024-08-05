@@ -9,7 +9,7 @@ import warnings
 
 #define a class to streamline object creation 
 class dataObject:
-    def __init__(self, foragersDF, grid_size=None, rewardsDF=None, frames=None):
+    def __init__(self, foragersDF : pd.DataFrame, grid_size : int =None, rewardsDF : pd.DataFrame =None, frames : int=None):
         if frames is None:
             frames = foragersDF["time"].nunique()
 
@@ -33,10 +33,10 @@ class dataObject:
         self.num_foragers = len(self.foragers)
         
         #raise warning if nan values in DataFrame
-        if foragersDF["x"].isna().any():
+        if foragersDF["x"].isna().any() or foragersDF["y"].isna().any():
             warnings.warn(f"Nan values in data. Specify handling of missing data using `skip_incomplete_frames` argument to `generate_all_predictors`")
 
-        #raise warning if all foragers are not present in any frame 
+        #raise warning if a forager is not tracked for all frames 
         all_frames = foragersDF["time"].unique() #need this as frames need not start from 0 
         ##PP_TODO revise once we start at 0
 

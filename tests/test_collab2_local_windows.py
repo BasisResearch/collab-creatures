@@ -53,7 +53,7 @@ def test_local_windows():
         foragersDF_scaled, grid_size=grid_size, frames=num_frames
     )
 
-    ## local windows, skipping incomplete frames
+    # local windows, skipping incomplete frames
     local_windows_kwargs = {
         "window_size": 10,
         "sampling_fraction": 0.5,
@@ -91,7 +91,7 @@ def test_local_windows():
     )
     assert grid_distances.max() <= local_windows_kwargs["window_size"]
 
-    ## local windows, without skipping incomplete frames
+    # local windows, without skipping incomplete frames
     local_windows_kwargs = {
         "window_size": 10,
         "sampling_fraction": 0.5,

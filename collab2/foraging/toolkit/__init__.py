@@ -48,3 +48,10 @@ from .visibility import (  # noqa: F401
     filter_by_visibility,
     visibility_vs_distance,
 )
+
+
+from .local_windows import (  # noqa: F401
+    get_grid,
+    generate_local_windows,
+    _generate_local_windows,
+)

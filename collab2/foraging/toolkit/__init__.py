@@ -28,14 +28,14 @@ from .proximity import (  # noqa: F401; foragers_to_forager_distances,
 from .subsampling import (  # noqa: F401
     rescale_to_grid,
     sample_time_slices,
+    subsample_frames_constant_frame_rate,
     subset_frames_evenly_spaced,
-    subsample_frames_constant_frame_rate
 )
 from .trace import rewards_to_trace, rewards_trace  # noqa: F401
 from .utils import (  # noqa: F401
+    dataObject,
     distances_and_peaks,
     foragers_to_forager_distances,
-    dataObject, 
     update_rewards,
 )
 from .velocity import (  # noqa: F401
@@ -47,13 +47,4 @@ from .visibility import (  # noqa: F401
     construct_visibility,
     filter_by_visibility,
     visibility_vs_distance,
-)
-from .local_windows import (
-    get_grid,
-    _generate_local_windows,
-    generate_local_windows
-)
-
-from .filtering import(
-    filter_by_distance
 )

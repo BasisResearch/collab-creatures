@@ -1,15 +1,21 @@
 import math
-from itertools import product
+import warnings
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy.signal import find_peaks
-import warnings
 
-#define a class to streamline object creation 
+
+# define a class to streamline object creation
 class dataObject:
-    def __init__(self, foragersDF : pd.DataFrame, grid_size : int = None, rewardsDF : pd.DataFrame = None, frames : int = None):
+    def __init__(
+        self,
+        foragersDF: pd.DataFrame,
+        grid_size: int = None,
+        rewardsDF: pd.DataFrame = None,
+        frames: int = None,
+    ):
         """
         Requirements for foragersDF :
             - Required columns "x" : float, "y" : float, "time" : int, "forager" :int
@@ -19,40 +25,48 @@ class dataObject:
             frames = foragersDF["time"].max() + 1
 
         if grid_size is None:
-            grid_size = int(foragersDF.loc[:,["x","y"]].max(axis=None)) + 1
+            grid_size = int(foragersDF.loc[:, ["x", "y"]].max(axis=None)) + 1
 
         self.grid_size = grid_size
         self.num_frames = frames
 
-        #raise warning if nan values in DataFrame
+        # raise warning if nan values in DataFrame
         if foragersDF.isna().any(axis=None):
-            warnings.warn(f"Nan values in data. Specify handling of missing data using `skip_incomplete_frames` argument to `generate_all_predictors`")
+            warnings.warn(
+                f"Nan values in data. Specify handling of missing data using `skip_incomplete_frames` argument to `generate_all_predictors`"
+            )
 
-        #group dfs by forager index
+        # group dfs by forager index
         foragers = [group for _, group in foragersDF.groupby("forager")]
         self.num_foragers = len(foragers)
-        
-        #add nans for any omitted frames & raise warning
+
+        # add nans for any omitted frames & raise warning
         all_frames = range(self.num_frames)
         for f in range(self.num_foragers):
             missing = set(all_frames) - set(foragers[f]["time"])
-            if missing :
-                warnings.warn(f"Missing frames encountered for forager {f}, adding NaN fillers. Specify handling of missing data using `skip_incomplete_frames` argument to `generate_all_predictors`")
-                filler_rows = pd.DataFrame({"time" : list(missing), "forager" : [f]*len(missing)})
-                foragers[f] = pd.concat([foragers[f],filler_rows]) #adds nan values for all other columns automatically
-            
-            #sort by time
-            foragers[f].sort_values("time",ignore_index=True,inplace=True)
+            if missing:
+                warnings.warn(
+                    f"Missing frames encountered for forager {f}, adding NaN fillers. Specify handling of missing data using `skip_incomplete_frames` argument to `generate_all_predictors`"
+                )
+                filler_rows = pd.DataFrame(
+                    {"time": list(missing), "forager": [f] * len(missing)}
+                )
+                foragers[f] = pd.concat(
+                    [foragers[f], filler_rows]
+                )  # adds nan values for all other columns automatically
 
-        #save to object
+            # sort by time
+            foragers[f].sort_values("time", ignore_index=True, inplace=True)
+
+        # save to object
         self.foragers = foragers
-        self.foragersDF = pd.concat(foragers,ignore_index=True)
+        self.foragersDF = pd.concat(foragers, ignore_index=True)
 
-        #add rewards
+        # add rewards
         if rewardsDF is not None:
             self.rewardsDF = rewardsDF
             self.rewards = [group for _, group in rewardsDF.groupby("time")]
-     
+
     def calculate_step_size_max(self):
         step_maxes = []
 
@@ -160,6 +174,7 @@ def distances_and_peaks(distances, bins=40, x_min=None, x_max=None):
             fontsize=10,
             color="red",
         )
+
 
 # remove rewards eaten by foragers in proximity
 def update_rewards(sim, rewards, foragers, start=1, end=None):

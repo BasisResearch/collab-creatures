@@ -56,7 +56,6 @@ def rescale_to_grid(df_raw : pd.DataFrame, size : int, gridMin: float = None, gr
     df= df_raw.copy()
     df["x"] = rescale_column(df["x"], size, gridMin, gridMax)
     df["y"] = rescale_column(df["y"], size, gridMin, gridMax)
-
     return df
 
 

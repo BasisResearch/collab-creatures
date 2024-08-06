@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy.signal import find_peaks
+from typing import Optional
 
 
 # define a class to streamline object creation
@@ -12,9 +13,9 @@ class dataObject:
     def __init__(
         self,
         foragersDF: pd.DataFrame,
-        grid_size: int = None,
-        rewardsDF: pd.DataFrame = None,
-        frames: int = None,
+        grid_size: Optional[int] = None,
+        rewardsDF: Optional[pd.DataFrame] = None,
+        frames: Optional[int] = None,
     ):
         """
         Requirements for foragersDF :

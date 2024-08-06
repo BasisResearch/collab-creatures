@@ -21,6 +21,11 @@ from .inference import (  # noqa: F401
     prep_data_for_robust_inference,
     summary,
 )
+from .local_windows import (  # noqa: F401
+    _generate_local_windows,
+    generate_local_windows,
+    get_grid,
+)
 from .proximity import (  # noqa: F401; foragers_to_forager_distances,
     generate_proximity_score,
     proximity_score,

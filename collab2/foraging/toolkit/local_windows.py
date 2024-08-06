@@ -1,5 +1,5 @@
 from itertools import product
-from typing import Any, Callable, List
+from typing import Any, Callable, List, Optional
 
 import numpy as np
 import pandas as pd
@@ -9,16 +9,18 @@ def get_grid(
     grid_size: int = 90,
     sampling_fraction: float = 1.0,
     random_seed: int = 0,
-    grid_constraint: Callable[[pd.DataFrame, pd.DataFrame, Any], pd.DataFrame] = None,
-    grid_constraint_params: dict = None,
+    grid_constraint: Optional[
+        Callable[[pd.DataFrame, pd.DataFrame, Optional[dict]], pd.DataFrame]
+    ] = None,
+    grid_constraint_params: Optional[dict] = None,
 ) -> pd.DataFrame:
     # generate grid of all points
-    grid = list(product(range(grid_size), repeat=2))
-    grid = pd.DataFrame(grid, columns=["x", "y"])
+    mesh = product(range(grid_size), repeat=2)
+    grid = pd.DataFrame(mesh, columns=["x", "y"])
 
     # only keep accessible points
     if grid_constraint is not None:
-        grid = grid[grid_constraint(grid["x"], grid["y"], **grid_constraint_params)]
+        grid = grid[grid_constraint(grid["x"], grid["y"], grid_constraint_params)]
 
     # subsample the grid
     np.random.seed(random_seed)
@@ -37,11 +39,14 @@ def _generate_local_windows(
     sampling_fraction: float = 1.0,
     random_seed: int = 0,
     skip_incomplete_frames: bool = False,
-    grid_constraint: Callable[[pd.DataFrame, pd.DataFrame, Any], pd.DataFrame] = None,
-    grid_constraint_params: dict = None,
+    grid_constraint: Optional[
+        Callable[[pd.DataFrame, pd.DataFrame, Any], pd.DataFrame]
+    ] = None,
+    grid_constraint_params: Optional[dict] = None,
 ) -> pd.DataFrame:
 
-    # Note: args grid_size, num_foragers, num_frames are not exposed to users but set to values inherited from foragers_object by generate_local_windows
+    # Note: args grid_size, num_foragers, num_frames are not exposed to users but set to
+    # values inherited from foragers_object by generate_local_windows
 
     # initialize a common grid
     grid = get_grid(
@@ -57,11 +62,9 @@ def _generate_local_windows(
         tracked_idx = foragers[f].loc[:, ["x", "y"]].notna().all(axis=1)
         f_present_frames.append(foragers[f]["time"].loc[tracked_idx].to_list())
 
-    # identify time points where ALL foragers are present, if needed
-    all_present_frames = []
-    if skip_incomplete_frames:
-        f_present_frames_set = [set(_) for _ in f_present_frames]
-        all_present_frames = set.intersection(*f_present_frames_set)
+    # identify time points where ALL foragers are present
+    f_present_frames_set = [set(_) for _ in f_present_frames]
+    all_present_frames = set.intersection(*f_present_frames_set)
 
     # calculate local_windows for each forager
     local_windows = []

@@ -1,5 +1,6 @@
 import math
 import warnings
+from typing import Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -12,9 +13,9 @@ class dataObject:
     def __init__(
         self,
         foragersDF: pd.DataFrame,
-        grid_size: int = None,
-        rewardsDF: pd.DataFrame = None,
-        frames: int = None,
+        grid_size: Optional[int] = None,
+        rewardsDF: Optional[pd.DataFrame] = None,
+        frames: Optional[int] = None,
     ):
         """
         Requirements for foragersDF :
@@ -33,7 +34,8 @@ class dataObject:
         # raise warning if nan values in DataFrame
         if foragersDF.isna().any(axis=None):
             warnings.warn(
-                f"Nan values in data. Specify handling of missing data using `skip_incomplete_frames` argument to `generate_all_predictors`"
+                """ Nan values in data.
+                Specify handling of missing data using `skip_incomplete_frames` argument to `generate_all_predictors`"""
             )
 
         # group dfs by forager index
@@ -46,7 +48,9 @@ class dataObject:
             missing = set(all_frames) - set(foragers[f]["time"])
             if missing:
                 warnings.warn(
-                    f"Missing frames encountered for forager {f}, adding NaN fillers. Specify handling of missing data using `skip_incomplete_frames` argument to `generate_all_predictors`"
+                    f"""Missing frames encountered for forager {f}, adding NaN fillers.
+                    Specify handling of missing data using `skip_incomplete_frames` argument to
+                    `generate_all_predictors`"""
                 )
                 filler_rows = pd.DataFrame(
                     {"time": list(missing), "forager": [f] * len(missing)}
@@ -89,6 +93,7 @@ class dataObject:
                     ),
                 )
             )
+
         self.step_size_max = max(step_maxes)
 
 

@@ -58,6 +58,7 @@ class dataObject:
 
         for b in range(len(self.foragers)):
             df = self.foragers[b]
+
             step_maxes.append(
                 max(
                     max(

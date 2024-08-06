@@ -4,9 +4,9 @@ import numpy as np
 import pandas as pd
 
 
-# PP_comment : even with passing constraint params as a dictionary, we might have a limitation : 
+# PP_comment : even with passing constraint params as a dictionary, we might have a limitation :
 # we cannot have a constraint that depends on quantities derived within the predictor function (eg, fastest v)
-# One workaround could be to locally (i.e. within the function) modify foragersDF with the derived quantities 
+# One workaround could be to locally (i.e. within the function) modify foragersDF with the derived quantities
 # and pass that to the constraint function via filter_by_distance
 def filter_by_distance(
     foragersDF: pd.DataFrame,

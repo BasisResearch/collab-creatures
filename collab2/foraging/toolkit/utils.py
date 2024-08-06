@@ -58,6 +58,7 @@ class dataObject:
 
         for b in range(len(self.foragers)):
             df = self.foragers[b]
+
             step_maxes.append(
                 max(
                     max(
@@ -74,7 +75,9 @@ class dataObject:
                     ),
                 )
             )
+
         self.step_size_max = max(step_maxes)
+
 
 
 def foragers_to_forager_distances(obj):
@@ -159,7 +162,7 @@ def distances_and_peaks(distances, bins=40, x_min=None, x_max=None):
             fontsize=10,
             color="red",
         )
-
+        
 # remove rewards eaten by foragers in proximity
 def update_rewards(sim, rewards, foragers, start=1, end=None):
     if end is None:

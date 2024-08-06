@@ -1,8 +1,9 @@
 import random
+from typing import Optional
 
 import numpy as np
 import pandas as pd
-from typing import Optional
+
 
 ##PP_comment : this function does not give a consistent frame-rate because of rounding.
 def subset_frames_evenly_spaced(
@@ -51,10 +52,16 @@ def subsample_frames_constant_frame_rate(
 # updated function to allow user to pass gridMin and gridMax
 # grid points start at 0
 def rescale_to_grid(
-    df_raw: pd.DataFrame, size: int, gridMin: Optional[float] = None, gridMax: Optional[float] = None
+    df_raw: pd.DataFrame,
+    size: int,
+    gridMin: Optional[float] = None,
+    gridMax: Optional[float] = None,
 ):
     def rescale_column(
-        column: pd.DataFrame, size: int, gridMin: Optional[float] = None, gridMax: Optional[float] = None
+        column: pd.DataFrame,
+        size: int,
+        gridMin: Optional[float] = None,
+        gridMax: Optional[float] = None,
     ):
         if gridMin is None:
             gridMin = column.min()

@@ -1,11 +1,11 @@
 import math
 import warnings
+from typing import Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy.signal import find_peaks
-from typing import Optional
 
 
 # define a class to streamline object creation

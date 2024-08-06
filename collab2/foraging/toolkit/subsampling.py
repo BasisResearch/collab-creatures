@@ -5,12 +5,13 @@ import pandas as pd
 ##PP_comment : this function does not give a consistent frame-rate because of rounding. 
 def subset_frames_evenly_spaced(df_raw : pd.DataFrame, desired_frames : int = 300) -> pd.DataFrame:
     df = df_raw.copy()
-    num_frames = df["time"].nunique()
-    print("original_frames:", num_frames)
-    print("original_shape:", df.shape)
     #start time at 0 
     df["time"] = df["time"] - df["time"].min()
-    df["time"] = np.ceil(df["time"] / (num_frames / (desired_frames-1))).astype(int) 
+    num_frames = df["time"].max() + 1
+    print("original_frames:", num_frames)
+    print("original_shape:", df.shape)
+    df["time"] = np.floor(df["time"]/(num_frames-1) * (desired_frames-1)).astype(int)
+    #df["time"] = np.ceil(df["time"] / (num_frames / (desired_frames-1))).astype(int) 
     df = df.drop_duplicates(subset=["time", "forager"], keep="first").reset_index(drop=True)
     print("resulting_frames:", df["time"].nunique())
     print("resulting_shape:", df.shape)
@@ -19,11 +20,12 @@ def subset_frames_evenly_spaced(df_raw : pd.DataFrame, desired_frames : int = 30
 ##PP_comment : wrote another version of subsampling that can be used for cases when frame-rate is important (eg. velocity)
 def subsample_frames_constant_frame_rate(df_raw : pd.DataFrame, frame_spacing : int =2, fps : float = None) -> pd.DataFrame:
     df = df_raw.copy()
-    og_frames = df["time"].nunique()
-    print("original_frames:", og_frames)
-    print("original_shape:", df.shape)
     #start time at 0 
     df["time"] = df["time"] - df["time"].min()
+    og_frames = df["time"].max() + 1
+    print("original_frames:", og_frames)
+    print("original_shape:", df.shape)
+
     keep_ind = df["time"] % frame_spacing == 0
     df = df.loc[keep_ind].reset_index(drop=True)
     df["time"] = (df["time"]/frame_spacing).astype(int)

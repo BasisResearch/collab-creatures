@@ -16,7 +16,7 @@ class dataObject:
             - Frame numbers and forager indices must start at 0
         """
         if frames is None:
-            frames = foragersDF["time"].nunique()
+            frames = foragersDF["time"].max() + 1
 
         if grid_size is None:
             grid_size = int(foragersDF.loc[:,["x","y"]].max(axis=None)) + 1

@@ -9,7 +9,9 @@ def get_grid(
     grid_size: int = 90,
     sampling_fraction: float = 1.0,
     random_seed: int = 0,
-    grid_constraint: Optional[Callable[[pd.DataFrame, pd.DataFrame, Optional[dict]], pd.DataFrame]] = None,
+    grid_constraint: Optional[
+        Callable[[pd.DataFrame, pd.DataFrame, Optional[dict]], pd.DataFrame]
+    ] = None,
     grid_constraint_params: Optional[dict] = None,
 ) -> pd.DataFrame:
     # generate grid of all points
@@ -37,7 +39,9 @@ def _generate_local_windows(
     sampling_fraction: float = 1.0,
     random_seed: int = 0,
     skip_incomplete_frames: bool = False,
-    grid_constraint: Optional[Callable[[pd.DataFrame, pd.DataFrame, Any], pd.DataFrame]] = None,
+    grid_constraint: Optional[
+        Callable[[pd.DataFrame, pd.DataFrame, Any], pd.DataFrame]
+    ] = None,
     grid_constraint_params: Optional[dict] = None,
 ) -> pd.DataFrame:
 

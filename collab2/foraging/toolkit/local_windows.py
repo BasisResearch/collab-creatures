@@ -45,7 +45,8 @@ def _generate_local_windows(
     grid_constraint_params: Optional[dict] = None,
 ) -> pd.DataFrame:
 
-    # Note: args grid_size, num_foragers, num_frames are not exposed to users but set to values inherited from foragers_object by generate_local_windows
+    # Note: args grid_size, num_foragers, num_frames are not exposed to users but set to
+    # values inherited from foragers_object by generate_local_windows
 
     # initialize a common grid
     grid = get_grid(

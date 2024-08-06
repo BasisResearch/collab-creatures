@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 
-##PP_comment : this function does not give a consistent frame-rate because of rounding.
+# this function does not give a consistent frame-rate because of rounding.
 def subset_frames_evenly_spaced(
     df_raw: pd.DataFrame, desired_frames: int = 300
 ) -> pd.DataFrame:
@@ -26,9 +26,9 @@ def subset_frames_evenly_spaced(
     return df
 
 
-##PP_comment : wrote another version of subsampling that can be used for cases when frame-rate is important (eg. velocity)
+# another version of subsampling that can be used for cases when frame-rate is important (eg. velocity)
 def subsample_frames_constant_frame_rate(
-    df_raw: pd.DataFrame, frame_spacing: int = 2, fps: float = None
+    df_raw: pd.DataFrame, frame_spacing: int = 2, fps: Optional[float] = None
 ) -> pd.DataFrame:
     df = df_raw.copy()
     # start time at 0
@@ -51,10 +51,16 @@ def subsample_frames_constant_frame_rate(
 # updated function to allow user to pass gridMin and gridMax
 # grid points start at 0
 def rescale_to_grid(
-    df_raw: pd.DataFrame, size: int, gridMin: float = None, gridMax: float = None
+    df_raw: pd.DataFrame,
+    size: int,
+    gridMin: Optional[float] = None,
+    gridMax: Optional[float] = None,
 ):
     def rescale_column(
-        column: pd.DataFrame, size: int, gridMin: float = None, gridMax: float = None
+        column: pd.DataFrame,
+        size: int,
+        gridMin: Optional[float] = None,
+        gridMax: Optional[float] = None,
     ):
         if gridMin is None:
             gridMin = column.min()
@@ -72,7 +78,6 @@ def rescale_to_grid(
     df = df_raw.copy()
     df["x"] = rescale_column(df["x"], size, gridMin, gridMax)
     df["y"] = rescale_column(df["y"], size, gridMin, gridMax)
-
     return df
 
 

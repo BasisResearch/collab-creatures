@@ -93,6 +93,7 @@ class dataObject:
                     ),
                 )
             )
+
         self.step_size_max = max(step_maxes)
 
 

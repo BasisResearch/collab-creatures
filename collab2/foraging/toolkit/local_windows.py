@@ -2,11 +2,12 @@
 from itertools import product
 import pandas as pd
 import numpy as np
-from typing import Callable, Any
+from typing import Callable, Any, List
 
-def get_grid(grid_size : int =90, sampling_fraction : float =1.0, random_seed : int =0, grid_constraint: Callable[[pd.DataFrame, pd.DataFrame, Any], pd.DataFrame] =None, grid_constraint_params : dict = None):
+def get_grid(grid_size : int =90, sampling_fraction : float =1.0, random_seed : int =0, 
+             grid_constraint: Callable[[pd.DataFrame, pd.DataFrame, Any], pd.DataFrame] =None, grid_constraint_params : dict = None) -> pd.DataFrame:
    #generate grid of all points
-    grid = list(product(range(1, grid_size+ 1), repeat=2)) 
+    grid = list(product(range(grid_size), repeat=2)) 
     grid =pd.DataFrame(grid, columns=["x", "y"])
 
     #only keep accessible points
@@ -20,8 +21,8 @@ def get_grid(grid_size : int =90, sampling_fraction : float =1.0, random_seed : 
 
     return grid
 
-def _generate_local_windows(foragers : list, grid_size : int, num_foragers : int, num_frames : int, window_size : float, sampling_fraction : float = 1.0, random_seed : int =0, 
-                            skip_incomplete_frames : bool = False, grid_constraint : Callable[[pd.DataFrame, pd.DataFrame, Any], pd.DataFrame] =None, grid_constraint_params : dict = None):
+def _generate_local_windows(foragers : List[pd.DataFrame], grid_size : int, num_foragers : int, num_frames : int, window_size : float, sampling_fraction : float = 1.0, random_seed : int =0, 
+                            skip_incomplete_frames : bool = False, grid_constraint : Callable[[pd.DataFrame, pd.DataFrame, Any], pd.DataFrame] =None, grid_constraint_params : dict = None) -> pd.DataFrame:
     
     #Note: args grid_size, num_foragers, num_frames are not exposed to users but set to values inherited from foragers_object by generate_local_windows
 
@@ -31,7 +32,8 @@ def _generate_local_windows(foragers : list, grid_size : int, num_foragers : int
 
     f_present_frames = []
     for f in range(num_foragers):
-        f_present_frames.append(foragers[f]["time"][foragers[f]["x"].notna()].to_list())
+        tracked_idx = foragers[f].loc[:,["x","y"]].notna().all(axis=1)
+        f_present_frames.append(foragers[f]["time"].loc[tracked_idx].to_list())
 
     #identify time points where ALL foragers are present, if needed 
     all_present_frames = []
@@ -50,7 +52,7 @@ def _generate_local_windows(foragers : list, grid_size : int, num_foragers : int
             compute_frames = all_present_frames
         else:
             compute_frames = f_present_frames[f]
-        
+
         for t in compute_frames:
                 #copy grid
                 g = grid.copy()
@@ -66,16 +68,15 @@ def _generate_local_windows(foragers : list, grid_size : int, num_foragers : int
                 g=g.assign(time = t) 
                 g=g.assign(forager = f)
 
-                #update the corresponding element of local_windows_f to DF with computed grid points
-                # time starts at 1! 
-                local_windows_f[t-1] = g 
+                #update the corresponding element of local_windows_f
+                local_windows_f[t] = g 
 
         #add local_windows_f to local_windows
         local_windows.append(local_windows_f)
 
     return local_windows
 
-def generate_local_windows(foragers_object):
+def generate_local_windows(foragers_object) -> pd.DataFrame:
     #grab parameters specific to local_windows
     params = foragers_object.local_windows_kwargs
 

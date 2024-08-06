@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 
-##PP_comment : this function does not give a consistent frame-rate because of rounding.
+# this function does not give a consistent frame-rate because of rounding.
 def subset_frames_evenly_spaced(
     df_raw: pd.DataFrame, desired_frames: int = 300
 ) -> pd.DataFrame:
@@ -27,7 +27,7 @@ def subset_frames_evenly_spaced(
     return df
 
 
-##PP_comment : wrote another version of subsampling that can be used for cases when frame-rate is important (eg. velocity)
+# another version of subsampling that can be used for cases when frame-rate is important (eg. velocity)
 def subsample_frames_constant_frame_rate(
     df_raw: pd.DataFrame, frame_spacing: int = 2, fps: Optional[float] = None
 ) -> pd.DataFrame:

@@ -34,7 +34,8 @@ class dataObject:
         # raise warning if nan values in DataFrame
         if foragersDF.isna().any(axis=None):
             warnings.warn(
-                f"Nan values in data. Specify handling of missing data using `skip_incomplete_frames` argument to `generate_all_predictors`"
+                """ Nan values in data.
+                Specify handling of missing data using `skip_incomplete_frames` argument to `generate_all_predictors`"""
             )
 
         # group dfs by forager index
@@ -47,7 +48,9 @@ class dataObject:
             missing = set(all_frames) - set(foragers[f]["time"])
             if missing:
                 warnings.warn(
-                    f"Missing frames encountered for forager {f}, adding NaN fillers. Specify handling of missing data using `skip_incomplete_frames` argument to `generate_all_predictors`"
+                    f"""Missing frames encountered for forager {f}, adding NaN fillers.
+                    Specify handling of missing data using `skip_incomplete_frames` argument to
+                    `generate_all_predictors`"""
                 )
                 filler_rows = pd.DataFrame(
                     {"time": list(missing), "forager": [f] * len(missing)}

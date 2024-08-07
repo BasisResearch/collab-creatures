@@ -1,3 +1,4 @@
+import copy
 from itertools import product
 from typing import Any, Callable, List, Optional
 
@@ -80,7 +81,7 @@ def _generate_local_windows(
 
         for t in compute_frames:
             # copy grid
-            g = grid.copy()
+            g = copy.deepcopy(grid)
 
             # calculate distance of points in g to the current position of forager f
             g["distance_to_f"] = np.sqrt(
@@ -92,7 +93,7 @@ def _generate_local_windows(
             g = g[g["distance_to_f"] <= window_size]
 
             # add forager and time info to the DF
-            # TODO : using assign here because everything else triggers a copy on write warning ??
+            # TODO : using assign here because everything else triggers a copy on write warning. Revisit if needed.
             g = g.assign(time=t)
             g = g.assign(forager=f)
 

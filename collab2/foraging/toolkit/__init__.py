@@ -53,3 +53,7 @@ from .visibility import (  # noqa: F401
     filter_by_visibility,
     visibility_vs_distance,
 )
+
+from .filtering import (
+    filter_by_distance
+)

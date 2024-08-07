@@ -2,6 +2,7 @@ from typing import Callable, List, Optional
 
 import numpy as np
 import pandas as pd
+import copy 
 
 # PP_comment : even with passing constraint params as a dictionary, we might have a limitation :
 # we cannot have a constraint that depends on quantities derived within the predictor function (eg, fastest v)
@@ -26,7 +27,7 @@ def filter_by_distance(
     ] = None,
     interaction_constraint_params: Optional[dict] = None,
 ) -> List[int]:
-    positions = foragersDF[foragersDF["time"] == t].copy()
+    positions = copy.deepcopy(foragersDF[foragersDF["time"] == t])
     positions["distance"] = np.sqrt(
         (positions["x"] - positions.loc[positions["forager"] == f, "x"].values) ** 2
         + (positions["y"] - positions.loc[positions["forager"] == f, "y"].values) ** 2

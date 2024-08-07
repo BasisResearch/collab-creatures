@@ -1,8 +1,8 @@
+import copy
 from typing import Callable, List, Optional
 
 import numpy as np
 import pandas as pd
-import copy 
 
 # PP_comment : even with passing constraint params as a dictionary, we might have a limitation :
 # we cannot have a constraint that depends on quantities derived within the predictor function (eg, fastest v)

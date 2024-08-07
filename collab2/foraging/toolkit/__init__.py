@@ -14,6 +14,7 @@ from .dynamical_utils import (  # noqa: F401
     plot_ds_trajectories,
     run_svi_inference,
 )
+from .filtering import filter_by_distance  # noqa: F401
 from .how_far import add_how_far_squared_scaled  # noqa: F401
 from .inference import (  # noqa: F401
     get_tensorized_data,
@@ -52,8 +53,4 @@ from .visibility import (  # noqa: F401
     construct_visibility,
     filter_by_visibility,
     visibility_vs_distance,
-)
-
-from .filtering import ( # noqa: F401
-    filter_by_distance
 )

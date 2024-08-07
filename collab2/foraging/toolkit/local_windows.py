@@ -45,8 +45,8 @@ def _generate_local_windows(
     grid_constraint_params: Optional[dict] = None,
 ) -> pd.DataFrame:
 
-    # Note: args grid_size, num_foragers, num_frames are not exposed to users but set to
-    # values inherited from foragers_object by generate_local_windows
+    # Note: args `grid_size`, `num_foragers`, `num_frames` are not exposed to users but set to
+    # values inherited from `foragers_object`` by `generate_local_windows`.
 
     # initialize a common grid
     grid = get_grid(
@@ -62,7 +62,7 @@ def _generate_local_windows(
         tracked_idx = foragers[f].loc[:, ["x", "y"]].notna().all(axis=1)
         f_present_frames.append(foragers[f]["time"].loc[tracked_idx].to_list())
 
-    # identify time points where ALL foragers are present
+    # identify time points where ALL foragers are presen
     f_present_frames_set = [set(_) for _ in f_present_frames]
     all_present_frames = set.intersection(*f_present_frames_set)
 

@@ -3,18 +3,18 @@ from typing import Callable, List, Optional
 import numpy as np
 import pandas as pd
 
-
 # PP_comment : even with passing constraint params as a dictionary, we might have a limitation :
 # we cannot have a constraint that depends on quantities derived within the predictor function (eg, fastest v)
 # One workaround could be to locally (i.e. within the function) modify foragersDF with the derived quantities
 # and pass that to the constraint function via filter_by_distance
 
 # RU_comment I think the proper workaround is to instantiate object, add velocities and then use the object
-# to write a constraint because now it will have velocities available 
-# and then pass this constraint to predictor derivation. 
-# If we can isolate velocities addition from derived predictor calculation. 
+# to write a constraint because now it will have velocities available
+# and then pass this constraint to predictor derivation.
+# If we can isolate velocities addition from derived predictor calculation.
 
-#TODO keep in mind and test for this functionality in the future
+# TODO keep in mind and test for this functionality in the future
+
 
 def filter_by_distance(
     foragersDF: pd.DataFrame,

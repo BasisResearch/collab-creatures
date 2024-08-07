@@ -63,7 +63,7 @@ def _generate_local_windows(
         tracked_idx = foragers[f].loc[:, ["x", "y"]].notna().all(axis=1)
         f_present_frames.append(foragers[f]["time"].loc[tracked_idx].to_list())
 
-    # identify time points where ALL foragers are presen
+    # identify time points where ALL foragers are present
     f_present_frames_set = [set(_) for _ in f_present_frames]
     all_present_frames = set.intersection(*f_present_frames_set)
 

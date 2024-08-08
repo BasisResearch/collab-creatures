@@ -37,11 +37,9 @@ def velocity_predictor_contribution(
     Requires theta in [-pi,pi)
     """
     v_implied = np.sqrt((grid["x"] - x) ** 2 + (grid["y"] - y) ** 2)
-    theta_implied = np.artan2(grid["y"] - y, grid["x"] - x)
+    theta_implied = np.arctan2(grid["y"] - y, grid["x"] - x)
 
-    predictor_score = np.exp(
-        -((v_implied - v) ** 2) / (2 * sigma_v**2)
-        - (theta_implied - theta) ** 2 / (2 * sigma_t**2)
-    ) / (2 * np.pi * sigma_v * sigma_t)
+    P_v = np.exp(-(v_implied - v)**2/(2*sigma_v**2)) / (np.sqrt(2*np.pi) * sigma_v)
+    P_theta = np.exp(-(theta_implied - theta)**2/(2*sigma_t**2)) / (np.sqrt(2*np.pi) * sigma_t)
 
-    return predictor_score
+    return P_v * P_theta

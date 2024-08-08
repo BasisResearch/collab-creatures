@@ -20,3 +20,28 @@ def add_velocity(foragers: List[pd.DataFrame], dt: int = 1):
             df[theta_ID] = np.arctan2(v_y, v_x)
 
     return foragers, pd.concat(foragers)
+
+
+# a function that takes in the "desired" (v, theta) (set by any mechanism), current position,
+# and calculates a predictor score over all grid points using polar gaussians of width (sigma_v, sigma_t)
+def velocity_predictor_contribution(
+    v: float,
+    theta: float,
+    x: int,
+    y: int,
+    grid: pd.DataFrame,
+    sigma_v: float,
+    sigma_t: float,
+):
+    """
+    Requires theta in [-pi,pi)
+    """
+    v_implied = np.sqrt((grid["x"] - x) ** 2 + (grid["y"] - y) ** 2)
+    theta_implied = np.artan2(grid["y"] - y, grid["x"] - x)
+
+    predictor_score = np.exp(
+        -((v_implied - v) ** 2) / (2 * sigma_v**2)
+        - (theta_implied - theta) ** 2 / (2 * sigma_t**2)
+    ) / (2 * np.pi * sigma_v * sigma_t)
+
+    return predictor_score

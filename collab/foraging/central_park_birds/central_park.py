@@ -252,6 +252,7 @@ def cp_add_how_far_squared_scaled(sim):
 
             _hf = how_far[forager][frame]
             _hf["how_far_squared"] = (_hf["x"] - x_new) ** 2 + (_hf["y"] - y_new) ** 2
+            _hf["how_far"] = np.sqrt(_hf["how_far_squared"])
             _hf["how_far_squared_scaled"] = (
                 -_hf["how_far_squared"]
                 / (2 * (sim.step_size_max + visibility_range) ** 2)

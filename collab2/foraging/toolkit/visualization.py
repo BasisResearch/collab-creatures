@@ -13,7 +13,7 @@ def plot_predictor(
     t: List[int],
     grid_size: int,
     random_state: int = 0,
-    size_multiplier: float = 1,
+    size_multiplier: float = 10,
 ):
     ncols = 4
     nrows = np.ceil(len(t) / ncols).astype(int)
@@ -24,19 +24,27 @@ def plot_predictor(
     colors = ["#{:02x}{:02x}{:02x}".format(r, g, b) for r, g, b in random_colors]
 
     for i, ti in enumerate(t):
-        if nrows > 1:
-            r = i // ncols
-            c = i % ncols
-            ax = axes[r, c]
+        if isinstance(axes, np.ndarray):
+            if axes.ndim == 2:
+                r = i // ncols
+                c = i % ncols
+                ax = axes[r, c]
+            else:
+                ax = axes[i]
         else:
-            ax = axes[i]
+            ax = axes
 
         for j, fj in enumerate(f):
             if predictor[fj][ti] is not None:
+                # normalize predictor value to choose scatter size
+                size = (
+                    predictor[fj][ti][predictorID]
+                    / predictor[fj][ti][predictorID].max()
+                )
                 ax.scatter(
                     predictor[fj][ti]["x"],
                     predictor[fj][ti]["y"],
-                    s=predictor[fj][ti][predictorID] * size_multiplier,
+                    s=0.2 + size * size_multiplier,
                     color=colors[j],
                     alpha=0.4,
                 )
@@ -54,11 +62,11 @@ def plot_predictor(
         ax.set_title(f"t={ti}")
         ax.set_aspect("equal")
 
-    #remove unused axes 
-    if len(t) % ncols :
-        if nrows > 1 :
+    # remove unused axes
+    if len(t) % ncols and isinstance(axes, np.ndarray):
+        if axes.ndim == 2:
             for c in range(len(t) % ncols, ncols):
-                fig.delaxes(axes[nrows-1,c])
+                fig.delaxes(axes[nrows - 1, c])
         else:
             for c in range(len(t) % ncols, ncols):
                 fig.delaxes(axes[c])

@@ -22,11 +22,11 @@ def add_velocity(foragers: List[pd.DataFrame], dt: int = 1):
     return foragers, pd.concat(foragers)
 
 
-# a function that takes in the "desired" (v, theta) (set by any mechanism), current position,
+# a function that takes in the "preferred" (v, theta) (set by any mechanism), current position,
 # and calculates a predictor score over all grid points using polar gaussians of width (sigma_v, sigma_t)
 def velocity_predictor_contribution(
-    v: float,
-    theta: float,
+    v_pref: float,
+    theta_pref: float,
     x: int,
     y: int,
     grid: pd.DataFrame,
@@ -36,10 +36,18 @@ def velocity_predictor_contribution(
     """
     Requires theta in [-pi,pi)
     """
+
     v_implied = np.sqrt((grid["x"] - x) ** 2 + (grid["y"] - y) ** 2)
     theta_implied = np.arctan2(grid["y"] - y, grid["x"] - x)
 
-    P_v = np.exp(-(v_implied - v)**2/(2*sigma_v**2)) / (np.sqrt(2*np.pi) * sigma_v)
-    P_theta = np.exp(-(theta_implied - theta)**2/(2*sigma_t**2)) / (np.sqrt(2*np.pi) * sigma_t)
+    d_v = v_implied - v_pref
+    # there is a discontinuity when taking the difference of angles (2pi \equiv 0 !),
+    # so always choose the smaller difference
+    d_theta = theta_implied - theta_pref
+    d_theta[d_theta > np.pi] += -2 * np.pi
+    d_theta[d_theta < -np.pi] += 2 * np.pi
+
+    P_v = np.exp(-(d_v**2) / (2 * sigma_v**2)) / (np.sqrt(2 * np.pi) * sigma_v)
+    P_theta = np.exp(-(d_theta**2) / (2 * sigma_t**2)) / (np.sqrt(2 * np.pi) * sigma_t)
 
     return P_v * P_theta

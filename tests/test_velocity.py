@@ -35,7 +35,6 @@ random_foragers_derived = ft.derive_predictors(
 
 
 def test_add_velocities_to_foragers():
-
     data1 = {"x": [0, 1, 4, 9, 16, 10], "y": [0, 1, 4, 9, 16, 10]}
     data2 = {"x": [0, 2, 6, 12, 20, 10], "y": [0, 2, 6, 12, 20, 10]}
 
@@ -81,7 +80,6 @@ def test_add_velocities_to_foragers():
 
 
 def test_add_velocities_to_data_object():
-
     add_velocities_to_data_object(random_foragers_sim)
 
     assert random_foragers_sim.foragers[0].shape[1] == 7

@@ -19,7 +19,6 @@ def generate_communicates(
     communicates = []
 
     for b in range(1, sim.num_foragers + 1):
-
         callingDF = filter_by_visibility(
             sim,
             subject=b,

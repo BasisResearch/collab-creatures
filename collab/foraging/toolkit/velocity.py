@@ -9,7 +9,6 @@ from collab.foraging.toolkit.visibility import filter_by_visibility
 
 
 def add_velocities_to_foragers(foragers: List[pd.DataFrame]) -> None:
-
     for forager in foragers:
         forager["velocity_x"] = forager["x"].diff().fillna(0)
         forager["velocity_y"] = forager["y"].diff().fillna(0)
@@ -31,7 +30,6 @@ def generate_velocity_scores(
     velocity_scores = []
 
     for subject in range(1, sim.num_foragers + 1):
-
         callingDF = filter_by_visibility(
             sim,
             subject=subject,

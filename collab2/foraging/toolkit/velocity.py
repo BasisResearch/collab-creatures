@@ -2,6 +2,7 @@ from typing import List, Tuple
 
 import numpy as np
 import pandas as pd
+from scipy.stats import norm
 
 
 def add_velocity(
@@ -13,7 +14,7 @@ def add_velocity(
         - foragers : list of DataFrames containing forager positions, grouped by forager index
         - dt : time interval (in frames) used to compute velocity
     Returns :
-        - foragers : list of DataFrames containing forager positions + velocity magnitude and direction, 
+        - foragers : list of DataFrames containing forager positions + velocity magnitude and direction,
                     grouped by forager index
         - foragersDF : flattened DataFrame containing positions + velocity magnitude and direction for all foragers
     """
@@ -43,14 +44,14 @@ def velocity_predictor_contribution(
     sigma_t: float,
 ) -> pd.DataFrame:
     """
-    A function that calculates Gaussian predictor scores over a grid, given a preferred velocity magnitude/direction 
+    A function that calculates Gaussian predictor scores over a grid, given a preferred velocity magnitude/direction
     for the next time-step and the current position of the focal forager.
     Parameters:
         - v_pref : Preferred velocity magnitude
         - theta_pref : Preferred velocity direction. Must be specified as an angle in [-pi,pi)
         - x : current x position of focal forager
         - y : current y position of focal forager
-        - grid : grid to compute predictor scores over. 
+        - grid : grid to compute predictor scores over.
                 For most applications, this would be the relevant `local_windows` for the focal forager
         - sigma_v : standard deviation of Gaussian for velocity magnitude
         - sigma_t : standard deviation of Gaussian for velocity direction
@@ -60,15 +61,11 @@ def velocity_predictor_contribution(
 
     v_implied = np.sqrt((grid["x"] - x) ** 2 + (grid["y"] - y) ** 2)
     theta_implied = np.arctan2(grid["y"] - y, grid["x"] - x)
-
-    d_v = v_implied - v_pref
+    P_v = norm.pdf(x=v_implied, loc=v_pref, scale=sigma_v)
     # there is a discontinuity when taking the difference of angles (2pi \equiv 0 !),
     # so always choose the smaller difference
     d_theta = theta_implied - theta_pref
     d_theta[d_theta > np.pi] += -2 * np.pi
     d_theta[d_theta < -np.pi] += 2 * np.pi
-
-    P_v = np.exp(-(d_v**2) / (2 * sigma_v**2)) / (np.sqrt(2 * np.pi) * sigma_v)
-    P_theta = np.exp(-(d_theta**2) / (2 * sigma_t**2)) / (np.sqrt(2 * np.pi) * sigma_t)
-
+    P_theta = norm.pdf(x=d_theta, loc=0, scale=sigma_t)
     return P_v * P_theta

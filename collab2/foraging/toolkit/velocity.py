@@ -1,11 +1,18 @@
-from typing import List
+from typing import List, Tuple
 
 import numpy as np
 import pandas as pd
 
-
-# a function that calculates the velocity magnitude and direction and outputs updated (foragers, foragersDF)
-def add_velocity(foragers: List[pd.DataFrame], dt: int = 1):
+def add_velocity(foragers: List[pd.DataFrame], dt: int = 1) -> Tuple[List[pd.DataFrame], pd.DataFrame]:
+    """
+    A function to calculate velocity magnitude and direction from forager positions, and add them to forager DataFrames.
+    Parameters :
+        - foragers : list of DataFrames containing forager positions, grouped by forager index
+        - dt : time interval (in frames) used to compute velocity
+    Returns :
+        - foragers : list of DataFrames containing forager positions + velocity magnitude and direction, grouped by forager index
+        - foragersDF : flattened DataFrame containing positions + velocity magnitude and direction for all foragers
+    """
     for df in foragers:
         v_ID = f"v_dt={dt}"
         theta_ID = f"theta_dt={dt}"
@@ -22,8 +29,6 @@ def add_velocity(foragers: List[pd.DataFrame], dt: int = 1):
     return foragers, pd.concat(foragers)
 
 
-# a function that takes in the "preferred" (v, theta) (set by any mechanism), current position,
-# and calculates a predictor score over all grid points using polar gaussians of width (sigma_v, sigma_t)
 def velocity_predictor_contribution(
     v_pref: float,
     theta_pref: float,
@@ -32,9 +37,19 @@ def velocity_predictor_contribution(
     grid: pd.DataFrame,
     sigma_v: float,
     sigma_t: float,
-):
+) -> pd.DataFrame:
     """
-    Requires theta in [-pi,pi)
+    A function that calculates Gaussian predictor scores over a grid, given a preferred velocity magnitude/direction for the next time-step and the current position of the focal forager. 
+    Parameters:
+        - v_pref : Preferred velocity magnitude
+        - theta_pref : Preferred velocity direction. Must be specified as an angle in [-pi,pi)
+        - x : current x position of focal forager
+        - y : current y position of focal forager
+        - grid : grid to compute predictor scores over. For most applications, this would be the relevant `local_windows` for the focal forager
+        - sigma_v : standard deviation of Gaussian for velocity magnitude
+        - sigma_t : standard deviation of Gaussian for velocity direction 
+    Returns:
+        - calculated predictor scores for each grid point returned as a DataFrame
     """
 
     v_implied = np.sqrt((grid["x"] - x) ** 2 + (grid["y"] - y) ** 2)

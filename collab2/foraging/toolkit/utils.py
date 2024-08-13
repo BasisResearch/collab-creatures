@@ -38,6 +38,9 @@ class dataObject:
                 Specify handling of missing data using `skip_incomplete_frames` argument to `generate_all_predictors`"""
             )
 
+        # ensure that forager index is saved as an integer
+        foragersDF["forager"] = foragersDF["forager"].astype(int)
+
         # group dfs by forager index
         foragers = [group for _, group in foragersDF.groupby("forager")]
         self.num_foragers = len(foragers)

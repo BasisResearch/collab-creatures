@@ -17,12 +17,12 @@ def plot_predictor(
 ):
     """
     A function to visualize a computed predictor for specified foragers and timeframes.
-    
-    Parameters: 
+
+    Parameters:
         - foragers : list of DataFrames containing forager positions, grouped by forager index
-        - predictor : Nested list of DataFrames containing computed predictor scores, grouped by forager index and time 
+        - predictor : Nested list of DataFrames containing computed predictor scores, grouped by forager index and time
         - predictorID : Name of column containing predictor scores in `predictor`
-        - forager_index : Index of foragers whose predictors are to be plotted 
+        - forager_index : Index of foragers whose predictors are to be plotted
         - time : Timeframes for which predictor scores are to be plotted
         - grid_size : size of grid used to compute forager positions (used for setting x,y limits in figure)
         - random_state : used to choose plot colors for each forager
@@ -53,10 +53,7 @@ def plot_predictor(
         for j, f in enumerate(forager_index):
             if predictor[f][t] is not None:
                 # normalize predictor value to choose scatter size
-                size = (
-                    predictor[f][t][predictorID]
-                    / predictor[f][t][predictorID].max()
-                )
+                size = predictor[f][t][predictorID] / predictor[f][t][predictorID].max()
                 ax.scatter(
                     predictor[f][t]["x"],
                     predictor[f][t]["y"],

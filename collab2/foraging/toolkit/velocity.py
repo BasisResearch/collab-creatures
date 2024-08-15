@@ -1,9 +1,12 @@
+import copy
 import warnings
 from typing import List, Tuple
 
 import numpy as np
 import pandas as pd
 from scipy.stats import norm
+
+from collab2.foraging.toolkit import filter_by_distance
 
 
 def add_velocity(
@@ -15,11 +18,12 @@ def add_velocity(
         - foragers : list of DataFrames containing forager positions, grouped by forager index
         - dt : time interval (in frames) used to compute velocity
     Returns :
-        - foragers : list of DataFrames containing forager positions + velocity magnitude and direction,
+        - foragers_processed : list of DataFrames containing forager positions + velocity magnitude and direction,
                     grouped by forager index
-        - foragersDF : flattened DataFrame containing positions + velocity magnitude and direction for all foragers
+        - foragersDF_processed : flattened DataFrame containing positions + velocity magnitude and direction for all foragers
     """
-    for df in foragers:
+    foragers_processed = copy.deepcopy(foragers)
+    for df in foragers_processed:
         v_ID = f"v_dt={dt}"
         theta_ID = f"theta_dt={dt}"
         if v_ID in df.columns and theta_ID in df.columns:
@@ -36,7 +40,7 @@ def add_velocity(
             df[v_ID] = np.sqrt(v_x**2 + v_y**2)
             df[theta_ID] = np.arctan2(v_y, v_x)
 
-    return foragers, pd.concat(foragers)
+    return foragers_processed, pd.concat(foragers_processed)
 
 
 def velocity_predictor_contribution(
@@ -47,10 +51,10 @@ def velocity_predictor_contribution(
     grid: pd.DataFrame,
     sigma_v: float,
     sigma_t: float,
-) -> pd.DataFrame:
+) -> np.ndarray:
     """
     A function that calculates Gaussian predictor scores over a grid, given a preferred velocity magnitude/direction
-    for the next time-step and the current position of the focal forager.
+    for the next time-step and the current position of the focal forager. 
     Parameters:
         - v_pref : Preferred velocity magnitude
         - theta_pref : Preferred velocity direction. Must be specified as an angle in [-pi,pi)
@@ -74,3 +78,56 @@ def velocity_predictor_contribution(
     d_theta[d_theta < -np.pi] += 2 * np.pi
     P_theta = norm.pdf(x=d_theta, loc=0, scale=sigma_t)
     return P_v * P_theta
+
+
+def _generate_pairwise_copying(
+    foragers,
+    foragersDF,
+    local_windows,
+    predictor_ID,
+    interaction_length,
+    interaction_constraint,
+    interaction_constraint_params,
+    dt,
+    sigma_v,
+    sigma_t,
+):
+    num_foragers = len(foragers)
+    num_frames = len(foragers[0])
+    predictor = copy.deepcopy(local_windows)
+
+    for f in range(num_foragers):
+        for t in range(num_frames):
+            if predictor[f][t] is not None:
+                # add column for predictor_ID
+                predictor[f][t][predictor_ID] = 0
+                # find confocals within interaction length
+                interaction_partners = filter_by_distance(
+                    foragersDF,
+                    f,
+                    t,
+                    interaction_length,
+                    interaction_constraint,
+                    interaction_constraint_params,
+                )
+                # additively combine their influence
+                x = foragers[f].loc[t, "x"]
+                y = foragers[f].loc[t, "y"]
+                valid_partners = 0 #number of partners with finite v,theta
+                
+                for f_i in interaction_partners:
+                    v_pref = foragers[f_i].loc[t, f"v_dt={dt}"]
+                    theta_pref = foragers[f_i].loc[t, f"theta_dt={dt}"]
+                    if np.isfinite(v_pref) and np.isfinite(theta_pref):
+                        valid_partners += 1
+                        predictor[f][t][
+                            predictor_ID
+                        ] += velocity_predictor_contribution(
+                            v_pref, theta_pref, x, y, predictor[f][t], sigma_v, sigma_t
+                        )
+
+                # finally, normalize by number of valid interaction partners
+                if valid_partners > 0 : 
+                    predictor[f][t][predictor_ID] = predictor[f][t][predictor_ID] / valid_partners
+
+    return predictor

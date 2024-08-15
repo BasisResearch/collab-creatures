@@ -1,6 +1,6 @@
 import copy
 import warnings
-from typing import List, Tuple
+from typing import Callable, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -10,7 +10,7 @@ from collab2.foraging.toolkit import filter_by_distance
 
 
 def add_velocity(
-    foragers: List[pd.DataFrame], dt: int = 1
+    foragers: List[pd.DataFrame], dt: int
 ) -> Tuple[List[pd.DataFrame], pd.DataFrame]:
     """
     A function to calculate velocity magnitude and direction from forager positions, and add them to forager DataFrames.
@@ -20,7 +20,7 @@ def add_velocity(
     Returns :
         - foragers_processed : list of DataFrames containing forager positions + velocity magnitude and direction,
                     grouped by forager index
-        - foragersDF_processed : flattened DataFrame containing positions + velocity magnitude and direction 
+        - foragersDF_processed : flattened DataFrame containing positions + velocity magnitude and direction
                     for all foragers
     """
     foragers_processed = copy.deepcopy(foragers)
@@ -82,17 +82,19 @@ def velocity_predictor_contribution(
 
 
 def _generate_pairwise_copying(
-    foragers,
-    foragersDF,
-    local_windows,
-    predictor_ID,
-    interaction_length,
-    interaction_constraint,
-    interaction_constraint_params,
-    dt,
-    sigma_v,
-    sigma_t,
-):
+    foragers: List[pd.DataFrame],
+    foragersDF: pd.DataFrame,
+    local_windows: List[List[pd.DataFrame]],
+    predictor_ID: str,
+    interaction_length: float,
+    dt: int,
+    sigma_v: float,
+    sigma_t: float,
+    interaction_constraint: Optional[
+        Callable[[List[int], int, int, pd.DataFrame, Optional[dict]], List[int]]
+    ] = None,
+    interaction_constraint_params: Optional[dict] = None,
+) -> List[List[pd.DataFrame]]:
     num_foragers = len(foragers)
     num_frames = len(foragers[0])
     predictor = copy.deepcopy(local_windows)

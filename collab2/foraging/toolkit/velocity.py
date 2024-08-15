@@ -20,7 +20,8 @@ def add_velocity(
     Returns :
         - foragers_processed : list of DataFrames containing forager positions + velocity magnitude and direction,
                     grouped by forager index
-        - foragersDF_processed : flattened DataFrame containing positions + velocity magnitude and direction for all foragers
+        - foragersDF_processed : flattened DataFrame containing positions + velocity magnitude and direction 
+                    for all foragers
     """
     foragers_processed = copy.deepcopy(foragers)
     for df in foragers_processed:
@@ -54,7 +55,7 @@ def velocity_predictor_contribution(
 ) -> np.ndarray:
     """
     A function that calculates Gaussian predictor scores over a grid, given a preferred velocity magnitude/direction
-    for the next time-step and the current position of the focal forager. 
+    for the next time-step and the current position of the focal forager.
     Parameters:
         - v_pref : Preferred velocity magnitude
         - theta_pref : Preferred velocity direction. Must be specified as an angle in [-pi,pi)
@@ -113,8 +114,8 @@ def _generate_pairwise_copying(
                 # additively combine their influence
                 x = foragers[f].loc[t, "x"]
                 y = foragers[f].loc[t, "y"]
-                valid_partners = 0 #number of partners with finite v,theta
-                
+                valid_partners = 0  # number of partners with finite v,theta
+
                 for f_i in interaction_partners:
                     v_pref = foragers[f_i].loc[t, f"v_dt={dt}"]
                     theta_pref = foragers[f_i].loc[t, f"theta_dt={dt}"]
@@ -127,7 +128,9 @@ def _generate_pairwise_copying(
                         )
 
                 # finally, normalize by number of valid interaction partners
-                if valid_partners > 0 : 
-                    predictor[f][t][predictor_ID] = predictor[f][t][predictor_ID] / valid_partners
+                if valid_partners > 0:
+                    predictor[f][t][predictor_ID] = (
+                        predictor[f][t][predictor_ID] / valid_partners
+                    )
 
     return predictor

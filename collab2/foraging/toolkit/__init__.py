@@ -44,8 +44,11 @@ from .utils import (  # noqa: F401
     foragers_to_forager_distances,
     update_rewards,
 )
-from .velocity import ( # noqa: F401
-    add_velocity, velocity_predictor_contribution, _generate_pairwise_copying )
+from .velocity import (  # noqa: F401
+    _generate_pairwise_copying,
+    add_velocity,
+    velocity_predictor_contribution,
+)
 from .visibility import (  # noqa: F401
     construct_visibility,
     filter_by_visibility,

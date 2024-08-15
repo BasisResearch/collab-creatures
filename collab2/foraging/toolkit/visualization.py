@@ -54,7 +54,7 @@ def plot_predictor(
             if predictor[f][t] is not None:
                 # normalize predictor value to choose scatter size and alpha
                 size = predictor[f][t][predictorID] / predictor[f][t][predictorID].max()
-                size[np.isnan(size)] = 0 
+                size[np.isnan(size)] = 0
                 ax.scatter(
                     predictor[f][t]["x"],
                     predictor[f][t]["y"],

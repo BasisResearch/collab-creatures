@@ -45,9 +45,9 @@ from .utils import (  # noqa: F401
     update_rewards,
 )
 from .velocity import (  # noqa: F401
-    _generate_pairwise_copying,
+    _generate_pairwiseCopying,
     add_velocity,
-    generate_pairwise_copying,
+    generate_pairwiseCopying,
     velocity_predictor_contribution,
 )
 from .visibility import (  # noqa: F401

@@ -80,11 +80,11 @@ def velocity_predictor_contribution(
     return P_v * P_theta
 
 
-def _generate_pairwise_copying(
+def _generate_pairwiseCopying(
     foragers: List[pd.DataFrame],
     foragersDF: pd.DataFrame,
     local_windows: List[List[pd.DataFrame]],
-    predictor_ID: str,
+    predictorID: str,
     interaction_length: float,
     dt: int,
     sigma_v: float,
@@ -95,7 +95,11 @@ def _generate_pairwise_copying(
     interaction_constraint_params: Optional[dict] = None,
 ) -> List[List[pd.DataFrame]]:
     """
-    A function that calculates the predictor scores associated with random, pairwise velocity copying to all foragers.
+    A function that calculates the predictor scores associated with random, pairwise velocity copying for all foragers.
+    Predictors are not calculated for frames where interaction partners have missing velocities.
+    In this case, fraction of dropped frames is reported.
+    Predictors are normalized to sum to 1 for each forager & frame.
+
     Parameters:
         - foragers : List of DataFrames containing forager positions and velocities grouped by forager index
         - foragersDF : Flattened DataFrame of forager positions and velocities
@@ -117,12 +121,15 @@ def _generate_pairwise_copying(
     num_foragers = len(foragers)
     num_frames = len(foragers[0])
     predictor = copy.deepcopy(local_windows)
+    valid_frames = 0  # frames with valid local_windows
+    dropped_frames = 0  # frames dropped due to missing velocity values
 
     for f in range(num_foragers):
         for t in range(num_frames):
             if predictor[f][t] is not None:
+                valid_frames += 1
                 # add column for predictor_ID
-                predictor[f][t][predictor_ID] = 0
+                predictor[f][t][predictorID] = 0
                 # find confocals within interaction length
                 interaction_partners = filter_by_distance(
                     foragersDF,
@@ -132,32 +139,46 @@ def _generate_pairwise_copying(
                     interaction_constraint,
                     interaction_constraint_params,
                 )
-                # additively combine their influence
-                x = foragers[f].loc[t, "x"]
-                y = foragers[f].loc[t, "y"]
-                valid_partners = 0  # number of partners with finite v,theta
 
-                for f_i in interaction_partners:
-                    v_pref = foragers[f_i].loc[t, f"v_dt={dt}"]
-                    theta_pref = foragers[f_i].loc[t, f"theta_dt={dt}"]
-                    if np.isfinite(v_pref) and np.isfinite(theta_pref):
-                        valid_partners += 1
-                        predictor[f][t][
-                            predictor_ID
-                        ] += velocity_predictor_contribution(
+                # check if all interaction partners have valid velocity values before computing predictor
+                v_values = foragersDF.loc[
+                    np.logical_and(
+                        foragersDF["forager"].isin(interaction_partners),
+                        foragersDF["time"] == t,
+                    ),
+                    [f"v_dt={dt}", f"theta_dt={dt}"],
+                ]
+
+                if v_values.notna().all(axis=None):
+                    x = foragers[f].loc[t, "x"]
+                    y = foragers[f].loc[t, "y"]
+                    # additively combine the influence of all confocals
+                    for v_pref, theta_pref in v_values.itertuples(index=False):
+                        predictor[f][t][predictorID] += velocity_predictor_contribution(
                             v_pref, theta_pref, x, y, predictor[f][t], sigma_v, sigma_t
                         )
+                else:
+                    predictor[f][t][predictorID] = np.nan
+                    dropped_frames += 1
 
-                # finally, normalize by number of valid interaction partners
-                if valid_partners > 0:
-                    predictor[f][t][predictor_ID] = (
-                        predictor[f][t][predictor_ID] / valid_partners
+                # normalize predictor to sum to 1
+                sum_over_grid = predictor[f][t][predictorID].sum()
+                if sum_over_grid > 0:
+                    predictor[f][t][predictorID] = (
+                        predictor[f][t][predictorID] / sum_over_grid
                     )
+
+    # raise warning if any frames dropped due to missing velocity data
+    if dropped_frames:
+        warnings.warn(
+            f"""Dropped {dropped_frames}/{valid_frames} instances from predictor calculation
+            due to invalid velocity values"""
+        )
 
     return predictor
 
 
-def generate_pairwise_copying(foragers_object: dataObject, predictorID: str):
+def generate_pairwiseCopying(foragers_object: dataObject, predictorID: str):
     """
     A function that calculates the predictor scores associated with random, pairwise velocity copying to all foragers,
     inheriting the necessary parameters from `foragers_object`. `foragers_object` must contain as attribute
@@ -178,7 +199,7 @@ def generate_pairwise_copying(foragers_object: dataObject, predictorID: str):
     )
 
     # calculate predictor values
-    predictor = _generate_pairwise_copying(
+    predictor = _generate_pairwiseCopying(
         foragers_object.foragers,
         foragers_object.foragersDF,
         foragers_object.local_windows,

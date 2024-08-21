@@ -39,7 +39,7 @@ class dataObject:
             )
 
         # ensure that forager index is saved as an integer
-        foragersDF["forager"] = foragersDF["forager"].astype(int)
+        foragersDF.loc[:, "forager"] = foragersDF.loc[:, "forager"].astype(int)
 
         # group dfs by forager index
         foragers = [group for _, group in foragersDF.groupby("forager")]

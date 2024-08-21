@@ -94,6 +94,26 @@ def _generate_pairwise_copying(
     ] = None,
     interaction_constraint_params: Optional[dict] = None,
 ) -> List[List[pd.DataFrame]]:
+    """
+    A function that calculates the predictor scores associated with random, pairwise velocity copying to all foragers.
+    Parameters:
+        - foragers : List of DataFrames containing forager positions and velocities grouped by forager index
+        - foragersDF : Flattened DataFrame of forager positions and velocities
+        - local_windows : Nested list of DataFrames containing grid points to compute predictor over,
+            grouped by forager index and time
+        - predictorID : Name given to column containing predictor scores in `predictor`
+        - interaction_length : Maximum inter-forager distance for velocity copying interaction
+        - dt : frames skipped in calculation of velocities
+            ** Note: This function requires `foragers` and `foragersDF` to contain 
+                columns "v_dt={dt}", "theta_dt={dt}" **
+        - sigma_v : standard deviation of Gaussian for velocity magnitude
+        - sigma_t : standard deviation of Gaussian for velocity direction
+        - interaction_constraint : Optional function to model other interaction constraints
+        - interaction_constraint_params : Optional dictionary of parameters to be passed to `interaction_constraint`
+    Returns:
+        - predictor : Nested list of calculated predictor scores, grouped by foragers and time
+    """
+
     num_foragers = len(foragers)
     num_frames = len(foragers[0])
     predictor = copy.deepcopy(local_windows)

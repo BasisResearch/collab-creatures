@@ -29,10 +29,9 @@ def add_velocity(
             )
             continue
         else:
-            # define v_x(t) = (x(t+dt) - x(t))/dt
-            # df.diff(period = -dt) computes (x(t) - x(t+dt)), hence need an extra minus sign
-            v_x = -df["x"].diff(periods=-dt) / dt
-            v_y = -df["y"].diff(periods=-dt) / dt
+            # define v_x(t) = (x(t) - x(t-dt))/dt
+            v_x = df["x"].diff(periods=dt) / dt
+            v_y = df["y"].diff(periods=dt) / dt
             df[v_ID] = np.sqrt(v_x**2 + v_y**2)
             df[theta_ID] = np.arctan2(v_y, v_x)
 

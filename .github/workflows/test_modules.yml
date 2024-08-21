@@ -1,4 +1,4 @@
-name: Test
+name: Test modules
 
 on:
   push:
@@ -49,6 +49,5 @@ jobs:
           pip install -e .[test]
 
       - name: Test
-        shell: bash
         run: |
-          MKL_NUM_THREADS=1 pytest tests/ -s -n auto --cov=collab/ --cov-report=term-missing ${@-}
+          ./scripts/test_modules.sh

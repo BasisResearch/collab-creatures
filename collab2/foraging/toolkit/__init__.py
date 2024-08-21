@@ -54,4 +54,4 @@ from .visibility import (  # noqa: F401
     filter_by_visibility,
     visibility_vs_distance,
 )
-from .visualization import plot_predictor  # noqa: F401
+from .visualization import plot_predictor, animate_predictors  # noqa: F401

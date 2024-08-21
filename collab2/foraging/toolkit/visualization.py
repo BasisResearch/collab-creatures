@@ -3,6 +3,8 @@ from typing import List
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import matplotlib.animation as animation
+from IPython.display import HTML
 
 
 def plot_predictor(
@@ -60,7 +62,7 @@ def plot_predictor(
                     predictor[f][t]["y"],
                     s=size * size_multiplier,
                     color=colors[j],
-                    alpha=size,
+                    alpha=size*0.8,
                 )
             ax.scatter(
                 foragers[f].loc[t, "x"],
@@ -86,3 +88,66 @@ def plot_predictor(
                 fig.delaxes(axes[c])
 
     fig.tight_layout(pad=2)
+
+
+def animate_predictors(foragersDF, predictor, predictorID, forager_index, size_multiplier, grid_size, random_state):
+    num_foragers = foragersDF["forager"].nunique()
+    num_frames = foragersDF["time"].nunique()
+
+    # Generate random colors for each particle
+    np.random.seed(random_state)
+    colors = np.random.rand(num_foragers, 3)  # RGB values for face colors
+
+    # Create a figure and axis
+    fig, ax = plt.subplots()
+    foragers_scat = ax.scatter([], [], s=50, marker="s", facecolor=[], edgecolor=[])  
+    predictors_scat_list = []
+    for i in range(len(forager_index)):
+        predictors_scat_list.append(ax.scatter([], [], s=[], facecolor=[], edgecolor=[]))
+
+    ax.set_xlim(0, grid_size)
+    ax.set_ylim(0, grid_size)
+    ax.set_aspect('equal')
+    ax.legend()
+
+    # Initialize function to set up the background of each frame
+    def init():
+        foragers_scat.set_offsets(np.empty((0, 2)))
+        foragers_scat.set_facecolor(np.array([]))  # Set face color array
+        foragers_scat.set_edgecolor(np.array([]))  # Set edge color array
+
+        for predictors_scat in predictors_scat_list:
+            predictors_scat.set_offsets(np.empty((0, 2)))
+            predictors_scat.set_facecolor(np.array([]))  # Set face color array
+            predictors_scat.set_edgecolor(np.array([]))  # Set edge color array
+            predictors_scat.set_sizes(np.array([]))
+
+        return foragers_scat, *predictors_scat_list
+
+    # Update function for each frame
+    def update(frame):
+        # Update positions of the particles
+        current_positions = foragersDF.loc[foragersDF["time"]==frame,["x","y"]].values
+        foragers_scat.set_offsets(current_positions)
+        
+        # Update face and edge colors of the particles
+        foragers_scat.set_facecolor(colors)  # Set face colors directly
+        foragers_scat.set_edgecolor(colors)  # Set edge colors directly
+        
+        # Update predictor
+        for i,f in enumerate(forager_index):
+            if predictor[f][frame] is not None:
+                current_features = predictor[f][frame].loc[:,["x","y"]]
+                size = predictor[f][frame][predictorID] / predictor[f][frame][predictorID].max()
+                size[np.isnan(size)] = 0
+                predictors_scat_list[i].set_offsets(current_features)
+                predictors_scat_list[i].set_sizes(size*size_multiplier)
+                predictors_scat_list[i].set_alpha(size)
+                predictors_scat_list[i].set_facecolor(colors[f])
+                predictors_scat_list[i].set_edgecolor(colors[f])
+        
+        return foragers_scat, *predictors_scat_list
+
+    # Create the animation
+    ani = animation.FuncAnimation(fig, update, frames=num_frames, init_func=init, blit=True)
+    return ani

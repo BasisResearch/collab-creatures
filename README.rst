@@ -2,9 +2,9 @@
    :alt: Test Notebooks Badge
    :target: https://github.com/BasisResearch/collaborative-intelligence/actions/workflows/test_notebooks.yml
 
-.. image:: https://github.com/BasisResearch/collaborative-intelligence/actions/workflows/test.yml/badge.svg
-   :alt: Test Badge
-   :target: https://github.com/BasisResearch/collaborative-intelligence/actions/workflows/test.yml
+.. image:: https://github.com/BasisResearch/collaborative-intelligence/actions/workflows/test_modules.yml/badge.svg
+   :alt: Test Modules Badge
+   :target: https://github.com/BasisResearch/collaborative-intelligence/actions/workflows/test_modules.yml
 
 .. index-inclusion-marker
 

@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from scipy.stats import norm
 
-from collab2.foraging.toolkit import filter_by_distance
+from collab2.foraging.toolkit import dataObject, filter_by_distance
 
 
 def add_velocity(
@@ -104,7 +104,7 @@ def _generate_pairwise_copying(
         - predictorID : Name given to column containing predictor scores in `predictor`
         - interaction_length : Maximum inter-forager distance for velocity copying interaction
         - dt : frames skipped in calculation of velocities
-            ** Note: This function requires `foragers` and `foragersDF` to contain 
+            ** Note: This function requires `foragers` and `foragersDF` to contain
                 columns "v_dt={dt}", "theta_dt={dt}" **
         - sigma_v : standard deviation of Gaussian for velocity magnitude
         - sigma_t : standard deviation of Gaussian for velocity direction
@@ -153,5 +153,37 @@ def _generate_pairwise_copying(
                     predictor[f][t][predictor_ID] = (
                         predictor[f][t][predictor_ID] / valid_partners
                     )
+
+    return predictor
+
+
+def generate_pairwise_copying(foragers_object: dataObject, predictorID: str):
+    """
+    A function that calculates the predictor scores associated with random, pairwise velocity copying to all foragers,
+    inheriting the necessary parameters from `foragers_object`. `foragers_object` must contain as attribute
+    `predictor_kwargs` : dict, with `predictorID` as a valid key.
+    Parameters:
+        - foragers_object : dataObject containing positional data and necessary kwargs
+        - predictorID : Name given to column containing predictor scores in `predictor`
+    Returns:
+        - predictor : Nested list of calculated predictor scores, grouped by foragers and time
+    """
+
+    # grab relevant parameters from foragers_object
+    params = foragers_object.predictor_kwargs[predictorID]
+
+    # compute/add velocity
+    foragers_object.foragers, foragers_object.foragersDF = add_velocity(
+        foragers_object.foragers, params["dt"]
+    )
+
+    # calculate predictor values
+    predictor = _generate_pairwise_copying(
+        foragers_object.foragers,
+        foragers_object.foragersDF,
+        foragers_object.local_windows,
+        predictorID,
+        **params,
+    )
 
     return predictor

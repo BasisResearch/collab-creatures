@@ -9,7 +9,7 @@ from scipy.stats import norm
 from collab2.foraging.toolkit import dataObject, filter_by_distance
 
 
-def add_velocity(
+def _add_velocity(
     foragers: List[pd.DataFrame], dt: int
 ) -> Tuple[List[pd.DataFrame], pd.DataFrame]:
     """
@@ -43,7 +43,7 @@ def add_velocity(
     return foragers_processed, pd.concat(foragers_processed)
 
 
-def velocity_predictor_contribution(
+def _velocity_predictor_contribution(
     v_pref: float,
     theta_pref: float,
     x: int,
@@ -80,7 +80,7 @@ def velocity_predictor_contribution(
     return P_v * P_theta
 
 
-def _generate_pairwiseCopying(
+def _generic_velocity_predictor(
     foragers: List[pd.DataFrame],
     foragersDF: pd.DataFrame,
     local_windows: List[List[pd.DataFrame]],
@@ -89,13 +89,16 @@ def _generate_pairwiseCopying(
     dt: int,
     sigma_v: float,
     sigma_t: float,
+    transformation_function: Callable[[pd.DataFrame], pd.DataFrame],
     interaction_constraint: Optional[
         Callable[[List[int], int, int, pd.DataFrame, Optional[dict]], List[int]]
     ] = None,
     interaction_constraint_params: Optional[dict] = None,
 ) -> List[List[pd.DataFrame]]:
     """
-    A function that calculates the predictor scores associated with random, pairwise velocity copying for all foragers.
+    A function that calculates predictor scores for arbitrary velocity alignment mechanisms, as specified by
+    `transformation_function`. This function takes the velocities of interaction partners and outputs a transformation
+    (eg, average, identity, max) as required by the corresponding mechanism
     Predictors are not calculated for frames where interaction partners have missing velocities.
     In this case, fraction of dropped frames is reported.
     Predictors are normalized to sum to 1 for each forager & frame.
@@ -112,6 +115,8 @@ def _generate_pairwiseCopying(
                 columns "v_dt={dt}", "theta_dt={dt}" **
         - sigma_v : standard deviation of Gaussian for velocity magnitude
         - sigma_t : standard deviation of Gaussian for velocity direction
+        - transformation_function : Function that implements a transformation of velocities of interaction partners,
+            as stipulated by the chosen velocity alignment mechanism
         - interaction_constraint : Optional function to model other interaction constraints
         - interaction_constraint_params : Optional dictionary of parameters to be passed to `interaction_constraint`
     Returns:
@@ -150,11 +155,14 @@ def _generate_pairwiseCopying(
                 ]
 
                 if v_values.notna().all(axis=None):
+                    v_values = transformation_function(v_values)
                     x = foragers[f].loc[t, "x"]
                     y = foragers[f].loc[t, "y"]
                     # additively combine the influence of all confocals
                     for v_pref, theta_pref in v_values.itertuples(index=False):
-                        predictor[f][t][predictorID] += velocity_predictor_contribution(
+                        predictor[f][t][
+                            predictorID
+                        ] += _velocity_predictor_contribution(
                             v_pref, theta_pref, x, y, predictor[f][t], sigma_v, sigma_t
                         )
                 else:
@@ -180,9 +188,11 @@ def _generate_pairwiseCopying(
 
 def generate_pairwiseCopying(foragers_object: dataObject, predictorID: str):
     """
-    A function that calculates the predictor scores associated with random, pairwise velocity copying to all foragers,
-    inheriting the necessary parameters from `foragers_object`. `foragers_object` must contain as attribute
+    A function that calculates the predictor scores associated with random, pairwise velocity copying,
+    by specifying an identity transformation to `_generic_velocity_predictor`.
+    The necessary parameters from `foragers_object`. Thus, `foragers_object` must contain as attribute
     `predictor_kwargs` : dict, with `predictorID` as a valid key.
+
     Parameters:
         - foragers_object : dataObject containing positional data and necessary kwargs
         - predictorID : Name given to column containing predictor scores in `predictor`
@@ -190,20 +200,25 @@ def generate_pairwiseCopying(foragers_object: dataObject, predictorID: str):
         - predictor : Nested list of calculated predictor scores, grouped by foragers and time
     """
 
+    # define transformation function
+    def transformation_pairwiseCopying(v_values):
+        return v_values
+
     # grab relevant parameters from foragers_object
     params = foragers_object.predictor_kwargs[predictorID]
 
     # compute/add velocity
-    foragers_object.foragers, foragers_object.foragersDF = add_velocity(
+    foragers_object.foragers, foragers_object.foragersDF = _add_velocity(
         foragers_object.foragers, params["dt"]
     )
 
     # calculate predictor values
-    predictor = _generate_pairwiseCopying(
+    predictor = _generic_velocity_predictor(
         foragers_object.foragers,
         foragers_object.foragersDF,
         foragers_object.local_windows,
         predictorID,
+        transformation_function=transformation_pairwiseCopying,
         **params,
     )
 

@@ -1,5 +1,6 @@
-from typing import List
+from typing import List, Optional
 
+import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -12,8 +13,8 @@ def plot_predictor(
     forager_index: List[int],
     time: List[int],
     grid_size: int,
-    random_state: int = 0,
-    size_multiplier: float = 10,
+    random_state: Optional[int] = 0,
+    size_multiplier: Optional[int] = 10,
 ):
     """
     A function to visualize a computed predictor for specified foragers and timeframes.
@@ -54,12 +55,13 @@ def plot_predictor(
             if predictor[f][t] is not None:
                 # normalize predictor value to choose scatter size and alpha
                 size = predictor[f][t][predictorID] / predictor[f][t][predictorID].max()
+                size[np.isnan(size)] = 0
                 ax.scatter(
                     predictor[f][t]["x"],
                     predictor[f][t]["y"],
                     s=size * size_multiplier,
                     color=colors[j],
-                    alpha=size,
+                    alpha=size * 0.8,
                 )
             ax.scatter(
                 foragers[f].loc[t, "x"],
@@ -85,3 +87,100 @@ def plot_predictor(
                 fig.delaxes(axes[c])
 
     fig.tight_layout(pad=2)
+
+
+def animate_predictors(
+    foragersDF: pd.DataFrame,
+    predictor: List[List[pd.DataFrame]],
+    predictorID: str,
+    forager_index: List[int],
+    grid_size: int,
+    random_state: Optional[int] = 0,
+    size_multiplier: Optional[int] = 10,
+):
+    """
+    A function to animate a computed predictor for specified foragers.
+
+    Parameters:
+        - foragersDF : flattened DataFrame of forager positions
+        - predictor : Nested list of DataFrames containing computed predictor scores, grouped by forager index and time
+        - predictorID : Name of column containing predictor scores in `predictor`
+        - forager_index : Index of foragers whose predictors are to be plotted
+        - grid_size : size of grid used to compute forager positions (used for setting x,y limits in figure)
+        - random_state : used to choose plot colors for each forager
+        - size_multiplier : used to select marker size in scatter plot
+
+    Returns :
+        - ani : animation
+    """
+    num_foragers = foragersDF["forager"].nunique()
+    num_frames = foragersDF["time"].nunique()
+
+    # Generate random colors for each particle
+    np.random.seed(random_state)
+    colors = np.random.rand(num_foragers, 3)  # RGB values for face colors
+
+    # Create a figure and axis
+    fig, ax = plt.subplots()
+    foragers_scat = ax.scatter([], [], s=50, marker="s", facecolor=[], edgecolor=[])
+    predictors_scat_list = []
+    for i in range(len(forager_index)):
+        predictors_scat_list.append(
+            ax.scatter([], [], s=[], facecolor=[], edgecolor=[])
+        )
+
+    ax.set_xlim(0, grid_size)
+    ax.set_ylim(0, grid_size)
+    ax.set_aspect("equal")
+    ax.legend()
+
+    # Initialize function to set up the background of each frame
+    def init():
+        foragers_scat.set_offsets(np.empty((0, 2)))
+        foragers_scat.set_facecolor(np.array([]))  # Set face color array
+        foragers_scat.set_edgecolor(np.array([]))  # Set edge color array
+
+        for predictors_scat in predictors_scat_list:
+            predictors_scat.set_offsets(np.empty((0, 2)))
+            predictors_scat.set_facecolor(np.array([]))  # Set face color array
+            predictors_scat.set_edgecolor(np.array([]))  # Set edge color array
+            predictors_scat.set_sizes(np.array([]))
+
+        return foragers_scat, *predictors_scat_list
+
+    # Update function for each frame
+    def update(frame):
+        # Update positions of the particles
+        current_positions = foragersDF.loc[
+            foragersDF["time"] == frame, ["x", "y"]
+        ].values
+        foragers_scat.set_offsets(current_positions)
+
+        # Update face and edge colors of the particles
+        foragers_scat.set_facecolor(colors)  # Set face colors directly
+        foragers_scat.set_edgecolor(colors)  # Set edge colors directly
+
+        # Update predictor
+        for i, f in enumerate(forager_index):
+            if predictor[f][frame] is not None:
+                current_features = predictor[f][frame].loc[:, ["x", "y"]]
+                size = (
+                    predictor[f][frame][predictorID]
+                    / predictor[f][frame][predictorID].max()
+                )
+                size[np.isnan(size)] = 0
+                predictors_scat_list[i].set_offsets(current_features)
+                predictors_scat_list[i].set_sizes(size * size_multiplier)
+                predictors_scat_list[i].set_alpha(size)
+                predictors_scat_list[i].set_facecolor(colors[f])
+                predictors_scat_list[i].set_edgecolor(colors[f])
+            else:
+                predictors_scat_list[i].set_offsets(np.empty((0, 2)))
+
+        return foragers_scat, *predictors_scat_list
+
+    # Create the animation
+    ani = animation.FuncAnimation(
+        fig, update, frames=num_frames, init_func=init, blit=True
+    )
+    return ani

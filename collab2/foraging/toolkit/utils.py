@@ -1,6 +1,6 @@
 import math
 import warnings
-from typing import Optional
+from typing import Any, List, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -39,7 +39,7 @@ class dataObject:
             )
 
         # ensure that forager index is saved as an integer
-        foragersDF["forager"] = foragersDF["forager"].astype(int)
+        foragersDF.loc[:, "forager"] = foragersDF.loc[:, "forager"].astype(int)
 
         # group dfs by forager index
         foragers = [group for _, group in foragersDF.groupby("forager")]
@@ -73,6 +73,11 @@ class dataObject:
         if rewardsDF is not None:
             self.rewardsDF = rewardsDF
             self.rewards = [group for _, group in rewardsDF.groupby("time")]
+
+        # save placeholders for local_windows and kwargs
+        self.local_windows: List[List[pd.DataFrame]] = [[]]
+        self.local_windows_kwarg: dict[str, Any] = {}
+        self.predictor_kwargs: dict[str, Any] = {}
 
     def calculate_step_size_max(self):
         step_maxes = []

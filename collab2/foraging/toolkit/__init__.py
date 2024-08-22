@@ -44,10 +44,15 @@ from .utils import (  # noqa: F401
     foragers_to_forager_distances,
     update_rewards,
 )
-from .velocity import add_velocity, velocity_predictor_contribution  # noqa: F401
+from .velocity import (  # noqa: F401
+    _add_velocity,
+    _generic_velocity_predictor,
+    _velocity_predictor_contribution,
+    generate_pairwiseCopying,
+)
 from .visibility import (  # noqa: F401
     construct_visibility,
     filter_by_visibility,
     visibility_vs_distance,
 )
-from .visualization import plot_predictor  # noqa: F401
+from .visualization import animate_predictors, plot_predictor  # noqa: F401

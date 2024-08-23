@@ -1,93 +1,129 @@
-import math
+import copy
+from typing import Callable, List, Optional, Union
 
 import numpy as np
 import pandas as pd
 
-
-def proximity_score(distance, getting_worse=1.5, optimal=4, proximity_decay=1):
-    if distance <= getting_worse:
-        return math.sin(math.pi / (2 * getting_worse) * (distance + 3 * getting_worse))
-    elif distance <= getting_worse + 1.5 * (optimal - getting_worse):
-        return math.sin(
-            math.pi / (2 * (optimal - getting_worse)) * (distance - getting_worse)
-        )
-    else:
-        return math.sin(
-            math.pi
-            / (2 * (optimal - getting_worse))
-            * (1.5 * (optimal - getting_worse))
-        ) * math.exp(1) ** (
-            -proximity_decay * (distance - optimal - 0.5 * (optimal - getting_worse))
-        )
+from collab2.foraging.toolkit import filter_by_distance
+from collab2.foraging.toolkit.utils import dataObject  # noqa: F401
 
 
-def foragers_to_forager_distances(foragers):
-    forager_distances = []
+def _piecewise_proximity_function(
+    distance: Union[float, np.ndarray],
+    getting_worse: float = 1.5,
+    optimal: float = 4,
+    proximity_decay: float = 1,
+):
 
-    for b in range(len(foragers)):
-        frames = len(foragers[0])
-        forager_distances.append(np.zeros((frames, len(foragers))))
+    cond1 = distance <= getting_worse
+    cond2 = (distance > getting_worse) & (
+        distance <= getting_worse + 1.5 * (optimal - getting_worse)
+    )
 
-        for o in range(len(foragers)):
-            for t in range(frames):
-                forager_distances[b][t, o] = math.sqrt(
-                    (foragers[b]["x"].iloc[t] - foragers[o]["x"].iloc[t]) ** 2
-                    + (foragers[b]["y"].iloc[t] - foragers[o]["y"].iloc[t]) ** 2
+    result = np.where(
+        cond1,
+        np.sin(np.pi / (2 * getting_worse) * (distance + 3 * getting_worse)),
+        np.where(
+            cond2,
+            np.sin(
+                np.pi / (2 * (optimal - getting_worse)) * (distance - getting_worse)
+            ),
+            np.sin(
+                np.pi
+                / (2 * (optimal - getting_worse))
+                * (1.5 * (optimal - getting_worse))
+            )
+            * np.exp(
+                -proximity_decay
+                * (distance - optimal - 0.5 * (optimal - getting_worse))
+            ),
+        ),
+    )
+
+    return result
+
+
+def _proximity_predictor_contribution(
+    x_other: int,
+    y_other: int,
+    grid: pd.DataFrame,
+    proximity_function: Callable,
+    **proximity_function_kwargs,
+) -> np.ndarray:
+
+    distance_to_other = np.sqrt((grid["x"] - x_other) ** 2 + (grid["y"] - y_other) ** 2)
+    proximity_score = proximity_function(distance_to_other, **proximity_function_kwargs)
+    return proximity_score
+
+
+def _proximity_predictor(
+    foragers: List[pd.DataFrame],
+    foragersDF: pd.DataFrame,
+    local_windows: List[List[pd.DataFrame]],
+    predictor_name: str,
+    interaction_length: float,
+    interaction_constraint: Optional[
+        Callable[[List[int], int, int, pd.DataFrame, Optional[dict]], List[int]]
+    ] = None,
+    interaction_constraint_params: Optional[dict] = None,
+    proximity_function: Callable = _piecewise_proximity_function,
+    **proximity_function_kwargs,
+) -> List[List[pd.DataFrame]]:
+
+    num_foragers = len(foragers)
+    num_frames = len(foragers[0])
+    predictor = copy.deepcopy(local_windows)
+
+    for f in range(num_foragers):
+        for t in range(num_frames):
+            if predictor[f][t] is not None:
+                # add column for predictor_name
+                predictor[f][t][predictor_name] = 0
+                # find confocals within interaction length
+                interaction_partners = filter_by_distance(
+                    foragersDF,
+                    f,
+                    t,
+                    interaction_length,
+                    interaction_constraint,
+                    interaction_constraint_params,
                 )
 
-        forager_distances[b] = pd.DataFrame(forager_distances[b])
-        forager_distances[b].columns = range(1, len(foragers) + 1)
+                if len(interaction_partners) > 0:
+                    for partner in interaction_partners:
+                        partner_x = foragers[partner]["x"].iloc[t]
+                        partner_y = foragers[partner]["y"].iloc[t]
 
-    return forager_distances
-
-
-def generate_proximity_score(
-    foragers,
-    visibility,
-    visibility_range,
-    getting_worse=1.5,
-    optimal=4,
-    proximity_decay=1,
-    start=0,
-    end=None,
-    time_shift=0,
-):
-    if end is None:
-        end = len(foragers[0])
-
-    forager_distances = foragers_to_forager_distances(foragers)
-
-    proximity = visibility.copy()
-    for b in range(len(foragers)):
-        for t in range(start, end):
-            proximity[b][t]["proximity"] = 0
-
-            distbt = forager_distances[b].iloc[t].drop(b + 1)
-
-            visible_foragers = distbt[distbt <= visibility_range].index.tolist()
-
-            if len(visible_foragers) > 0:
-                for vb in range(len(visible_foragers)):
-                    o_x = foragers[visible_foragers[vb] - 1]["x"].iloc[t]
-                    o_y = foragers[visible_foragers[vb] - 1]["y"].iloc[t]
-
-                    proximity[b][t]["proximity"] += [
-                        proximity_score(s, getting_worse, optimal, proximity_decay)
-                        for s in np.sqrt(
-                            (proximity[b][t]["x"] - o_x) ** 2
-                            + (proximity[b][t]["y"] - o_y) ** 2
+                        predictor[f][t][
+                            predictor_name
+                        ] += _proximity_predictor_contribution(
+                            partner_x,
+                            partner_y,
+                            local_windows[f][t],
+                            proximity_function,
+                            **proximity_function_kwargs,
                         )
-                    ]
 
-            proximity[b][t]["proximity_standardized"] = (
-                proximity[b][t]["proximity"] - proximity[b][t]["proximity"].mean()
-            ) / proximity[b][t]["proximity"].std()
+                # scaling to abs max (not sum, as this would lead to small numerical values)
+                max_abs_over_grid = predictor[f][t][predictor_name].abs().max()  # sum()
+                if max_abs_over_grid > 0:
+                    predictor[f][t][predictor_name] = (
+                        predictor[f][t][predictor_name] / max_abs_over_grid
+                    )
 
-            proximity[b][t]["proximity_standardized"].fillna(0, inplace=True)
+    return predictor
 
-            proximity[b][t]["forager"] = b + 1
-            proximity[b][t]["time"] = t + 1 + time_shift
 
-    proximityDF = pd.concat([pd.concat(p) for p in proximity])
+def generate_proximity(foragers_object: dataObject, predictor_name: str):
 
-    return {"proximity": proximity, "proximityDF": proximityDF}
+    params = foragers_object.predictor_kwargs[predictor_name]
+
+    predictor = _proximity_predictor(
+        foragers_object.foragers,
+        foragers_object.foragersDF,
+        foragers_object.local_windows,
+        predictor_name=predictor_name,
+        **params,
+    )
+
+    return predictor

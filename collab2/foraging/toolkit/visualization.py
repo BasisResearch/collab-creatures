@@ -54,7 +54,10 @@ def plot_predictor(
         for j, f in enumerate(forager_index):
             if predictor[f][t] is not None:
                 # normalize predictor value to choose scatter size and alpha
-                size = abs(predictor[f][t][predictorID]) / abs(predictor[f][t][predictorID]).max()
+                size = (
+                    abs(predictor[f][t][predictorID])
+                    / abs(predictor[f][t][predictorID]).max()
+                )
                 size[np.isnan(size)] = 0
                 ax.scatter(
                     predictor[f][t]["x"],

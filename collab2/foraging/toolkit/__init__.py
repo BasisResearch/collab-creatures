@@ -27,10 +27,7 @@ from .local_windows import (  # noqa: F401
     generate_local_windows,
     get_grid,
 )
-from .proximity import (  # noqa: F401; foragers_to_forager_distances,
-    generate_proximity_score,
-    proximity_score,
-)
+from .proximity import generate_proximity  # noqa: F401; foragers_to_forager_distances,
 from .subsampling import (  # noqa: F401
     rescale_to_grid,
     sample_time_slices,

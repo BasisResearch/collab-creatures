@@ -49,6 +49,7 @@ from .velocity import (  # noqa: F401
     _generic_velocity_predictor,
     _velocity_predictor_contribution,
     generate_pairwiseCopying,
+    generate_vicsek
 )
 from .visibility import (  # noqa: F401
     construct_visibility,

@@ -54,7 +54,7 @@ def plot_predictor(
         for j, f in enumerate(forager_index):
             if predictor[f][t] is not None:
                 # normalize predictor value to choose scatter size and alpha
-                size = abs(predictor[f][t][predictorID]) / abs(predictor[f][t][predictorID].max())
+                size = abs(predictor[f][t][predictorID]) / abs(predictor[f][t][predictorID]).max()
                 size[np.isnan(size)] = 0
                 ax.scatter(
                     predictor[f][t]["x"],
@@ -165,8 +165,8 @@ def animate_predictors(
             if predictor[f][frame] is not None:
                 current_features = predictor[f][frame].loc[:, ["x", "y"]]
                 size = (
-                    predictor[f][frame][predictorID]
-                    / predictor[f][frame][predictorID].max()
+                    abs(predictor[f][frame][predictorID])
+                    / abs(predictor[f][frame][predictorID]).max()
                 )
                 size[np.isnan(size)] = 0
                 predictors_scat_list[i].set_offsets(current_features)

@@ -15,7 +15,7 @@ from .dynamical_utils import (  # noqa: F401
     run_svi_inference,
 )
 from .filtering import filter_by_distance  # noqa: F401
-from .how_far import add_how_far_squared_scaled  # noqa: F401
+from .distance_to_next_pos import _generate_distance_to_next_pos  # noqa: F401
 from .inference import (  # noqa: F401
     get_tensorized_data,
     normalize,

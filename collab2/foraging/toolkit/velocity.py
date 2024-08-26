@@ -169,17 +169,17 @@ def _generic_velocity_predictor(
                     predictor[f][t][predictorID] = np.nan
                     dropped_frames += 1
 
-                # normalize predictor to sum to 1
-                sum_over_grid = predictor[f][t][predictorID].sum()
-                if sum_over_grid > 0:
+                # normalize predictor by dividing by max
+                max_val = predictor[f][t][predictorID].abs().max()
+                if max_val > 0:
                     predictor[f][t][predictorID] = (
-                        predictor[f][t][predictorID] / sum_over_grid
+                        predictor[f][t][predictorID] / max_val
                     )
 
     # raise warning if any frames dropped due to missing velocity data
     if dropped_frames:
         warnings.warn(
-            f"""Dropped {dropped_frames}/{valid_frames} instances from predictor calculation
+            f"""Dropped {dropped_frames}/{valid_frames} instances from {predictorID} predictor calculation
             due to invalid velocity values"""
         )
 
@@ -223,3 +223,45 @@ def generate_pairwiseCopying(foragers_object: dataObject, predictorID: str):
     )
 
     return predictor
+
+def generate_vicsek(foragers_object: dataObject, predictorID: str):
+    """
+    A function that calculates the predictor scores associated with vicsek flocking,
+    by specifying an averaging transformation to `_generic_velocity_predictor`.
+    The necessary parameters from `foragers_object`. Thus, `foragers_object` must contain as attribute
+    `predictor_kwargs` : dict, with `predictorID` as a valid key.
+
+    Parameters:
+        - foragers_object : dataObject containing positional data and necessary kwargs
+        - predictorID : Name given to column containing predictor scores in `predictor`
+    Returns:
+        - predictor : Nested list of calculated predictor scores, grouped by foragers and time
+    """
+
+    # define transformation function
+    def transformation_vicsek(v_values):
+        v_x = np.mean(v_values.iloc[:,0] * np.cos(v_values.iloc[:,1]))
+        v_y = np.mean(v_values.iloc[:,0] * np.sin(v_values.iloc[:,1]))
+        v_transformed = pd.DataFrame([[np.sqrt(v_x**2 + v_y**2), np.arctan2(v_y,v_x)]])
+        return v_transformed
+
+    # grab relevant parameters from foragers_object
+    params = foragers_object.predictor_kwargs[predictorID]
+
+    # compute/add velocity
+    foragers_object.foragers, foragers_object.foragersDF = _add_velocity(
+        foragers_object.foragers, params["dt"]
+    )
+
+    # calculate predictor values
+    predictor = _generic_velocity_predictor(
+        foragers_object.foragers,
+        foragers_object.foragersDF,
+        foragers_object.local_windows,
+        predictorID,
+        transformation_function=transformation_vicsek,
+        **params,
+    )
+
+    return predictor
+

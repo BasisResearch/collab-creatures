@@ -169,11 +169,11 @@ def _generic_velocity_predictor(
                     predictor[f][t][predictorID] = np.nan
                     dropped_frames += 1
 
-                # normalize predictor to sum to 1
-                sum_over_grid = predictor[f][t][predictorID].sum()
-                if sum_over_grid > 0:
+                # normalize predictor by dividing by max
+                max_val = predictor[f][t][predictorID].abs().max()
+                if max_val > 0:
                     predictor[f][t][predictorID] = (
-                        predictor[f][t][predictorID] / sum_over_grid
+                        predictor[f][t][predictorID] / max_val
                     )
 
     # raise warning if any frames dropped due to missing velocity data

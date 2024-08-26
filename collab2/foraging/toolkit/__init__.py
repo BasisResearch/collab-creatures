@@ -7,6 +7,7 @@ from .animate_foragers import (  # noqa: F401
 )
 from .communicates import generate_communicates  # noqa: F401
 from .derive import derive_predictors  # noqa: F401
+from .distance_to_next_pos import _generate_distance_to_next_pos  # noqa: F401
 from .dynamical_utils import tensorize_and_dump_count_data  # noqa: F401
 from .dynamical_utils import (  # noqa: F401
     add_ring,
@@ -15,7 +16,6 @@ from .dynamical_utils import (  # noqa: F401
     run_svi_inference,
 )
 from .filtering import filter_by_distance  # noqa: F401
-from .distance_to_next_pos import _generate_distance_to_next_pos  # noqa: F401
 from .inference import (  # noqa: F401
     get_tensorized_data,
     normalize,
@@ -49,7 +49,7 @@ from .velocity import (  # noqa: F401
     _generic_velocity_predictor,
     _velocity_predictor_contribution,
     generate_pairwiseCopying,
-    generate_vicsek
+    generate_vicsek,
 )
 from .visibility import (  # noqa: F401
     construct_visibility,

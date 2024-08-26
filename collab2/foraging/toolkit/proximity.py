@@ -15,15 +15,15 @@ def _piecewise_proximity_function(
     proximity_decay: float = 1,
 ):
     """
-    Computes a piecewise proximity function based on distance, modeling the transition from 
+    Computes a piecewise proximity function based on distance, modeling the transition from
     a suboptimal to an optimal range and beyond.
 
     The function uses a piecewise approach:
-    1. For distances less than or equal to `getting_worse`, it applies a sine function to model 
+    1. For distances less than or equal to `getting_worse`, it applies a sine function to model
        an increasing proximity effect, starting at -1 and reaching 0 at `getting_worse`.
-    2. For distances between `getting_worse` and a mid-range value derived from `optimal`, it 
+    2. For distances between `getting_worse` and a mid-range value derived from `optimal`, it
        applies another sine function to model proximity improvement.
-    3. For distances beyond the optimal range, proximity decays exponentially, representing a 
+    3. For distances beyond the optimal range, proximity decays exponentially, representing a
        diminishing effect.
 
     :param distance: A float or ndarray representing the distance(s) at which proximity is evaluated.
@@ -74,8 +74,8 @@ def _proximity_predictor_contribution(
     """
     Computes the proximity score contribution of an agent present at `x_other, y_other` to points present in `grid`.
 
-    This function calculates the Euclidean distance from the point `(x_other, y_other)` to each point 
-    in the grid and applies the provided proximity function to determine the proximity score for those points 
+    This function calculates the Euclidean distance from the point `(x_other, y_other)` to each point
+    in the grid and applies the provided proximity function to determine the proximity score for those points
     as a function of distance.
 
     :param x_other: The x-coordinate of an agent.
@@ -106,6 +106,34 @@ def _proximity_predictor(
     proximity_function: Callable = _piecewise_proximity_function,
     **proximity_function_kwargs,
 ) -> List[List[pd.DataFrame]]:
+    """
+    Computes proximity-based predictor scores, adding up the impact of individual agents
+    present in local windows within `interaction_length` satisfying `interaction_constraint`.
+
+    The function calculates proximity scores for each forager at each time step based on the positions
+    of other foragers within a defined interaction length. The proximity scores are then normalized by
+    scaling to the maximum absolute value over the grid.
+
+    :param foragers: A list of pandas DataFrames where each DataFrame represents a forager's trajectory
+                     with time-series data containing 'x' and 'y' coordinates.
+    :param foragersDF: A combined pandas DataFrame containing the trajectories of all foragers, with
+                       columns indicating 'x', 'y', and forager IDs.
+    :param local_windows: A list of lists of pandas DataFrames, representing spatial windows for each
+                          forager at each time step.
+    :param predictor_name: The name of the column where the computed proximity predictor will be stored
+                           in each window.
+    :param interaction_length: The maximum distance within which foragers can interact.
+    :param interaction_constraint: An optional callable that imposes additional constraints on which
+                                   foragers can interact based on custom logic.
+    :param interaction_constraint_params: Optional parameters to pass to the `interaction_constraint`
+                                          function.
+    :param proximity_function: A callable function used to compute proximity scores based on distance.
+                               Defaults to `_piecewise_proximity_function`.
+    :param proximity_function_kwargs: Additional keyword arguments for the proximity function.
+
+    :return: A list of lists of pandas DataFrames, where each DataFrame has been updated with the computed
+             proximity predictor values.
+    """
 
     num_foragers = len(foragers)
     num_frames = len(foragers[0])
@@ -152,6 +180,21 @@ def _proximity_predictor(
 
 
 def generate_proximity(foragers_object: dataObject, predictor_name: str):
+    """
+    Generates proximity-based predictors for a group of foragers by invoking the proximity predictor mechanism.
+
+    This function retrieves the relevant parameters from the provided `foragers_object` and uses them to compute
+    the proximity predictor values. It relies on the `_proximity_predictor` function to handle the detailed
+    calculations and updates.
+
+    :param foragers_object: A data object containing information about the foragers, including their positions,
+                            trajectories, and local windows. Such objects can be generated using `object_from_data`.
+    :param predictor_name: The name of the proximity predictor to be generated, used to fetch relevant parameters
+                           from `foragers_object.predictor_kwargs` and to store the computed values.
+
+    :return: A list of lists of pandas DataFrames where each DataFrame has been updated with the computed proximity
+             predictor values.
+    """
 
     params = foragers_object.predictor_kwargs[predictor_name]
 

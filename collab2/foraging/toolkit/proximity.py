@@ -14,6 +14,25 @@ def _piecewise_proximity_function(
     optimal: float = 4,
     proximity_decay: float = 1,
 ):
+    """
+    Computes a piecewise proximity function based on distance, modeling the transition from 
+    a suboptimal to an optimal range and beyond.
+
+    The function uses a piecewise approach:
+    1. For distances less than or equal to `getting_worse`, it applies a sine function to model 
+       an increasing proximity effect, starting at -1 and reaching 0 at `getting_worse`.
+    2. For distances between `getting_worse` and a mid-range value derived from `optimal`, it 
+       applies another sine function to model proximity improvement.
+    3. For distances beyond the optimal range, proximity decays exponentially, representing a 
+       diminishing effect.
+
+    :param distance: A float or ndarray representing the distance(s) at which proximity is evaluated.
+    :param getting_worse: The distance threshold below which the score becomes negative. Defaults to 1.5.
+    :param optimal: The distance where proximity reaches its peak. Defaults to 4.
+    :param proximity_decay: The rate at which proximity decays beyond the optimal range. Defaults to 1.
+
+    :return: A float or ndarray representing the computed proximity value(s) based on the input distance.
+    """
 
     cond1 = distance <= getting_worse
     cond2 = (distance > getting_worse) & (

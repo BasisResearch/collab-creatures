@@ -1,9 +1,3 @@
-from .utils import (  # noqa : F401
-    dataObject,
-    distances_and_peaks,
-    foragers_to_forager_distances,
-    update_rewards,
-)
 from .animate_foragers import (  # noqa: F401
     animate_foragers,
     plot_coefs,
@@ -44,6 +38,12 @@ from .subsampling import (  # noqa: F401
     subset_frames_evenly_spaced,
 )
 from .trace import rewards_to_trace, rewards_trace  # noqa: F401
+from .utils import (  # noqa : F401
+    dataObject,
+    distances_and_peaks,
+    foragers_to_forager_distances,
+    update_rewards,
+)
 from .velocity import (  # noqa: F401
     _add_velocity,
     _generic_velocity_predictor,

@@ -48,9 +48,9 @@ def _generate_next_step_score(
                         - next_step_score[f][t]["distance_to_next_step"].min()
                     )
 
-                    next_step_score[f][t]["next_step_score"] = 1 - (
-                        next_step_score[f][t]["scaled_distance_to_next_step"]
-                    ) ** n
+                    next_step_score[f][t]["next_step_score"] = (
+                        1 - (next_step_score[f][t]["scaled_distance_to_next_step"]) ** n
+                    )
                 else:
                     next_step_score[f][t]["distance_to_next_step"] = np.nan
                     next_step_score[f][t]["scaled_distance_to_next_pos"] = np.nan

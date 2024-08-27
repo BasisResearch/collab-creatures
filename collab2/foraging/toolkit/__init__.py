@@ -7,7 +7,7 @@ from .animate_foragers import (  # noqa: F401
 )
 from .communicates import generate_communicates  # noqa: F401
 from .derive import derive_predictors  # noqa: F401
-from .distance_to_next_pos import _generate_next_step_score  # noqa: F401
+from .next_step_score import _generate_next_step_score, generate_next_step_score  # noqa: F401
 from .dynamical_utils import tensorize_and_dump_count_data  # noqa: F401
 from .dynamical_utils import (  # noqa: F401
     add_ring,

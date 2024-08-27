@@ -6,7 +6,8 @@ import numpy as np
 import pandas as pd
 from scipy.stats import norm
 
-from collab2.foraging.toolkit import dataObject, filter_by_distance
+from collab2.foraging.toolkit.filtering import filter_by_distance
+from collab2.foraging.toolkit.utils import dataObject
 
 
 def _add_velocity(
@@ -224,6 +225,7 @@ def generate_pairwiseCopying(foragers_object: dataObject, predictorID: str):
 
     return predictor
 
+
 def generate_vicsek(foragers_object: dataObject, predictorID: str):
     """
     A function that calculates the predictor scores associated with vicsek flocking,
@@ -240,9 +242,9 @@ def generate_vicsek(foragers_object: dataObject, predictorID: str):
 
     # define transformation function
     def transformation_vicsek(v_values):
-        v_x = np.mean(v_values.iloc[:,0] * np.cos(v_values.iloc[:,1]))
-        v_y = np.mean(v_values.iloc[:,0] * np.sin(v_values.iloc[:,1]))
-        v_transformed = pd.DataFrame([[np.sqrt(v_x**2 + v_y**2), np.arctan2(v_y,v_x)]])
+        v_x = np.mean(v_values.iloc[:, 0] * np.cos(v_values.iloc[:, 1]))
+        v_y = np.mean(v_values.iloc[:, 0] * np.sin(v_values.iloc[:, 1]))
+        v_transformed = pd.DataFrame([[np.sqrt(v_x**2 + v_y**2), np.arctan2(v_y, v_x)]])
         return v_transformed
 
     # grab relevant parameters from foragers_object
@@ -264,4 +266,3 @@ def generate_vicsek(foragers_object: dataObject, predictorID: str):
     )
 
     return predictor
-

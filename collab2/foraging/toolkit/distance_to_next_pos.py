@@ -1,5 +1,5 @@
 import copy
-from typing import List
+from typing import List, Optional
 
 import numpy as np
 import pandas as pd
@@ -7,10 +7,10 @@ import pandas as pd
 from collab2.foraging.toolkit import dataObject
 
 
-def _generate_distance_to_next_pos(
+def _generate_next_step_score(
     foragers: List[pd.DataFrame],
     local_windows: List[List[pd.DataFrame]],
-    window_size: int,
+    n: Optional[float] = 1.0,
 ):
     """
     A function that computes a score for how far grid points are from the next position of a forager.
@@ -20,104 +20,62 @@ def _generate_distance_to_next_pos(
         - foragers : list of DataFrames containing forager positions, grouped by forager index
         - local_windows :  Nested list of DataFrames containing grid points to compute predictor over,
             grouped by forager index and time
-        - window_size : Radius of local windows
+        - n : Nonlinearity in  `next_step_score`. Default value n=1
 
     Returns:
-        - distance_to_next_pos : Nested list of calculated scores, grouped by foragers and time
+        - next_step_score : Nested list of calculated scores, grouped by foragers and time
     """
 
     num_foragers = len(foragers)
     num_frames = len(foragers[0])
-    distance_to_next_pos = copy.deepcopy(local_windows)
+    next_step_score = copy.deepcopy(local_windows)
 
     for f in range(num_foragers):
         for t in range(num_frames - 1):
-            if distance_to_next_pos[f][t] is not None:
+            if next_step_score[f][t] is not None:
                 x_new = foragers[f].at[t + 1, "x"]
                 y_new = foragers[f].at[t + 1, "y"]
                 if np.isfinite(x_new) and np.isfinite(y_new):
-                    distance_to_next_pos[f][t]["raw_distance_to_next_pos"] = np.sqrt(
-                        (distance_to_next_pos[f][t]["x"] - x_new) ** 2
-                        + (distance_to_next_pos[f][t]["y"] - y_new) ** 2
+                    next_step_score[f][t]["distance_to_next_step"] = np.sqrt(
+                        (next_step_score[f][t]["x"] - x_new) ** 2
+                        + (next_step_score[f][t]["y"] - y_new) ** 2
                     )
-                    distance_to_next_pos[f][t]["scored_raw_distance_to_next_pos"] = (
-                        1
-                        - (
-                            distance_to_next_pos[f][t]["raw_distance_to_next_pos"]
-                            / (2 * window_size)
-                        )
-                        ** 2
-                    )
-                    distance_to_next_pos[f][t][
-                        "rescaled_scored_raw_distance_to_next_pos"
-                    ] = (
-                        distance_to_next_pos[f][t]["scored_raw_distance_to_next_pos"]
-                        - distance_to_next_pos[f][t][
-                            "scored_raw_distance_to_next_pos"
-                        ].min()
+                    next_step_score[f][t]["scaled_distance_to_next_step"] = (
+                        next_step_score[f][t]["distance_to_next_step"]
+                        - next_step_score[f][t]["distance_to_next_step"].min()
                     ) / (
-                        distance_to_next_pos[f][t][
-                            "scored_raw_distance_to_next_pos"
-                        ].max()
-                        - distance_to_next_pos[f][t][
-                            "scored_raw_distance_to_next_pos"
-                        ].min()
+                        next_step_score[f][t]["distance_to_next_step"].max()
+                        - next_step_score[f][t]["distance_to_next_step"].min()
                     )
-                    distance_to_next_pos[f][t]["rescaled_distance_to_next_pos"] = (
-                        distance_to_next_pos[f][t]["raw_distance_to_next_pos"]
-                        - distance_to_next_pos[f][t]["raw_distance_to_next_pos"].min()
-                    ) / (
-                        distance_to_next_pos[f][t]["raw_distance_to_next_pos"].max()
-                        - distance_to_next_pos[f][t]["raw_distance_to_next_pos"].min()
-                    )
-                    distance_to_next_pos[f][t][
-                        "scored_rescaled_distance_to_next_pos"
-                    ] = (
-                        1 - distance_to_next_pos[f][t]["rescaled_distance_to_next_pos"]
-                    )
+
+                    next_step_score[f][t]["next_step_score"] = 1 - (
+                        next_step_score[f][t]["scaled_distance_to_next_step"]
+                    ) ** n
                 else:
-                    distance_to_next_pos[f][t]["raw_distance_to_next_pos"] = np.nan
-                    distance_to_next_pos[f][t][
-                        "scored_raw_distance_to_next_pos"
-                    ] = np.nan
-                    distance_to_next_pos[f][t][
-                        "rescaled_scored_raw_distance_to_next_pos"
-                    ] = np.nan
-                    distance_to_next_pos[f][t]["rescaled_distance_to_next_pos"] = np.nan
-                    distance_to_next_pos[f][t][
-                        "scored_rescaled_distance_to_next_pos"
-                    ] = np.nan
+                    next_step_score[f][t]["distance_to_next_step"] = np.nan
+                    next_step_score[f][t]["scaled_distance_to_next_pos"] = np.nan
+                    next_step_score[f][t]["next_step_score"] = np.nan
 
         # save nans for last frame
-        distance_to_next_pos[f][num_frames - 1]["raw_distance_to_next_pos"] = np.nan
-        distance_to_next_pos[f][num_frames - 1][
-            "scored_raw_distance_to_next_pos"
-        ] = np.nan
-        distance_to_next_pos[f][num_frames - 1][
-            "rescaled_scored_raw_distance_to_next_pos"
-        ] = np.nan
-        distance_to_next_pos[f][num_frames - 1][
-            "rescaled_distance_to_next_pos"
-        ] = np.nan
-        distance_to_next_pos[f][num_frames - 1][
-            "scored_rescaled_distance_to_next_pos"
-        ] = np.nan
+        next_step_score[f][num_frames - 1]["distance_to_next_step"] = np.nan
+        next_step_score[f][num_frames - 1]["scaled_distance_to_next_pos"] = np.nan
+        next_step_score[f][num_frames - 1]["next_step_score"] = np.nan
 
-    return distance_to_next_pos
+    return next_step_score
 
 
-def generate_distance_to_next_pos(foragers_object: dataObject):
+def generate_next_step_score(foragers_object: dataObject, n):
     """
-    A wrapper function that computes `distance_to_next_pos` only taking `foragers_object` as argument,
-    and calling `_generate_distance_to_next_pos` under the hood
+    A wrapper function that computes `next_step_score` only taking `foragers_object` as argument,
+    and calling `_generate_next_step_score` under the hood
 
     Parameters:
-        - foragers_object : dataObject containing positional data and necessary kwargs
+        - foragers_object : dataObject containing positional data, local_windows
 
     Returns:
-        - distance_to_next_pos : Nested list of calculated scores, grouped by foragers and time
+        - next_step_score : Nested list of calculated scores, grouped by foragers and time
     """
-    window_size = foragers_object.local_windows_kwarg["window_size"]
-    return _generate_distance_to_next_pos(
-        foragers_object.foragers, foragers_object.local_windows, window_size
+
+    return _generate_next_step_score(
+        foragers_object.foragers, foragers_object.local_windows, n
     )

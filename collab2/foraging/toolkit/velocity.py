@@ -6,8 +6,8 @@ import numpy as np
 import pandas as pd
 from scipy.stats import norm
 
-from collab2.foraging.toolkit.utils import dataObject
 from collab2.foraging.toolkit.filtering import filter_by_distance
+from collab2.foraging.toolkit.utils import dataObject
 
 
 def _add_velocity(

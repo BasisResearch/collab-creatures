@@ -10,8 +10,8 @@ from collab2.foraging.toolkit.utils import dataObject  # noqa: F401
 
 def _piecewise_proximity_function(
     distance: Union[float, np.ndarray],
-    getting_worse: float = 1.5,
-    optimal: float = 4,
+    repulsion_radius: float = 1.5,
+    optimal_distance: float = 4,
     proximity_decay: float = 1,
 ):
     """
@@ -34,27 +34,33 @@ def _piecewise_proximity_function(
     :return: A float or ndarray representing the computed proximity value(s) based on the input distance.
     """
 
-    cond1 = distance <= getting_worse
-    cond2 = (distance > getting_worse) & (
-        distance <= getting_worse + 1.5 * (optimal - getting_worse)
+    cond1 = distance <= repulsion_radius
+    cond2 = (distance > repulsion_radius) & (
+        distance <= repulsion_radius + 1.5 * (optimal_distance - repulsion_radius)
     )
 
     result = np.where(
         cond1,
-        np.sin(np.pi / (2 * getting_worse) * (distance + 3 * getting_worse)),
+        np.sin(np.pi / (2 * repulsion_radius) * (distance + 3 * repulsion_radius)),
         np.where(
             cond2,
             np.sin(
-                np.pi / (2 * (optimal - getting_worse)) * (distance - getting_worse)
+                np.pi
+                / (2 * (optimal_distance - repulsion_radius))
+                * (distance - repulsion_radius)
             ),
             np.sin(
                 np.pi
-                / (2 * (optimal - getting_worse))
-                * (1.5 * (optimal - getting_worse))
+                / (2 * (optimal_distance - repulsion_radius))
+                * (1.5 * (optimal_distance - repulsion_radius))
             )
             * np.exp(
                 -proximity_decay
-                * (distance - optimal - 0.5 * (optimal - getting_worse))
+                * (
+                    distance
+                    - optimal_distance
+                    - 0.5 * (optimal_distance - repulsion_radius)
+                )
             ),
         ),
     )
@@ -93,7 +99,7 @@ def _proximity_predictor_contribution(
     return proximity_score
 
 
-def _proximity_predictor(
+def _generate_proximity_predictor(
     foragers: List[pd.DataFrame],
     foragersDF: pd.DataFrame,
     local_windows: List[List[pd.DataFrame]],
@@ -179,7 +185,7 @@ def _proximity_predictor(
     return predictor
 
 
-def generate_proximity(foragers_object: dataObject, predictor_name: str):
+def generate_proximity_predictor(foragers_object: dataObject, predictor_name: str):
     """
     Generates proximity-based predictors for a group of foragers by invoking the proximity predictor mechanism.
 
@@ -198,7 +204,7 @@ def generate_proximity(foragers_object: dataObject, predictor_name: str):
 
     params = foragers_object.predictor_kwargs[predictor_name]
 
-    predictor = _proximity_predictor(
+    predictor = _generate_proximity_predictor(
         foragers_object.foragers,
         foragers_object.foragersDF,
         foragers_object.local_windows,

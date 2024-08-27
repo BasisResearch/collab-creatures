@@ -64,7 +64,7 @@ def filter_by_distance(
     return foragers_ind
 
 
-def filter_nearest(
+def constraint_filter_nearest(
     f_ind: List[int],
     f: int,
     t: int,

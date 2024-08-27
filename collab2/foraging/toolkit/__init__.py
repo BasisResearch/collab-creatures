@@ -1,4 +1,4 @@
-from .utils import (  # isort: skip
+from .utils import (  # noqa : F401
     dataObject,
     distances_and_peaks,
     foragers_to_forager_distances,

@@ -14,7 +14,7 @@ from .dynamical_utils import (  # noqa: F401
     plot_ds_trajectories,
     run_svi_inference,
 )
-from .filtering import filter_by_distance  # noqa: F401
+from .filtering import constraint_filter_nearest, filter_by_distance  # noqa: F401
 from .inference import (  # noqa: F401
     get_tensorized_data,
     normalize,
@@ -27,8 +27,7 @@ from .local_windows import (  # noqa: F401
     get_grid,
 )
 from .proximity import (  # noqa: F401; foragers_to_forager_distances,
-    generate_proximity_score,
-    proximity_score,
+    generate_proximity_predictor,
 )
 from .subsampling import (  # noqa: F401
     rescale_to_grid,

@@ -10,7 +10,7 @@ from collab2.foraging.toolkit.utils import dataObject
 def _generate_next_step_score(
     foragers: List[pd.DataFrame],
     local_windows: List[List[pd.DataFrame]],
-    n: Optional[float] = 1.0,
+    nonlinearity_exponent: Optional[float] = 1.0,
 ):
     """
     A function that computes a score for how far grid points are from the next position of a forager.
@@ -49,7 +49,9 @@ def _generate_next_step_score(
                     )
 
                     next_step_score[f][t]["next_step_score"] = (
-                        1 - (next_step_score[f][t]["scaled_distance_to_next_step"]) ** n
+                        1
+                        - (next_step_score[f][t]["scaled_distance_to_next_step"])
+                        ** nonlinearity_exponent
                     )
                 else:
                     next_step_score[f][t]["distance_to_next_step"] = np.nan
@@ -64,7 +66,9 @@ def _generate_next_step_score(
     return next_step_score
 
 
-def generate_next_step_score(foragers_object: dataObject, n):
+def generate_next_step_score(
+    foragers_object: dataObject, nonlinearity_exponent: Optional[float] = 1.0
+):
     """
     A wrapper function that computes `next_step_score` only taking `foragers_object` as argument,
     and calling `_generate_next_step_score` under the hood
@@ -77,5 +81,5 @@ def generate_next_step_score(foragers_object: dataObject, n):
     """
 
     return _generate_next_step_score(
-        foragers_object.foragers, foragers_object.local_windows, n
+        foragers_object.foragers, foragers_object.local_windows, nonlinearity_exponent
     )

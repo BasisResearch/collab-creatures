@@ -76,5 +76,5 @@ def generate_nextStep_score(
     """
     params = foragers_object.score_kwargs[score_name]
     return _generate_nextStep_score(
-        foragers_object.foragers, foragers_object.local_windows, **params
+        foragers_object.foragers, foragers_object.local_windows, score_name, **params
     )

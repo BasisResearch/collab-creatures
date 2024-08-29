@@ -51,7 +51,7 @@ def _generate_combined_DF(
         )
 
     if dropna:
-        combinedDF.dropna()
+        combinedDF.dropna(inplace=True)
 
     # scale predictor columns
     if add_scaled_values:

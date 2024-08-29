@@ -82,11 +82,12 @@ def derive_predictors_and_scores(
             predictor_kwargs = {
                 "proximity_10" : {"optimal_dist":10, "decay":1, ...},
                 "proximity_20" : {"optimal_dist":20, "decay":2, ...},
-                "proximity_w_constraint" : {...,"interaction_constraint" : constraint_function, "interaction_constraint_params": {...}}
+                "proximity_w_constraint" : {...,"interaction_constraint" : constraint_function,
+                                        "interaction_constraint_params": {...}}
             }
     :param score_kwargs: nested dictionary of keyword arguments for scores to be computed.
-                        The substring before the first underscore in dictionary keys must correspond to the name of a score type in Collab,
-                        same as in `predictor_kwargs`
+            The substring before the first underscore in dictionary keys must correspond to the name of a score type in Collab,
+            same as in `predictor_kwargs`
     :param dropna: set to `True` to drop NaN elements from final DataFrame
     :param add_scaled_values: set to `True` to compute scaled predictor scores
         and add them as additional columns in final DataFrame

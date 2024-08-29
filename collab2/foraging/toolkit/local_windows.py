@@ -6,22 +6,34 @@ import numpy as np
 import pandas as pd
 
 
-def get_grid(
-    grid_size: int = 90,
-    sampling_fraction: float = 1.0,
-    random_seed: int = 0,
+def _get_grid(
+    grid_size: int,
+    sampling_fraction: Optional[float] = 1.0,
+    random_seed: Optional[int] = 0,
     grid_constraint: Optional[
-        Callable[[pd.DataFrame, pd.DataFrame, Optional[dict]], pd.DataFrame]
+        Callable[[pd.DataFrame, Any], pd.DataFrame]
     ] = None,
     grid_constraint_params: Optional[dict] = None,
 ) -> pd.DataFrame:
+    """
+    A helper function that generates a grid of size `grid_size` with options to subsample and 
+    apply geometric constraints
+    :param grid_size: size of grid
+    :param sampling_fraction: fraction of grid points to keep while subsampling
+    :param random_seed: random state (for reproducibility of subsampling)
+    :param grid_constraint: an optional callable that implements the desired geometric constraint. 
+        Takes as inputs current grid and any other kwargs.
+    :param grid_constraint_params: optional dict with kwargs for grid_constraint
+    
+    :return: computed grid in format of a DataFrame with "x","y" columns 
+    """
     # generate grid of all points
     mesh = product(range(grid_size), repeat=2)
     grid = pd.DataFrame(mesh, columns=["x", "y"])
 
     # only keep accessible points
     if grid_constraint is not None:
-        grid = grid[grid_constraint(grid["x"], grid["y"], grid_constraint_params)]
+        grid = grid[grid_constraint(grid, grid_constraint_params)]
 
     # subsample the grid
     np.random.seed(random_seed)
@@ -41,16 +53,19 @@ def _generate_local_windows(
     random_seed: int = 0,
     skip_incomplete_frames: bool = False,
     grid_constraint: Optional[
-        Callable[[pd.DataFrame, pd.DataFrame, Any], pd.DataFrame]
+        Callable[[pd.DataFrame, Any], pd.DataFrame]
     ] = None,
     grid_constraint_params: Optional[dict] = None,
 ) -> pd.DataFrame:
-
+    """
+    A function that calculates local_windows, i.e. grid points to compute predictors over, 
+    for each forager at each time step.
+    """
     # Note: args `grid_size`, `num_foragers`, `num_frames` are not exposed to users but set to
     # values inherited from `foragers_object`` by `generate_local_windows`.
 
     # initialize a common grid
-    grid = get_grid(
+    grid = _get_grid(
         grid_size=grid_size,
         sampling_fraction=sampling_fraction,
         random_seed=random_seed,

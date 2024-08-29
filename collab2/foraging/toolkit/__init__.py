@@ -24,7 +24,7 @@ from .inference import (  # noqa: F401
 from .local_windows import (  # noqa: F401
     _generate_local_windows,
     generate_local_windows,
-    get_grid,
+    _get_grid,
 )
 from .next_step_score import (  # noqa: F401
     _generate_next_step_score,

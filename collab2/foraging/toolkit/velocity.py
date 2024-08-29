@@ -102,7 +102,7 @@ def _generic_velocity_predictor(
     (eg, average, identity, max) as required by the corresponding mechanism
     Predictors are not calculated for frames where interaction partners have missing velocities.
     In this case, fraction of dropped frames is reported.
-    Predictors are normalized to sum to 1 for each forager & frame.
+    Predictors are normalized by dividing by their max value for each forager & frame.
 
     Parameters:
         - foragers : List of DataFrames containing forager positions and velocities grouped by forager index

@@ -10,7 +10,7 @@ from collab2.foraging.toolkit.utils import dataObject
 def _generate_nextStep_score(
     foragers: List[pd.DataFrame],
     local_windows: List[List[pd.DataFrame]],
-    score_name : str,
+    score_name: str,
     nonlinearity_exponent: Optional[float] = 1.0,
 ):
     """
@@ -49,7 +49,7 @@ def _generate_nextStep_score(
                     )
 
                     score[f][t][score_name] = 1 - (d_scaled) ** nonlinearity_exponent
-        
+
                 else:
                     score[f][t]["distance_to_next_step"] = np.nan
                     score[f][t][score_name] = np.nan
@@ -61,10 +61,7 @@ def _generate_nextStep_score(
     return score
 
 
-def generate_nextStep_score(
-    foragers_object: dataObject,
-    score_name : str
-):
+def generate_nextStep_score(foragers_object: dataObject, score_name: str):
     """
     A wrapper function that computes `next_step_score` only taking `foragers_object` as argument,
     and calling `_generate_next_step_score` under the hood

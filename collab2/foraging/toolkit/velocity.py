@@ -187,7 +187,7 @@ def _generic_velocity_predictor(
     return predictor
 
 
-def generate_pairwiseCopying(foragers_object: dataObject, predictorID: str):
+def generate_pairwiseCopying_predictor(foragers_object: dataObject, predictorID: str):
     """
     A function that calculates the predictor scores associated with random, pairwise velocity copying,
     by specifying an identity transformation to `_generic_velocity_predictor`.
@@ -226,7 +226,7 @@ def generate_pairwiseCopying(foragers_object: dataObject, predictorID: str):
     return predictor
 
 
-def generate_vicsek(foragers_object: dataObject, predictorID: str):
+def generate_vicsek_predictor(foragers_object: dataObject, predictorID: str):
     """
     A function that calculates the predictor scores associated with vicsek flocking,
     by specifying an averaging transformation to `_generic_velocity_predictor`.

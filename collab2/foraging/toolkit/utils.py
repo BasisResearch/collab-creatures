@@ -74,12 +74,13 @@ class dataObject:
             self.rewardsDF = rewardsDF
             self.rewards = [group for _, group in rewardsDF.groupby("time")]
 
-        # save placeholders for local_windows and kwargs
+        # save placeholders for local_windows, predictors and kwargs
         self.local_windows: List[List[pd.DataFrame]] = [[]]
         self.local_windows_kwargs: dict[str, Any] = {}
-        self.predictor_kwargs: dict[str, Any] = {}
-        self.predictors: dict[str, List[List[pd.DataFrame]]] = {}
-        self.combined_predictorDF : pd.DataFrame
+        self.score_kwargs: dict[str, dict[str,Any]] = {}
+        self.predictor_kwargs: dict[str, dict[str,Any]] = {}
+        self.derived_quantities: dict[str, List[List[pd.DataFrame]]] = {}
+        self.derivedDF : pd.DataFrame
 
     def calculate_step_size_max(self):
         step_maxes = []

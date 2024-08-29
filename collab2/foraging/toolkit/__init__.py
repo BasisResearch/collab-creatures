@@ -27,8 +27,8 @@ from .local_windows import (  # noqa: F401
     get_grid,
 )
 from .next_step_score import (  # noqa: F401
-    _generate_next_step_score,
-    generate_next_step_score,
+    _generate_nextStep_score,
+    generate_nextStep_score,
 )
 from .proximity import (  # noqa: F401; foragers_to_forager_distances,
     generate_proximity_predictor,

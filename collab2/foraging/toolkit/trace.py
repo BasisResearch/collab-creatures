@@ -1,12 +1,10 @@
 import copy
-from typing import Callable, List, Optional
+from typing import Callable, List
 
-import numpy as np
 import pandas as pd
 
-from collab2.foraging.toolkit.utils import dataObject 
-from collab2.foraging.toolkit.filtering import filter_by_distance
 from collab2.foraging.toolkit.decay import _decaying_contribution, _exponential_decay
+from collab2.foraging.toolkit.utils import dataObject
 
 
 def _generate_food_predictor(
@@ -27,7 +25,6 @@ def _generate_food_predictor(
             if predictor[f][t] is not None:
 
                 predictor[f][t][predictor_name] = 0
-
 
                 if len(rewards) > 0:
                     for reward in rewards:
@@ -50,8 +47,9 @@ def _generate_food_predictor(
 
     return predictor
 
+
 def generate_food_predictor(foragers_object: dataObject, predictor_name: str):
-    
+
     params = foragers_object.predictor_kwargs[predictor_name]
 
     predictor = _generate_food_predictor(

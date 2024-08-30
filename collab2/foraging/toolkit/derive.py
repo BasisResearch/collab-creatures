@@ -116,15 +116,17 @@ def derive_predictors_and_scores(
             foragers_object, predictor_name
         )
         end = time.time()
-        derivation_logger.info(f"{predictor_name} completed in {end-start:.2f} seconds")
+        derivation_logger.info(f"{predictor_name} completed in {end-start:.2f} seconds.")
 
     # calculate scores
     for score_name in score_kwargs.keys():
         score_type = score_name.split("_")[0]
         function_name = f"generate_{score_type}_score"
         generate_function = getattr(ftk, function_name)
+        start = time.time()
         derived_quantities[score_name] = generate_function(foragers_object, score_name)
-        derivation_logger.info(f"{score_name} completed")
+        end = time.time()
+        derivation_logger.info(f"{score_name} completed in {end-start:.2f} seconds.")
 
     # save to object
     foragers_object.derived_quantities = derived_quantities

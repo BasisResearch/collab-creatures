@@ -135,9 +135,7 @@ def _generate_proximity_predictor(
                         partner_x = foragers[partner]["x"].iloc[t]
                         partner_y = foragers[partner]["y"].iloc[t]
 
-                        predictor[f][t][
-                            predictor_name
-                        ] += _point_contribution(
+                        predictor[f][t][predictor_name] += _point_contribution(
                             partner_x,
                             partner_y,
                             local_windows[f][t],

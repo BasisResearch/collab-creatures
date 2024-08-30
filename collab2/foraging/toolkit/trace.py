@@ -3,7 +3,10 @@ from typing import Callable, List
 
 import pandas as pd
 
-from collab2.foraging.toolkit.point_contribution import _decaying_contribution, _exponential_decay
+from collab2.foraging.toolkit.point_contribution import (
+    _exponential_decay,
+    _point_contribution,
+)
 from collab2.foraging.toolkit.utils import dataObject
 
 
@@ -31,7 +34,7 @@ def _generate_food_predictor(
                         reward_x = reward["x"].iloc[t]
                         reward_y = reward["y"].iloc[t]
 
-                        predictor[f][t][predictor_name] += _decaying_contribution(
+                        predictor[f][t][predictor_name] += _point_contribution(
                             reward_x,
                             reward_y,
                             local_windows[f][t],

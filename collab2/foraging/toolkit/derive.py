@@ -2,6 +2,7 @@ import logging
 from typing import Any, Dict, List, Optional
 
 import pandas as pd
+import time
 
 from collab2.foraging import toolkit as ftk
 from collab2.foraging.toolkit.local_windows import generate_local_windows
@@ -110,10 +111,12 @@ def derive_predictors_and_scores(
         predictor_type = predictor_name.split("_")[0]
         function_name = f"generate_{predictor_type}_predictor"
         generate_function = getattr(ftk, function_name)
+        start = time.time()
         derived_quantities[predictor_name] = generate_function(
             foragers_object, predictor_name
         )
-        derivation_logger.info(f"{predictor_name} completed")
+        end = time.time()
+        derivation_logger.info(f"{predictor_name} completed in {end-start:.2f} seconds")
 
     # calculate scores
     for score_name in score_kwargs.keys():

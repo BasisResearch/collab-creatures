@@ -72,13 +72,13 @@ def derive_predictors_and_scores(
     """
     A function that calculates a chosen set of predictors and scores for data by inferring their names from
     keys in `predictor_kwargs` & `score_kwargs`, and dynamically calling the corresponding functions.
-    :param foragers_object: instance of dataObject class containing the trajectory data of foragers
+    :param foragers_object: instance of dataObject class containing the trajectory data of foragers.
     :param local_window_kwargs: dictionary of keyword arguments for `generate_local_windows` function.
     :param predictor_kwargs: nested dictionary of keyword arguments for predictors to be computed.
             Keys of predictor_kwargs set the name of the predictor to be computed.
             The predictor name can have underscores, however, the substring before the first underscore must correspond
             to the name of a predictor type in Collab. Thus, we can have multiple versions of the same predictor type
-            (with different parameters) by naming them as follows
+            (with different parameters) by naming them as follows:
             predictor_kwargs = {
                 "proximity_10" : {"optimal_dist":10, "decay":1, ...},
                 "proximity_20" : {"optimal_dist":20, "decay":2, ...},
@@ -88,7 +88,7 @@ def derive_predictors_and_scores(
     :param score_kwargs: nested dictionary of keyword arguments for scores to be computed.
             The substring before the first underscore in dictionary keys must correspond to the name of
             a score type in Collab, same as in `predictor_kwargs`
-    :param dropna: set to `True` to drop NaN elements from final DataFrame
+    :param dropna: set to `True` to drop NaN elements from the final DataFrame
     :param add_scaled_values: set to `True` to compute scaled predictor scores
         and add them as additional columns in final DataFrame
     :return: final, flattened DataFrame containing all computed predictors as columns

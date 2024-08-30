@@ -39,6 +39,9 @@ from .subsampling import (  # noqa: F401
     subsample_frames_constant_frame_rate,
     subset_frames_evenly_spaced,
 )
+
+from .trace import generate_food_predictor
+
 from .utils import (  # noqa: F401
     dataObject,
     distances_and_peaks,

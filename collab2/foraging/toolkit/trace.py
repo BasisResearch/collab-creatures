@@ -11,7 +11,7 @@ from collab2.foraging.toolkit.utils import dataObject
 
 
 def _generate_food_predictor(
-    rewards: List[pd.DataFrame], # one frame per t, with columns x and y
+    rewards: List[pd.DataFrame],  # one frame per t, with columns x and y
     foragers: List[pd.DataFrame],
     local_windows: List[List[pd.DataFrame]],
     predictor_name: str,
@@ -28,7 +28,7 @@ def _generate_food_predictor(
             if predictor[f][t] is not None:
 
                 predictor[f][t][predictor_name] = 0
-                
+
                 rewards_now = rewards[t]
 
                 if len(rewards_now) > 0:

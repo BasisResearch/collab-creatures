@@ -3,7 +3,7 @@ from typing import Callable, List
 
 import pandas as pd
 
-from collab2.foraging.toolkit.decay import _decaying_contribution, _exponential_decay
+from collab2.foraging.toolkit.point_contribution import _decaying_contribution, _exponential_decay
 from collab2.foraging.toolkit.utils import dataObject
 
 

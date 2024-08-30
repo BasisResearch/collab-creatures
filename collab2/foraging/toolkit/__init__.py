@@ -38,6 +38,7 @@ from .subsampling import (  # noqa: F401
 )
 
 # from .trace import rewards_to_trace, rewards_trace  # noqa: F401
+
 from .utils import (  # noqa: F401
     dataObject,
     distances_and_peaks,

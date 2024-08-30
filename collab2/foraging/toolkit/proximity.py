@@ -69,37 +69,6 @@ def _piecewise_proximity_function(
     return result
 
 
-# # TODO this can be further generalized to any point-centered contribution
-# # with some decay/scoring function
-# def _proximity_predictor_contribution(
-#     x_other: int,
-#     y_other: int,
-#     grid: pd.DataFrame,
-#     proximity_function: Callable,
-#     **proximity_function_kwargs,
-# ) -> np.ndarray:
-#     """
-#     Computes the proximity score contribution of an agent present at `x_other, y_other` to points present in `grid`.
-
-#     This function calculates the Euclidean distance from the point `(x_other, y_other)` to each point
-#     in the grid and applies the provided proximity function to determine the proximity score for those points
-#     as a function of distance.
-
-#     :param x_other: The x-coordinate of an agent.
-#     :param y_other: The y-coordinate of an agent.
-#     :param grid: A pandas DataFrame containing the x and y coordinates of the grid points. The DataFrame
-#                  must have columns named 'x' and 'y'.
-#     :param proximity_function: A callable function that takes distance as input and computes proximity scores.
-#     :param proximity_function_kwargs: Additional keyword arguments to pass to the proximity function.
-
-#     :return: A numpy ndarray representing the computed proximity scores for each point in the grid.
-#     """
-
-#     distance_to_other = np.sqrt((grid["x"] - x_other) ** 2 + (grid["y"] - y_other) ** 2)
-#     proximity_score = proximity_function(distance_to_other, **proximity_function_kwargs)
-#     return proximity_score
-
-
 def _generate_proximity_predictor(
     foragers: List[pd.DataFrame],
     foragersDF: pd.DataFrame,

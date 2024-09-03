@@ -1,8 +1,9 @@
 import copy
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, List, Optional
 
 import numpy as np
 import pandas as pd
+
 
 def filter_by_distance(
     foragersDF: pd.DataFrame,
@@ -10,7 +11,7 @@ def filter_by_distance(
     t: int,
     interaction_length: float,
     interaction_constraint: Optional[
-        Callable[[List[int], int, int, pd.DataFrame, Any], List[int]]
+        Callable[[List[int], int, int, pd.DataFrame], List[int]]
     ] = None,
     **interaction_constraint_params,
 ) -> List[int]:
@@ -52,11 +53,7 @@ def filter_by_distance(
 
 
 def constraint_filter_nearest(
-    f_ind: List[int],
-    f: int,
-    t: int,
-    foragersDF: pd.DataFrame,
-    **params
+    f_ind: List[int], f: int, t: int, foragersDF: pd.DataFrame, **params
 ) -> List[int]:
     """
     Filters and returns the index of the nearest forager to a given forager at a specified time step.

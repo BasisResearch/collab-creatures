@@ -23,8 +23,8 @@ from .inference import (  # noqa: F401
 )
 from .local_windows import (  # noqa: F401
     _generate_local_windows,
-    generate_local_windows,
     _get_grid,
+    generate_local_windows,
 )
 from .next_step_score import (  # noqa: F401
     _generate_nextStep_score,

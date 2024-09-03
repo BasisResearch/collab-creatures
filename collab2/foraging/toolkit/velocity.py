@@ -1,5 +1,5 @@
 import copy
-from typing import Callable, List, Optional, Tuple, Any
+from typing import Any, Callable, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -87,7 +87,7 @@ def _generic_velocity_predictor(
     sigma_t: float,
     transformation_function: Callable[[pd.DataFrame], pd.DataFrame],
     interaction_constraint: Optional[
-        Callable[[List[int], int, int, pd.DataFrame, Any], List[int]]
+        Callable[[List[int], int, int, pd.DataFrame], List[int]]
     ] = None,
     **interaction_constraint_params,
 ) -> List[List[pd.DataFrame]]:
@@ -107,7 +107,7 @@ def _generic_velocity_predictor(
     :param nteraction_length : Maximum inter-forager distance for velocity copying interaction
     :param dt : frames skipped in calculation of velocities
             Note: This function requires `foragers` and `foragersDF` to contain
-            columns "v_dt={dt}", "theta_dt={dt}" 
+            columns "v_dt={dt}", "theta_dt={dt}"
     :param sigma_v : standard deviation of Gaussian for velocity magnitude
     :param sigma_t : standard deviation of Gaussian for velocity direction
     :param transformation_function : Function that implements a transformation of velocities of interaction partners,
@@ -132,7 +132,7 @@ def _generic_velocity_predictor(
                     f,
                     t,
                     interaction_length,
-                    interaction_constraint,
+                    interaction_constraint=interaction_constraint,
                     **interaction_constraint_params,
                 )
 
@@ -169,7 +169,9 @@ def _generic_velocity_predictor(
     return predictor
 
 
-def generate_pairwiseCopying_predictor(foragers_object: dataObject, predictor_name: str):
+def generate_pairwiseCopying_predictor(
+    foragers_object: dataObject, predictor_name: str
+):
     """
     A function that calculates the predictor scores associated with random, pairwise velocity copying,
     by specifying an identity transformation to `_generic_velocity_predictor`.

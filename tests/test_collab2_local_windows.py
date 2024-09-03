@@ -50,7 +50,7 @@ def test_local_windows():
         foragersDF, size=grid_size, gridMin=gridMin, gridMax=gridMax
     )
     foragers_object = dataObject(
-        foragersDF_scaled, grid_size=grid_size, frames=num_frames
+        foragersDF_scaled, grid_size=grid_size
     )
 
     # local windows, skipping incomplete frames

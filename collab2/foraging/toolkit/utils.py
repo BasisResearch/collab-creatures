@@ -13,6 +13,7 @@ class dataObject:
     """
     Object class containing foragers' trajectory data and other attributes.
     """
+
     def __init__(
         self,
         foragersDF: pd.DataFrame,
@@ -21,12 +22,12 @@ class dataObject:
     ):
         """
         Initializes an instance of dataObject with trajectory data
-        :param foragersDF: DataFrame containing foragers' trajectory data and additional attributes. 
-            Must contain columns "x" : int, "y" : int, "time" : int, "forager" :int. 
-            Time and forager indices must start at 0. 
-        :param grid_size: size of grid used to discretize positional data. 
+        :param foragersDF: DataFrame containing foragers' trajectory data and additional attributes.
+            Must contain columns "x" : int, "y" : int, "time" : int, "forager" :int.
+            Time and forager indices must start at 0.
+        :param grid_size: size of grid used to discretize positional data.
             If argument not provided, grid_size is set to the max "x" and "y" value in `foragersDF`
-        :param rewardsDF: location of rewards in grid, if applicable. 
+        :param rewardsDF: location of rewards in grid, if applicable.
             Must contain columns "x" : int, "y" : int, "time" : int, "reward" :int.
         """
 
@@ -39,9 +40,9 @@ class dataObject:
         # raise warning if nan values in DataFrame
         if foragersDF.isna().any(axis=None):
             warnings.warn(
-                """ 
-                NaN values in data. The default behavior of predictor/score generating functions is 
-                to ignore foragers with missing positional data. To modify, see documentation of 
+                """
+                NaN values in data. The default behavior of predictor/score generating functions is
+                to ignore foragers with missing positional data. To modify, see documentation of
                 `derive_predictors_and_scores` and `generate_local_windows`
                 """
             )
@@ -61,8 +62,8 @@ class dataObject:
                 warnings.warn(
                     f"""
                     Missing frames encountered for forager {f}, adding NaN fillers.
-                    The default behavior of predictor/score generating functions is 
-                    to ignore foragers with missing positional data. To modify, see documentation of 
+                    The default behavior of predictor/score generating functions is
+                    to ignore foragers with missing positional data. To modify, see documentation of
                     `derive_predictors_and_scores` and `generate_local_windows`
                     """
                 )

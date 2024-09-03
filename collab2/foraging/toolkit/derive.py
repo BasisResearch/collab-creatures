@@ -1,5 +1,6 @@
 import logging
 import time
+import warnings
 from typing import Any, Dict, List, Optional
 
 import pandas as pd
@@ -10,7 +11,7 @@ from collab2.foraging.toolkit.utils import dataObject
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
 derivation_logger = logging.getLogger(__name__)
-import warnings
+
 
 def _generate_DF_from_nestedList(df_list: List[List[pd.DataFrame]]) -> pd.DataFrame:
     """
@@ -52,12 +53,14 @@ def _generate_combined_DF(
         combinedDF.dropna(inplace=True)
         dropped_frames = og_frames - len(combinedDF)
         if dropped_frames:
-            warnings.warn(f"""
+            warnings.warn(
+                f"""
                       Dropped {dropped_frames}/{og_frames} frames from `derivedDF` due to NaN values.
-                      Missing values can arise when predictor/score computations depend on next or previous 
-                      step positions that are unavailable. See documentation of the corresponding generating
-                      functions for more information. 
-                      """)
+                      Missing values can arise when computations depend on next/previous step positions
+                      that are unavailable. See documentation of the corresponding predictor/score generating
+                      functions for more information.
+                      """
+            )
 
     # scale predictor columns
     if add_scaled_values:
@@ -95,8 +98,8 @@ def derive_predictors_and_scores(
                 "proximity_w_constraint" : {...,"interaction_constraint" : constraint_function,
                                         "interaction_constraint_params": {...}}
             }
-    :param score_kwargs: nested dictionary of keyword arguments for outcome variables 
-        ("scores") to be computed.  The substring before the first underscore in dictionary keys must 
+    :param score_kwargs: nested dictionary of keyword arguments for outcome variables
+        ("scores") to be computed.  The substring before the first underscore in dictionary keys must
         correspond to the name of a score type in Collab, same as in `predictor_kwargs`
         score_kwargs = {
                 "nextStep_linear" : {"nonlinearity_exponent" : 1},

@@ -39,9 +39,11 @@ class dataObject:
         # raise warning if nan values in DataFrame
         if foragersDF.isna().any(axis=None):
             warnings.warn(
-                """ NaN values in data. The default behavior of predictor/score generating functions is 
+                """ 
+                NaN values in data. The default behavior of predictor/score generating functions is 
                 to ignore foragers with missing positional data. To modify, see documentation of 
-                `derive_predictors_and_scores` and `generate_local_windows`"""
+                `derive_predictors_and_scores` and `generate_local_windows`
+                """
             )
 
         # ensure that forager index is saved as an integer
@@ -57,10 +59,12 @@ class dataObject:
             missing = set(all_frames) - set(foragers[f]["time"])
             if missing:
                 warnings.warn(
-                    f"""Missing frames encountered for forager {f}, adding NaN fillers.
-                        The default behavior of predictor/score generating functions is 
-                        to ignore foragers with missing positional data. To modify, see documentation of 
-                         `derive_predictors_and_scores` and `generate_local_windows`"""
+                    f"""
+                    Missing frames encountered for forager {f}, adding NaN fillers.
+                    The default behavior of predictor/score generating functions is 
+                    to ignore foragers with missing positional data. To modify, see documentation of 
+                    `derive_predictors_and_scores` and `generate_local_windows`
+                    """
                 )
                 filler_rows = pd.DataFrame(
                     {"time": list(missing), "forager": [f] * len(missing)}

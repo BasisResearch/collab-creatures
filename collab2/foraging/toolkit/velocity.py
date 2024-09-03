@@ -29,10 +29,10 @@ def _add_velocity(
         v_ID = f"v_dt={dt}"
         theta_ID = f"theta_dt={dt}"
         if v_ID in df.columns and theta_ID in df.columns:
-            warnings.warn(
-                """Using existing velocity data.
-                Delete corresponding columns from foragersDF to re-calculate velocity values."""
-            )
+            # warnings.warn(
+            #     """Using existing velocity data.
+            #     Delete corresponding columns from foragersDF to re-calculate velocity values."""
+            # )
             continue
         else:
             # define v_x(t) = (x(t) - x(t-dt))/dt

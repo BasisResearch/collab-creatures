@@ -127,13 +127,10 @@ def _generic_velocity_predictor(
     num_foragers = len(foragers)
     num_frames = len(foragers[0])
     predictor = copy.deepcopy(local_windows)
-    valid_frames = 0  # frames with valid local_windows
-    dropped_frames = 0  # frames dropped due to missing velocity values
 
     for f in range(num_foragers):
         for t in range(num_frames):
             if predictor[f][t] is not None:
-                valid_frames += 1
                 # add column for predictor_ID
                 predictor[f][t][predictorID] = 0
                 # find confocals within interaction length
@@ -168,7 +165,6 @@ def _generic_velocity_predictor(
                         )
                 else:
                     predictor[f][t][predictorID] = np.nan
-                    dropped_frames += 1
 
                 # normalize predictor by dividing by max
                 max_val = predictor[f][t][predictorID].abs().max()
@@ -176,13 +172,6 @@ def _generic_velocity_predictor(
                     predictor[f][t][predictorID] = (
                         predictor[f][t][predictorID] / max_val
                     )
-
-    # raise warning if any frames dropped due to missing velocity data
-    if dropped_frames:
-        warnings.warn(
-            f"""Dropped {dropped_frames}/{valid_frames} instances from {predictorID} predictor calculation
-            due to invalid velocity values"""
-        )
 
     return predictor
 

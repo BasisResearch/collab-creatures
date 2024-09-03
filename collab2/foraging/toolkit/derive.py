@@ -10,7 +10,7 @@ from collab2.foraging.toolkit.utils import dataObject
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
 derivation_logger = logging.getLogger(__name__)
-
+import warnings
 
 def _generate_DF_from_nestedList(df_list: List[List[pd.DataFrame]]) -> pd.DataFrame:
     """
@@ -48,7 +48,16 @@ def _generate_combined_DF(
         combinedDF = combinedDF.merge(list_DFs[i], how="inner")
 
     if dropna:
+        og_frames = len(combinedDF)
         combinedDF.dropna(inplace=True)
+        dropped_frames = og_frames - len(combinedDF)
+        if dropped_frames:
+            warnings.warn(f"""
+                      Dropped {dropped_frames}/{og_frames} frames from `derivedDF` due to NaN values.
+                      Missing values can arise when predictor/score computations depend on next or previous 
+                      step positions that are unavailable. See documentation of the corresponding generating
+                      functions for more information. 
+                      """)
 
     # scale predictor columns
     if add_scaled_values:

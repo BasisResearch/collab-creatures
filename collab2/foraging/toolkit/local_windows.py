@@ -112,13 +112,13 @@ def _generate_local_windows(
             g = copy.deepcopy(grid)
 
             # calculate distance of points in g to the current position of forager f
-            g["distance_to_f"] = np.sqrt(
+            g["distance_to_forager"] = np.sqrt(
                 (g["x"] - foragers[f].query("time == @t")["x"].values) ** 2
                 + (g["y"] - foragers[f].query("time == @t")["y"].values) ** 2
             )
 
             # select grid points with distance < window_size
-            g = g[g["distance_to_f"] <= window_size]
+            g = g[g["distance_to_forager"] <= window_size]
 
             # add forager and time info to the DF
             # TODO : using assign here because everything else triggers a copy on write warning. Revisit if needed.

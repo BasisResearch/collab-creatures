@@ -95,7 +95,7 @@ def plot_predictor(
 def animate_predictors(
     foragersDF: pd.DataFrame,
     predictor: List[List[pd.DataFrame]],
-    predictorID: str,
+    predictor_name: str,
     forager_index: List[int],
     grid_size: int,
     random_state: Optional[int] = 0,
@@ -107,7 +107,7 @@ def animate_predictors(
     Parameters:
         - foragersDF : flattened DataFrame of forager positions
         - predictor : Nested list of DataFrames containing computed predictor scores, grouped by forager index and time
-        - predictorID : Name of column containing predictor scores in `predictor`
+        - predictor_name : Name of column containing predictor scores in `predictor`
         - forager_index : Index of foragers whose predictors are to be plotted
         - grid_size : size of grid used to compute forager positions (used for setting x,y limits in figure)
         - random_state : used to choose plot colors for each forager
@@ -168,8 +168,8 @@ def animate_predictors(
             if predictor[f][frame] is not None:
                 current_features = predictor[f][frame].loc[:, ["x", "y"]]
                 size = (
-                    abs(predictor[f][frame][predictorID])
-                    / abs(predictor[f][frame][predictorID]).max()
+                    abs(predictor[f][frame][predictor_name])
+                    / abs(predictor[f][frame][predictor_name]).max()
                 )
                 size[np.isnan(size)] = 0
                 predictors_scat_list[i].set_offsets(current_features)

@@ -79,8 +79,8 @@ def _generate_proximity_predictor(
         Callable[[List[int], int, int, pd.DataFrame, Optional[dict]], List[int]]
     ] = None,
     interaction_constraint_params: Optional[dict] = None,
-    proximity_function: Callable = _piecewise_proximity_function,
-    **proximity_function_kwargs,
+    proximity_contribution_function: Callable = _piecewise_proximity_function,
+    **proximity_contribution_function_kwargs,
 ) -> List[List[pd.DataFrame]]:
     """
     Computes proximity-based predictor scores, adding up the impact of individual agents
@@ -103,9 +103,9 @@ def _generate_proximity_predictor(
                                    foragers can interact based on custom logic.
     :param interaction_constraint_params: Optional parameters to pass to the `interaction_constraint`
                                           function.
-    :param proximity_function: A callable function used to compute proximity scores based on distance.
+    :param proximity_contribution_function: A callable function used to compute proximity scores based on distance.
                                Defaults to `_piecewise_proximity_function`.
-    :param proximity_function_kwargs: Additional keyword arguments for the proximity function.
+    :param proximity_contribution_function_kwargs: Additional keyword arguments for the proximity function.
 
     :return: A list of lists of pandas DataFrames, where each DataFrame has been updated with the computed
              proximity predictor values.
@@ -139,8 +139,8 @@ def _generate_proximity_predictor(
                             partner_x,
                             partner_y,
                             local_windows[f][t],
-                            proximity_function,
-                            **proximity_function_kwargs,
+                            proximity_contribution_function,
+                            **proximity_contribution_function_kwargs,
                         )
 
                 # scaling to abs max (not sum, as this would lead to small numerical values)

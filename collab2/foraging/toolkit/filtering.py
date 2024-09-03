@@ -4,28 +4,15 @@ from typing import Any, Callable, Dict, List, Optional, Union
 import numpy as np
 import pandas as pd
 
-# PP_comment : even with passing constraint params as a dictionary, we might have a limitation :
-# we cannot have a constraint that depends on quantities derived within the predictor function (eg, fastest v)
-# One workaround could be to locally (i.e. within the function) modify foragersDF with the derived quantities
-# and pass that to the constraint function via filter_by_distance
-
-# RU_comment I think the proper workaround is to instantiate object, add velocities and then use the object
-# to write a constraint because now it will have velocities available
-# and then pass this constraint to predictor derivation.
-# If we can isolate velocities addition from derived predictor calculation.
-
-# TODO keep in mind and test for this functionality in the future
-
-
 def filter_by_distance(
     foragersDF: pd.DataFrame,
     f: int,
     t: int,
     interaction_length: float,
     interaction_constraint: Optional[
-        Callable[[List[int], int, int, pd.DataFrame, Optional[dict]], List[int]]
+        Callable[[List[int], int, int, pd.DataFrame, Any], List[int]]
     ] = None,
-    interaction_constraint_params: Optional[dict] = None,
+    **interaction_constraint_params,
 ) -> List[int]:
     """
     Filters and returns a list of foragers that are within a specified distance of a given forager at a particular time.
@@ -59,7 +46,7 @@ def filter_by_distance(
 
     if interaction_constraint is not None:
         foragers_ind = interaction_constraint(
-            foragers_ind, f, t, foragersDF, interaction_constraint_params
+            foragers_ind, f, t, foragersDF, **interaction_constraint_params
         )
     return foragers_ind
 
@@ -69,7 +56,7 @@ def constraint_filter_nearest(
     f: int,
     t: int,
     foragersDF: pd.DataFrame,
-    params: Union[Dict[str, Any], None] = None,
+    **params
 ) -> List[int]:
     """
     Filters and returns the index of the nearest forager to a given forager at a specified time step.

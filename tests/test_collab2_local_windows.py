@@ -49,9 +49,7 @@ def test_local_windows():
     foragersDF_scaled = rescale_to_grid(
         foragersDF, size=grid_size, gridMin=gridMin, gridMax=gridMax
     )
-    foragers_object = dataObject(
-        foragersDF_scaled, grid_size=grid_size
-    )
+    foragers_object = dataObject(foragersDF_scaled, grid_size=grid_size)
 
     # local windows, skipping incomplete frames
     local_windows_kwargs = {

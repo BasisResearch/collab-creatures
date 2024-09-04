@@ -17,9 +17,9 @@ def _get_grid(
 ) -> pd.DataFrame:
     """
     A helper function that generates a grid of size `grid_size` with options to subsample and
-    apply geometric constraints
+    apply geometric constraints.
     :param grid_size: size of grid
-    :param sampling_fraction: fraction of grid points to keep while subsampling
+    :param sampling_fraction: fraction of grid points to keep while subsampling the grid
     :param random_seed: random state (for reproducibility of subsampling)
     :param grid_constraint: an optional callable that implements the desired geometric constraint.
         Takes as inputs current grid and any other kwargs. Eg:
@@ -70,7 +70,7 @@ def _generate_local_windows(
         whenever tracks for *any* forager is missing. This implies that frames with incomplete
         tracking would be skipped entirely from subsequent predictor/score computations. If False (default
         behavior) `local_windows` are set to `None` only for the missing foragers, and computations proceed as normal
-        for foragers in frame
+        for other foragers in the frame
     :param grid_constraint: Optional callable to model inaccessible points in the grid. This function takes as arguments
         the grid (as a pd.DataFrame) and any additional kwargs, and returns a DataFrame of accessible grid points
     :param grid_constrain_params: optional additional kwargs for `grid_constraint`
@@ -140,7 +140,7 @@ def generate_local_windows(foragers_object: dataObject) -> List[List[pd.DataFram
     """
     A wrapper function that calculates `local_windows` for a dataObject by calling `_generate_local_windows`
     with parameters inherited from the dataObject.
-    :param foragers_object: dataObject containing foragers trajectory data.
+    :param foragers_object: dataObject containing foragers trajectory data
         Must have `local_windows_kwargs` as an attribute
 
     :return: Nested list of local_windows (DataFrames with "x","y" columns) grouped by forager index and time

@@ -23,8 +23,8 @@ def filter_by_distance(
     constraint can be applied to further filter the resulting foragers based on custom logic.
 
     :param foragersDF: A pandas DataFrame containing the foragers' positions and times. Must include columns 'x',
-                       'y', 'forager', and 'time'.
-    :param f: The index of the forager whose neighbors are being filtered.
+                       'y', 'forager', and 'time'
+    :param f: The index of the forager whose neighbors are being filtered
     :param t: The time step at which the filtering is performed.
     :param interaction_length: The maximum distance within which foragers are considered neighbors.
     :param interaction_constraint: An optional callable that imposes additional filtering criteria. The callable should
@@ -33,7 +33,7 @@ def filter_by_distance(
     :param interaction_constraint_params: Optional parameters passed to the interaction constraint function.
 
     :return: A list of forager indices that are within the specified interaction length of forager `f` at time `t`,
-             possibly further filtered by the interaction constraint.
+             possibly further filtered by the interaction constraint
     """
     positions = copy.deepcopy(foragersDF[foragersDF["time"] == t])
     positions["distance"] = np.sqrt(
@@ -62,15 +62,15 @@ def constraint_filter_nearest(
     Euclidean distances to the focal forager `f` at time step `t`. The forager with the smallest distance
     is returned.
 
-    :param f_ind: A list of forager indices to consider as potential neighbors.
-    :param f: The index of the focal forager.
-    :param t: The time step at which to compute distances.
+    :param f_ind: A list of forager indices to consider as potential neighbors
+    :param f: The index of the focal forager
+    :param t: The time step at which to compute distances
     :param foragersDF: A pandas DataFrame containing forager positions and times. The DataFrame must include
-                       columns 'x', 'y', 'forager', and 'time'.
+                       columns 'x', 'y', 'forager', and 'time'
     :param params: Additional parameters that may be required by this or other filter functions. Not used in
-                   this implementation but included for compatibility with the filtering pipeline.
+                   this implementation but included for compatibility with the filtering pipeline
 
-    :return: A list containing the index of the nearest forager to forager `f` at time `t`.
+    :return: A list containing the index of the nearest forager to forager `f` at time `t`
     """
     current_positions = foragersDF.loc[
         np.logical_and(foragersDF["forager"].isin(f_ind), foragersDF["time"] == t)

@@ -6,7 +6,7 @@ from .animate_foragers import (  # noqa: F401
     visualise_forager_predictors,
 )
 from .communicates import generate_communicates  # noqa: F401
-from .derive import derive_predictors  # noqa: F401
+from .derive import derive_predictors_and_scores  # noqa: F401
 from .dynamical_utils import tensorize_and_dump_count_data  # noqa: F401
 from .dynamical_utils import (  # noqa: F401
     add_ring,
@@ -27,8 +27,8 @@ from .local_windows import (  # noqa: F401
     get_grid,
 )
 from .next_step_score import (  # noqa: F401
-    _generate_next_step_score,
-    generate_next_step_score,
+    _generate_nextStep_score,
+    generate_nextStep_score,
 )
 from .proximity import (  # noqa: F401; foragers_to_forager_distances,
     generate_proximity_predictor,
@@ -49,8 +49,8 @@ from .velocity import (  # noqa: F401
     _add_velocity,
     _generic_velocity_predictor,
     _velocity_predictor_contribution,
-    generate_pairwiseCopying,
-    generate_vicsek,
+    generate_pairwiseCopying_predictor,
+    generate_vicsek_predictor,
 )
 from .visibility import (  # noqa: F401
     construct_visibility,

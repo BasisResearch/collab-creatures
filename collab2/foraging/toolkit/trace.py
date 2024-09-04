@@ -15,8 +15,8 @@ def _generate_food_predictor(
     foragers: List[pd.DataFrame],
     local_windows: List[List[pd.DataFrame]],
     predictor_name: str,
-    decay_function: Callable = _exponential_decay,
-    **decay_function_kwargs,
+    decay_contribution_function: Callable = _exponential_decay,
+    **decay_contribution_function_kwargs,
 ) -> List[List[pd.DataFrame]]:
 
     num_foragers = len(foragers)
@@ -40,8 +40,8 @@ def _generate_food_predictor(
                             reward_x,
                             reward_y,
                             local_windows[f][t],
-                            decay_function,
-                            **decay_function_kwargs,
+                            decay_contribution_function,
+                            **decay_contribution_function_kwargs,
                         )
 
                 max_abs_over_grid = predictor[f][t][predictor_name].abs().max()

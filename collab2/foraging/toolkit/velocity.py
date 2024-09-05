@@ -30,6 +30,10 @@ def _add_velocity(
             #     """Using existing velocity data.
             #     Delete corresponding columns from foragersDF to re-calculate velocity values."""
             # )
+            # warnings.warn(
+            #     """Using existing velocity data.
+            #     Delete corresponding columns from foragersDF to re-calculate velocity values."""
+            # )
             continue
         else:
             # define v_x(t) = (x(t) - x(t-dt))/dt

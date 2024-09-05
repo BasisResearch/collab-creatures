@@ -76,7 +76,7 @@ def _generate_proximity_predictor(
     predictor_name: str,
     interaction_length: float,
     interaction_constraint: Optional[
-        Callable[[List[int], int, int, pd.DataFrame, Optional[dict]], List[int]]
+        Callable[[List[int], int, int, pd.DataFrame], List[int]]
     ] = None,
     interaction_constraint_params: Optional[dict] = None,
     proximity_contribution_function: Callable = _piecewise_proximity_function,

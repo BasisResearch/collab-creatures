@@ -87,7 +87,7 @@ def _generic_velocity_predictor(
     sigma_t: float,
     transformation_function: Callable[[pd.DataFrame], pd.DataFrame],
     interaction_constraint: Optional[
-        Callable[[List[int], int, int, pd.DataFrame, ...], List[int]]
+        Callable[[List[int], int, int, pd.DataFrame], List[int]]
     ] = None,
     **interaction_constraint_params,
 ) -> List[List[pd.DataFrame]]:

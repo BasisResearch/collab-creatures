@@ -111,6 +111,9 @@ def _generate_proximity_predictor(
              proximity predictor values.
     """
 
+    if interaction_constraint_params is None:
+        interaction_constraint_params = {}
+        
     num_foragers = len(foragers)
     num_frames = len(foragers[0])
     predictor = copy.deepcopy(local_windows)
@@ -127,7 +130,7 @@ def _generate_proximity_predictor(
                     t,
                     interaction_length,
                     interaction_constraint,
-                    interaction_constraint_params,
+                    **interaction_constraint_params,
                 )
 
                 if len(interaction_partners) > 0:

@@ -1,5 +1,5 @@
 import copy
-from typing import Callable, List, Optional
+from typing import Any, Callable, List, Optional
 
 import numpy as np
 import pandas as pd
@@ -11,9 +11,9 @@ def filter_by_distance(
     t: int,
     interaction_length: float,
     interaction_constraint: Optional[
-        Callable[[List[int], int, int, pd.DataFrame], List[int]]  # TODO add ,... to type hints?
-    ] = None,
-    **interaction_constraint_params,
+        Callable[[List[int], int, int, pd.DataFrame], List[int]]
+    ] = None,  # TODO add ,... to type hints? ] = None,
+    **interaction_constraint_params: Any,
 ) -> List[int]:
     """
     Filters and returns a list of foragers that are within a specified distance of a given forager at a particular time.
@@ -35,6 +35,8 @@ def filter_by_distance(
     :return: A list of forager indices that are within the specified interaction length of forager `f` at time `t`,
              possibly further filtered by the interaction constraint
     """
+    interaction_constraint_params = interaction_constraint_params or {}
+
     positions = copy.deepcopy(foragersDF[foragersDF["time"] == t])
     positions["distance"] = np.sqrt(
         (positions["x"] - positions.loc[positions["forager"] == f, "x"].values) ** 2

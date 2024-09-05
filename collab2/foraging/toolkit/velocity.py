@@ -1,5 +1,5 @@
 import copy
-from typing import Callable, List, Optional, Tuple
+from typing import Any, Callable, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -87,9 +87,9 @@ def _generic_velocity_predictor(
     sigma_t: float,
     transformation_function: Callable[[pd.DataFrame], pd.DataFrame],
     interaction_constraint: Optional[
-        Callable[[List[int], int, int, pd.DataFrame, ...], List[int]]
+        Callable[[List[int], int, int, pd.DataFrame], List[int]]
     ] = None,
-    **interaction_constraint_params,
+    **interaction_constraint_params: Optional[Any],
 ) -> List[List[pd.DataFrame]]:
     """
     A function that calculates predictor scores for arbitrary velocity alignment mechanisms, as specified by

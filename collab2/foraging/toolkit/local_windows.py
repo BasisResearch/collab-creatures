@@ -12,7 +12,7 @@ def _get_grid(
     grid_size: int,
     sampling_fraction: float = 1.0,
     random_seed: Optional[int] = 0,
-    grid_constraint: Optional[Callable[[pd.DataFrame, ...], pd.DataFrame]] = None,
+    grid_constraint: Optional[Callable[[pd.DataFrame], pd.DataFrame]] = None,
     **grid_constraint_params,
 ) -> pd.DataFrame:
     """
@@ -53,7 +53,7 @@ def _generate_local_windows(
     sampling_fraction: float = 1.0,
     random_seed: int = 0,
     skip_incomplete_frames: bool = False,
-    grid_constraint: Optional[Callable[[pd.DataFrame, ...], pd.DataFrame]] = None,
+    grid_constraint: Optional[Callable[[pd.DataFrame], pd.DataFrame]] = None,
     **grid_constraint_params,
 ) -> List[List[pd.DataFrame]]:
     """

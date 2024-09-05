@@ -10,32 +10,41 @@ from scipy.signal import find_peaks
 
 # define a class to streamline object creation
 class dataObject:
+    """
+    Object class containing foragers' trajectory data and other attributes.
+    """
+
     def __init__(
         self,
         foragersDF: pd.DataFrame,
         grid_size: Optional[int] = None,
         rewardsDF: Optional[pd.DataFrame] = None,
-        frames: Optional[int] = None,
     ):
         """
-        Requirements for foragersDF :
-            - Required columns "x" : float, "y" : float, "time" : int, "forager" :int
-            - Frame numbers and forager indices must start at 0
+        Initializes an instance of dataObject with trajectory data
+        :param foragersDF: DataFrame containing foragers' trajectory data and additional attributes.
+            Must contain columns "x" : int, "y" : int, "time" : int, "forager" :int.
+            Time and forager indices must start at 0.
+        :param grid_size: size of grid used to discretize positional data.
+            If argument not provided, grid_size is set to the max "x" and "y" value in `foragersDF`
+        :param rewardsDF: location of rewards in grid, if applicable.
+            Must contain columns "x" : int, "y" : int, "time" : int, "reward" :int.
         """
-        if frames is None:
-            frames = foragersDF["time"].max() + 1
 
         if grid_size is None:
             grid_size = int(foragersDF.loc[:, ["x", "y"]].max(axis=None)) + 1
 
         self.grid_size = grid_size
-        self.num_frames = frames
+        self.num_frames = foragersDF["time"].max() + 1
 
         # raise warning if nan values in DataFrame
         if foragersDF.isna().any(axis=None):
             warnings.warn(
-                """ Nan values in data.
-                Specify handling of missing data using `skip_incomplete_frames` argument to `generate_all_predictors`"""
+                """
+                NaN values in data. The default behavior of predictor/score generating functions is
+                to ignore foragers with missing positional data. To modify, see documentation of
+                `derive_predictors_and_scores` and `generate_local_windows`
+                """
             )
 
         # ensure that forager index is saved as an integer
@@ -51,9 +60,12 @@ class dataObject:
             missing = set(all_frames) - set(foragers[f]["time"])
             if missing:
                 warnings.warn(
-                    f"""Missing frames encountered for forager {f}, adding NaN fillers.
-                    Specify handling of missing data using `skip_incomplete_frames` argument to
-                    `generate_all_predictors`"""
+                    f"""
+                    Missing frames encountered for forager {f}, adding NaN fillers.
+                    The default behavior of predictor/score generating functions is
+                    to ignore foragers with missing positional data. To modify, see documentation of
+                    `derive_predictors_and_scores` and `generate_local_windows`
+                    """
                 )
                 filler_rows = pd.DataFrame(
                     {"time": list(missing), "forager": [f] * len(missing)}
@@ -74,10 +86,13 @@ class dataObject:
             self.rewardsDF = rewardsDF
             self.rewards = [group for _, group in rewardsDF.groupby("time")]
 
-        # save placeholders for local_windows and kwargs
+        # save placeholders for local_windows, predictors and kwargs
         self.local_windows: List[List[pd.DataFrame]] = [[]]
-        self.local_windows_kwarg: dict[str, Any] = {}
-        self.predictor_kwargs: dict[str, Any] = {}
+        self.local_windows_kwargs: dict[str, Any] = {}
+        self.score_kwargs: dict[str, dict[str, Any]] = {}
+        self.predictor_kwargs: dict[str, dict[str, Any]] = {}
+        self.derived_quantities: dict[str, List[List[pd.DataFrame]]] = {}
+        self.derivedDF: pd.DataFrame
 
     def calculate_step_size_max(self):
         step_maxes = []

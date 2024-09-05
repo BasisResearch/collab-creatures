@@ -1,5 +1,4 @@
 import copy
-import warnings
 from typing import Callable, List, Optional, Tuple
 
 import numpy as np
@@ -29,10 +28,10 @@ def _add_velocity(
         v_ID = f"v_dt={dt}"
         theta_ID = f"theta_dt={dt}"
         if v_ID in df.columns and theta_ID in df.columns:
-            warnings.warn(
-                """Using existing velocity data.
-                Delete corresponding columns from foragersDF to re-calculate velocity values."""
-            )
+            # warnings.warn(
+            #     """Using existing velocity data.
+            #     Delete corresponding columns from foragersDF to re-calculate velocity values."""
+            # )
             continue
         else:
             # define v_x(t) = (x(t) - x(t-dt))/dt
@@ -127,13 +126,10 @@ def _generic_velocity_predictor(
     num_foragers = len(foragers)
     num_frames = len(foragers[0])
     predictor = copy.deepcopy(local_windows)
-    valid_frames = 0  # frames with valid local_windows
-    dropped_frames = 0  # frames dropped due to missing velocity values
 
     for f in range(num_foragers):
         for t in range(num_frames):
             if predictor[f][t] is not None:
-                valid_frames += 1
                 # add column for predictor_ID
                 predictor[f][t][predictorID] = 0
                 # find confocals within interaction length
@@ -168,7 +164,6 @@ def _generic_velocity_predictor(
                         )
                 else:
                     predictor[f][t][predictorID] = np.nan
-                    dropped_frames += 1
 
                 # normalize predictor by dividing by max
                 max_val = predictor[f][t][predictorID].abs().max()
@@ -177,17 +172,10 @@ def _generic_velocity_predictor(
                         predictor[f][t][predictorID] / max_val
                     )
 
-    # raise warning if any frames dropped due to missing velocity data
-    if dropped_frames:
-        warnings.warn(
-            f"""Dropped {dropped_frames}/{valid_frames} instances from {predictorID} predictor calculation
-            due to invalid velocity values"""
-        )
-
     return predictor
 
 
-def generate_pairwiseCopying(foragers_object: dataObject, predictorID: str):
+def generate_pairwiseCopying_predictor(foragers_object: dataObject, predictorID: str):
     """
     A function that calculates the predictor scores associated with random, pairwise velocity copying,
     by specifying an identity transformation to `_generic_velocity_predictor`.
@@ -226,7 +214,7 @@ def generate_pairwiseCopying(foragers_object: dataObject, predictorID: str):
     return predictor
 
 
-def generate_vicsek(foragers_object: dataObject, predictorID: str):
+def generate_vicsek_predictor(foragers_object: dataObject, predictorID: str):
     """
     A function that calculates the predictor scores associated with vicsek flocking,
     by specifying an averaging transformation to `_generic_velocity_predictor`.

@@ -431,7 +431,7 @@ def plot_ds_estimates(
 
     ax[1].set_title(
         f"""Posterior ({coef_names[group][i]}, mean {round(posterior_samples[group][:, i].mean().item(),
-                                                                3)})"""
+                                                    3)})"""
     )
     sns.despine(ax=ax[1])
     ax[1].set_yticks([])

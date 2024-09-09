@@ -93,7 +93,7 @@ def _generic_velocity_predictor(
     interaction_constraint: Optional[
         Callable[[List[int], int, int, pd.DataFrame], List[int]]
     ] = None,
-    **interaction_constraint_params: Optional[Any],
+    interaction_constraint_params: Optional[dict[str,Any]] = {},
 ) -> List[List[pd.DataFrame]]:
     """
     A function that calculates predictor scores for arbitrary velocity alignment mechanisms, as specified by

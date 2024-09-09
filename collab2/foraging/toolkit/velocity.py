@@ -264,7 +264,7 @@ def _generate_velocityDiffusion_predictor(
     """
     A function that calculates predictor scores for angular/speed diffusion about the current velocity.
     This process models inertia in moving direction/ speed that can arise due to biological constraints.
-    Predictors are modelled as 2D polar Gaussians, and normalized by dividing by 
+    Predictors are modelled as 2D polar Gaussians, and normalized by dividing by
     their max value for each forager & frame.
 
     :param foragers : List of DataFrames containing forager positions and velocities grouped by forager index
@@ -312,10 +312,12 @@ def _generate_velocityDiffusion_predictor(
     return predictor
 
 
-def generate_velocityDiffusion_predictor(foragers_object: dataObject, predictor_name: str):
+def generate_velocityDiffusion_predictor(
+    foragers_object: dataObject, predictor_name: str
+):
     """
     A function that calculates the predictor scores associated with velocity diffusion,
-    by calling `_generate_velocityDiffusion_predictor` and grabbing necessary parameters 
+    by calling `_generate_velocityDiffusion_predictor` and grabbing necessary parameters
     from `foragers_object`. Thus, `foragers_object` must contain as attribute `predictor_kwargs` : dict,
     with `predictor_name` as a valid key.
 

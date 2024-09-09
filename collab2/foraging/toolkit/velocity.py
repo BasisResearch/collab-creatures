@@ -253,7 +253,7 @@ def generate_vicsek_predictor(foragers_object: dataObject, predictor_name: str):
     return predictor
 
 
-def _generate_persistence_predictor(
+def _generate_velocityDiffusion_predictor(
     foragers: List[pd.DataFrame],
     local_windows: List[List[pd.DataFrame]],
     predictor_name: str,
@@ -263,7 +263,7 @@ def _generate_persistence_predictor(
 ) -> List[List[pd.DataFrame]]:
     """
     A function that calculates predictor scores for angular/speed diffusion about the current velocity.
-    This process models inertiain moving direction/ speed that can arise due to biological constraints.
+    This process models inertia in moving direction/ speed that can arise due to biological constraints.
     Predictors are modelled as 2D polar Gaussians, and normalized by dividing by 
     their max value for each forager & frame.
 
@@ -312,11 +312,11 @@ def _generate_persistence_predictor(
     return predictor
 
 
-def generate_persistence_predictor(foragers_object: dataObject, predictor_name: str):
+def generate_velocityDiffusion_predictor(foragers_object: dataObject, predictor_name: str):
     """
-    A function that calculates the predictor scores associated with persistence/inertia,
-    by calling `_generate_persistence_predictor` and grabbing necessary parameters from `foragers_object`.
-    Thus, `foragers_object` must contain as attribute `predictor_kwargs` : dict,
+    A function that calculates the predictor scores associated with velocity diffusion,
+    by calling `_generate_velocityDiffusion_predictor` and grabbing necessary parameters 
+    from `foragers_object`. Thus, `foragers_object` must contain as attribute `predictor_kwargs` : dict,
     with `predictor_name` as a valid key.
 
     :param foragers_object : dataObject containing positional data and necessary kwargs
@@ -333,7 +333,7 @@ def generate_persistence_predictor(foragers_object: dataObject, predictor_name: 
     )
 
     # calculate predictor values
-    predictor = _generate_persistence_predictor(
+    predictor = _generate_velocityDiffusion_predictor(
         foragers_object.foragers,
         foragers_object.local_windows,
         predictor_name,

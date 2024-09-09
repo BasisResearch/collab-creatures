@@ -1,6 +1,6 @@
 import copy
 from itertools import product
-from typing import Callable, List, Optional, Any
+from typing import Any, Callable, List, Optional
 
 import numpy as np
 import pandas as pd
@@ -54,7 +54,7 @@ def _generate_local_windows(
     random_seed: int = 0,
     skip_incomplete_frames: bool = False,
     grid_constraint: Optional[Callable[[pd.DataFrame], pd.DataFrame]] = None,
-    grid_constraint_params : Optional[dict[str,Any]] = {},
+    grid_constraint_params: dict[str, Any] = {},
 ) -> List[List[pd.DataFrame]]:
     """
     A function that calculates local_windows, i.e. grid points to compute predictors over,

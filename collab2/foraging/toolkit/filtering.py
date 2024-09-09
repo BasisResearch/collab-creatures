@@ -1,5 +1,5 @@
 import copy
-from typing import Any, Callable, List, Optional
+from typing import Callable, List, Optional
 
 import numpy as np
 import pandas as pd

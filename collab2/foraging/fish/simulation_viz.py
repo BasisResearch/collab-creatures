@@ -13,6 +13,7 @@ def animate_trajectories(sim, interval=100):
     n_frames = x.shape[1]
     arena_size = sim.arena_size
     dt = sim.dt
+    L = sim.arena_size/10
 
     # Set up the figure and axis
     fig, ax = plt.subplots()
@@ -35,8 +36,8 @@ def animate_trajectories(sim, interval=100):
 
         # Update velocity direction lines
         for i, line in enumerate(velocity_lines):
-            dx = -5 * np.cos(theta[i, frame])
-            dy = -5 * np.sin(theta[i, frame])
+            dx = -L * np.cos(theta[i, frame])
+            dy = -L * np.sin(theta[i, frame])
             line.set_data(
                 [x[i, frame], x[i, frame] + dx], [y[i, frame], y[i, frame] + dy]
             )

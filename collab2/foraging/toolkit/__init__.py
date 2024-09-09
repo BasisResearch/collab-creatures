@@ -47,9 +47,11 @@ from .utils import (  # noqa: F401
 )
 from .velocity import (  # noqa: F401
     _add_velocity,
+    _generate_persistence_predictor,
     _generic_velocity_predictor,
     _velocity_predictor_contribution,
     generate_pairwiseCopying_predictor,
+    generate_persistence_predictor,
     generate_vicsek_predictor,
 )
 from .visibility import (  # noqa: F401

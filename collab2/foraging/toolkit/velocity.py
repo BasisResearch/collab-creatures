@@ -108,7 +108,7 @@ def _generic_velocity_predictor(
     :param local_windows : Nested list of DataFrames containing grid points to compute predictor over,
             grouped by forager index and time
     :param predictor_name : Name given to column containing predictor scores in `predictor`
-    :param nteraction_length : Maximum inter-forager distance for velocity copying interaction
+    :param interaction_length : Maximum inter-forager distance for velocity copying interaction
     :param dt : frames skipped in calculation of velocities
             Note: This function requires `foragers` and `foragersDF` to contain
             columns "v_dt={dt}", "theta_dt={dt}"
@@ -216,7 +216,8 @@ def generate_vicsek_predictor(foragers_object: dataObject, predictor_name: str):
     """
     A function that calculates the predictor scores associated with vicsek flocking,
     by specifying an averaging transformation to `_generic_velocity_predictor`.
-    The necessary parameters from `foragers_object`. Thus, `foragers_object` must contain as attribute
+    The necessary parameters are taken from `foragers_object`.
+    Thus, `foragers_object` must contain as attribute
     `predictor_kwargs` : dict, with `predictor_name` as a valid key.
 
     :param foragers_object : dataObject containing positional data and necessary kwargs
@@ -246,6 +247,96 @@ def generate_vicsek_predictor(foragers_object: dataObject, predictor_name: str):
         foragers_object.local_windows,
         predictor_name,
         transformation_function=transformation_vicsek,
+        **params,
+    )
+
+    return predictor
+
+
+def _generate_persistence_predictor(
+    foragers: List[pd.DataFrame],
+    local_windows: List[List[pd.DataFrame]],
+    predictor_name: str,
+    dt: int,
+    sigma_v: float,
+    sigma_t: float,
+) -> List[List[pd.DataFrame]]:
+    """
+    A function that calculates predictor scores for angular/speed diffusion about the current velocity.
+    This process models inertiain moving direction/ speed that can arise due to biological constraints.
+    Predictors are modelled as 2D polar Gaussians, and normalized by dividing by 
+    their max value for each forager & frame.
+
+    :param foragers : List of DataFrames containing forager positions and velocities grouped by forager index
+    :param foragersDF : Flattened DataFrame of forager positions and velocities
+    :param local_windows : Nested list of DataFrames containing grid points to compute predictor over,
+            grouped by forager index and time
+    :param predictor_name : Name given to column containing predictor scores in `predictor`
+    :param dt : frames skipped in calculation of velocities
+            Note: This function requires `foragers` and `foragersDF` to contain
+            columns "v_dt={dt}", "theta_dt={dt}"
+    :param sigma_v : standard deviation of Gaussian for velocity magnitude
+    :param sigma_t : standard deviation of Gaussian for velocity direction
+    :return: Nested list of calculated predictor scores, grouped by foragers and time
+    """
+
+    num_foragers = len(foragers)
+    num_frames = len(foragers[0])
+    predictor = copy.deepcopy(local_windows)
+
+    for f in range(num_foragers):
+        for t in range(num_frames):
+            if predictor[f][t] is not None:
+                # add column for predictor_ID
+                predictor[f][t][predictor_name] = 0
+                x = foragers[f].loc[t, "x"]
+                y = foragers[f].loc[t, "y"]
+                # center Gaussian about current velocity
+                v_pref = foragers[f].loc[t, f"v_dt={dt}"]
+                theta_pref = foragers[f].loc[t, f"theta_dt={dt}"]
+
+                if np.isfinite(v_pref) and np.isfinite(theta_pref):
+                    predictor[f][t][predictor_name] = _velocity_predictor_contribution(
+                        v_pref, theta_pref, x, y, predictor[f][t], sigma_v, sigma_t
+                    )
+                else:
+                    predictor[f][t][predictor_name] = np.nan
+
+                # normalize predictor by dividing by max
+                max_val = predictor[f][t][predictor_name].abs().max()
+                if max_val > 0:
+                    predictor[f][t][predictor_name] = (
+                        predictor[f][t][predictor_name] / max_val
+                    )
+
+    return predictor
+
+
+def generate_persistence_predictor(foragers_object: dataObject, predictor_name: str):
+    """
+    A function that calculates the predictor scores associated with persistence/inertia,
+    by calling `_generate_persistence_predictor` and grabbing necessary parameters from `foragers_object`.
+    Thus, `foragers_object` must contain as attribute `predictor_kwargs` : dict,
+    with `predictor_name` as a valid key.
+
+    :param foragers_object : dataObject containing positional data and necessary kwargs
+    :param predictorID : Name given to column containing predictor scores in `predictor`
+    :return: Nested list of calculated predictor scores, grouped by foragers and time
+    """
+
+    # grab relevant parameters from foragers_object
+    params = foragers_object.predictor_kwargs[predictor_name]
+
+    # compute/add velocity
+    foragers_object.foragers, foragers_object.foragersDF = _add_velocity(
+        foragers_object.foragers, params["dt"]
+    )
+
+    # calculate predictor values
+    predictor = _generate_persistence_predictor(
+        foragers_object.foragers,
+        foragers_object.local_windows,
+        predictor_name,
         **params,
     )
 

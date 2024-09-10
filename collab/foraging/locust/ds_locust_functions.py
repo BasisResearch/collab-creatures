@@ -398,8 +398,8 @@ def plot_ds_estimates(
             ax[0].axvline(true_wander[i], color="black", linestyle="--")
 
     ax[0].set_title(
-        f"""Prior ({coef_names[group][i]}, mean {round(prior_samples[group][:, i].mean().item(),
-                                                       3)})"""
+        f"""Prior ({coef_names[group][i]},
+          mean {round(prior_samples[group][:, i].mean().item(), 3)})"""
     )
     sns.despine(ax=ax[0])
     ax[0].set_yticks([])
@@ -430,8 +430,7 @@ def plot_ds_estimates(
             ax[1].axvline(true_wander[i], color="black", linestyle="--")
 
     ax[1].set_title(
-        f"""Posterior ({coef_names[group][i]}, mean {round(posterior_samples[group][:, i].mean().item(),
-                                                            3)})"""
+        f"""Posterior ({coef_names[group][i]}, mean {round(posterior_samples[group][:, i].mean().item(), 3)})"""
     )
     sns.despine(ax=ax[1])
     ax[1].set_yticks([])

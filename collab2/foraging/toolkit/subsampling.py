@@ -29,7 +29,7 @@ def subset_frames_evenly_spaced(
 
 # another version of subsampling that can be used for cases when frame-rate is important (eg. velocity)
 def subsample_frames_constant_frame_rate(
-    df_raw: pd.DataFrame, frame_spacing: int = 2, fps: Optional[float] = None
+    df_raw: pd.DataFrame, frame_spacing: int = 2
 ) -> pd.DataFrame:
     df = df_raw.copy()
     # start time at 0
@@ -44,8 +44,6 @@ def subsample_frames_constant_frame_rate(
     new_frames = df["time"].nunique()
     print("resulting_frames:", new_frames)
     print("resulting_shape:", df.shape)
-    if fps is not None:
-        print(f"new frame-rate = {fps*new_frames/og_frames : .2f}")
     return df
 
 

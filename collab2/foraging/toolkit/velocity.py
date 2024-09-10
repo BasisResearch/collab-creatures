@@ -1,6 +1,5 @@
 import copy
 from typing import Any, Callable, List, Optional, Tuple
-from typing import Any, Callable, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -101,7 +100,6 @@ def _generic_velocity_predictor(
     foragersDF: pd.DataFrame,
     local_windows: List[List[pd.DataFrame]],
     predictor_name: str,
-    predictor_name: str,
     interaction_length: float,
     dt: int,
     sigma_v: float,
@@ -109,9 +107,7 @@ def _generic_velocity_predictor(
     transformation_function: Callable[[pd.DataFrame], pd.DataFrame],
     interaction_constraint: Optional[
         Callable[[List[int], int, int, pd.DataFrame], List[int]]
-        Callable[[List[int], int, int, pd.DataFrame], List[int]]
     ] = None,
-    interaction_constraint_params: dict[str, Any] = {},
     interaction_constraint_params: dict[str, Any] = {},
 ) -> List[List[pd.DataFrame]]:
     """
@@ -155,15 +151,12 @@ def _generic_velocity_predictor(
             if predictor[f][t] is not None:
                 # add column for predictor_ID
                 predictor[f][t][predictor_name] = 0
-                predictor[f][t][predictor_name] = 0
                 # find confocals within interaction length
                 interaction_partners = filter_by_distance(
                     foragersDF,
                     f,
                     t,
                     interaction_length,
-                    interaction_constraint=interaction_constraint,
-                    **interaction_constraint_params,
                     interaction_constraint=interaction_constraint,
                     **interaction_constraint_params,
                 )
@@ -185,20 +178,15 @@ def _generic_velocity_predictor(
                     for v_pref, theta_pref in v_values.itertuples(index=False):
                         predictor[f][t][
                             predictor_name
-                            predictor_name
                         ] += _velocity_predictor_contribution(
                             v_pref, theta_pref, x, y, predictor[f][t], sigma_v, sigma_t
                         )
                 else:
                     predictor[f][t][predictor_name] = np.nan
-                    predictor[f][t][predictor_name] = np.nan
 
                 # normalize predictor by dividing by max
                 max_val = predictor[f][t][predictor_name].abs().max()
-                max_val = predictor[f][t][predictor_name].abs().max()
                 if max_val > 0:
-                    predictor[f][t][predictor_name] = (
-                        predictor[f][t][predictor_name] / max_val
                     predictor[f][t][predictor_name] = (
                         predictor[f][t][predictor_name] / max_val
                     )
@@ -206,9 +194,6 @@ def _generic_velocity_predictor(
     return predictor
 
 
-def generate_pairwiseCopying_predictor(
-    foragers_object: dataObject, predictor_name: str
-):
 def generate_pairwiseCopying_predictor(
     foragers_object: dataObject, predictor_name: str
 ):
@@ -246,7 +231,6 @@ def generate_pairwiseCopying_predictor(
         foragers_object.foragersDF,
         foragers_object.local_windows,
         predictor_name,
-        predictor_name,
         transformation_function=transformation_pairwiseCopying,
         **params,
     )
@@ -254,7 +238,6 @@ def generate_pairwiseCopying_predictor(
     return predictor
 
 
-def generate_vicsek_predictor(foragers_object: dataObject, predictor_name: str):
 def generate_vicsek_predictor(foragers_object: dataObject, predictor_name: str):
     """
     A function that calculates the predictor scores associated with vicsek flocking,
@@ -292,7 +275,6 @@ def generate_vicsek_predictor(foragers_object: dataObject, predictor_name: str):
         foragers_object.foragers,
         foragers_object.foragersDF,
         foragers_object.local_windows,
-        predictor_name,
         predictor_name,
         transformation_function=transformation_vicsek,
         **params,

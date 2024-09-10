@@ -41,7 +41,9 @@ def _add_velocity(
             v_y = df["y"].diff(periods=dt) / dt
             df[v_ID] = np.sqrt(v_x**2 + v_y**2)
             # return theta = NaN when velocity is zero
-            df[theta_ID] = np.where(np.logical_and(v_x==0,v_y==0), np.NaN, np.arctan2(v_y, v_x))
+            df[theta_ID] = np.where(
+                np.logical_and(v_x == 0, v_y == 0), np.NaN, np.arctan2(v_y, v_x)
+            )
 
     return foragers_processed, pd.concat(foragers_processed)
 
@@ -75,7 +77,7 @@ def _velocity_predictor_contribution(
     # if theta_pref is NaN, no direction preference, return an isotropic gaussian
     if np.isnan(theta_pref):
         P_theta = 1
-    else :
+    else:
         # there is a discontinuity when taking the difference of angles (2pi \equiv 0 !),
         # so always choose the smaller difference
         d_theta = theta_implied - theta_pref

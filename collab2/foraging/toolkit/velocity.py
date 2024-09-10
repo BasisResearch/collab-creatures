@@ -108,7 +108,7 @@ def _generic_velocity_predictor(
     :param local_windows : Nested list of DataFrames containing grid points to compute predictor over,
             grouped by forager index and time
     :param predictor_name : Name given to column containing predictor scores in `predictor`
-    :param interaction_length : Maximum inter-forager distance for velocity copying interaction
+    :param nteraction_length : Maximum inter-forager distance for velocity copying interaction
     :param dt : frames skipped in calculation of velocities
             Note: This function requires `foragers` and `foragersDF` to contain
             columns "v_dt={dt}", "theta_dt={dt}"

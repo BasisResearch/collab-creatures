@@ -9,8 +9,9 @@ import pandas as pd
 def plot_predictor(
     foragers: List[pd.DataFrame],
     predictor: List[List[pd.DataFrame]],
-    predictorID: str,
-    forager_index: List[int],
+    predictor_name: str,
+    forager_position_indices: List[int],
+    forager_predictor_indices: List[int],
     time: List[int],
     grid_size: int,
     random_state: Optional[int] = 0,
@@ -22,8 +23,9 @@ def plot_predictor(
     Parameters:
         - foragers : list of DataFrames containing forager positions, grouped by forager index
         - predictor : Nested list of DataFrames containing computed predictor scores, grouped by forager index and time
-        - predictorID : Name of column containing predictor scores in `predictor`
-        - forager_index : Index of foragers whose predictors are to be plotted
+        - predictor_name : Name of column containing predictor scores in `predictor`
+        - forager_position_indices: List of indices of foragers whose positions are to be plotted
+        - forager_predictor_indices : List of indices of foragers whose predictors are to be plotted
         - time : Timeframes for which predictor scores are to be plotted
         - grid_size : size of grid used to compute forager positions (used for setting x,y limits in figure)
         - random_state : used to choose plot colors for each forager
@@ -36,7 +38,7 @@ def plot_predictor(
     nrows = np.ceil(len(time) / ncols).astype(int)
     fig, axes = plt.subplots(nrows, ncols, figsize=(3 * ncols, 3 * nrows))
     np.random.seed(random_state)
-    random_colors = np.random.randint(0, 256, size=(len(forager_index), 3))
+    random_colors = np.random.randint(0, 256, size=(len(forager_position_indices), 3))
     # Convert the RGB values to hex format
     colors = ["#{:02x}{:02x}{:02x}".format(r, g, b) for r, g, b in random_colors]
 
@@ -51,12 +53,24 @@ def plot_predictor(
         else:
             ax = axes
 
-        for j, f in enumerate(forager_index):
+        # plot forager positions
+        for j, f in enumerate(forager_position_indices):
+            ax.scatter(
+                foragers[f].loc[t, "x"],
+                foragers[f].loc[t, "y"],
+                s=50,
+                marker="s",
+                edgecolors="k",
+                facecolors=colors[j],
+            )
+
+        # plot predictor values
+        for j, f in enumerate(forager_predictor_indices):
             if predictor[f][t] is not None:
                 # normalize predictor value to choose scatter size and alpha
                 size = (
-                    abs(predictor[f][t][predictorID])
-                    / abs(predictor[f][t][predictorID]).max()
+                    abs(predictor[f][t][predictor_name])
+                    / abs(predictor[f][t][predictor_name]).max()
                 )
                 size[np.isnan(size)] = 0
                 ax.scatter(
@@ -66,14 +80,6 @@ def plot_predictor(
                     color=colors[j],
                     alpha=abs(size * 0.8),
                 )
-            ax.scatter(
-                foragers[f].loc[t, "x"],
-                foragers[f].loc[t, "y"],
-                s=50,
-                marker="s",
-                edgecolors="k",
-                facecolors=colors[j],
-            )
 
         ax.set_xlim([-1, grid_size])
         ax.set_ylim([-1, grid_size])
@@ -96,7 +102,8 @@ def animate_predictors(
     foragersDF: pd.DataFrame,
     predictor: List[List[pd.DataFrame]],
     predictor_name: str,
-    forager_index: List[int],
+    forager_position_indices: List[int],
+    forager_predictor_indices: List[int],
     grid_size: int,
     random_state: Optional[int] = 0,
     size_multiplier: Optional[int] = 10,
@@ -108,7 +115,8 @@ def animate_predictors(
         - foragersDF : flattened DataFrame of forager positions
         - predictor : Nested list of DataFrames containing computed predictor scores, grouped by forager index and time
         - predictor_name : Name of column containing predictor scores in `predictor`
-        - forager_index : Index of foragers whose predictors are to be plotted
+        - forager_position_incices : Index of foragers whose positions are to be plotted
+        - forager_predictor_indices : Index of foragers whose predictors are to be plotted
         - grid_size : size of grid used to compute forager positions (used for setting x,y limits in figure)
         - random_state : used to choose plot colors for each forager
         - size_multiplier : used to select marker size in scatter plot
@@ -127,7 +135,7 @@ def animate_predictors(
     fig, ax = plt.subplots()
     foragers_scat = ax.scatter([], [], s=50, marker="s", facecolor=[], edgecolor=[])
     predictors_scat_list = []
-    for i in range(len(forager_index)):
+    for i in range(len(forager_predictor_indices)):
         predictors_scat_list.append(
             ax.scatter([], [], s=[], facecolor=[], edgecolor=[])
         )
@@ -135,7 +143,12 @@ def animate_predictors(
     ax.set_xlim(0, grid_size)
     ax.set_ylim(0, grid_size)
     ax.set_aspect("equal")
-    ax.legend()
+    #TODO potentially expand with forager legend
+    #ax.legend()
+
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.axis('off')
 
     # Initialize function to set up the background of each frame
     def init():
@@ -153,8 +166,13 @@ def animate_predictors(
 
     # Update function for each frame
     def update(frame):
+
+        filtered_foragers = foragersDF[
+            foragersDF["forager"].isin(forager_position_indices)
+        ]
+
         # Update positions of the particles
-        current_positions = foragersDF.loc[
+        current_positions = filtered_foragers.loc[
             foragersDF["time"] == frame, ["x", "y"]
         ].values
         foragers_scat.set_offsets(current_positions)
@@ -164,7 +182,7 @@ def animate_predictors(
         foragers_scat.set_edgecolor(colors)  # Set edge colors directly
 
         # Update predictor
-        for i, f in enumerate(forager_index):
+        for i, f in enumerate(forager_predictor_indices):
             if predictor[f][frame] is not None:
                 current_features = predictor[f][frame].loc[:, ["x", "y"]]
                 size = (
@@ -184,6 +202,7 @@ def animate_predictors(
 
     # Create the animation
     ani = animation.FuncAnimation(
-        fig, update, frames=num_frames, init_func=init, blit=True
+        fig, update, frames=num_frames, init_func=init, blit=True, interval = 500,
+        repeat_delay = 3500
     )
     return ani

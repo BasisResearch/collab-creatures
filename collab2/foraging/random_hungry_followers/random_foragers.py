@@ -170,8 +170,8 @@ class Foragers:
                 {
                     "x": forager_x,
                     "y": forager_y,
-                    "time": range(1, size + 1),
-                    "forager": forager + 1,
+                    "time": range(0, size),
+                    "forager": forager,
                     "type": "random",
                 }
             )

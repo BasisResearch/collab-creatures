@@ -3,118 +3,33 @@ import copy
 import numpy as np
 import pandas as pd
 import torch
+from typing import List, Tuple, Dict
+from pyro.infer.autoguide import AutoMultivariateNormal, init_to_mean
+import pyro
+import time
+import logging
+
+import matplotlib.pyplot as plt 
 
 
-def normalize(column):
-    return (column - column.min()) / (column.max() - column.min())
+def prep_data_for_inference(sim_derived, predictors: List[str],
+                            outcome_vars: str) -> Tuple[Dict[str, torch.Tensor],
+                                                        Dict[str, torch.Tensor]]:
+    df = sim_derived.derivedDF[predictors + outcome_vars].copy()
 
 
-def prep_data_for_robust_inference(sim_old, gridsize=11):
-    sim_new = copy.copy(sim_old)
+    
+    # assert no nas in df
+    assert df.notna().all().all(), "Dataframe contains NaN values"
 
-    def bin_vector(vector, gridsize=11):
-        vector_max = max(vector)
-        vector_min = min(vector)
-        # step_size = (vector_max - vector_min) / gridsize
-        vector_bin_edges = np.linspace(vector_min, vector_max, gridsize + 1)
-        # vector_bin_edges = pd.interval_range(start=vector_min, end=vector_max, freq=step_size)
-        vector_bin_labels = [f"{i}" for i in range(1, gridsize + 1)]
-        vector_binned = pd.cut(
-            vector,
-            bins=vector_bin_edges,
-            labels=vector_bin_labels,
-            include_lowest=True,
-        )
-
-        return vector_binned
-
-    sim_new.derivedDF.dropna(inplace=True)
-    sim_new.derivedDF["proximity_cat"] = bin_vector(
-        sim_new.derivedDF["proximity_standardized"], gridsize=gridsize
-    )
-
-    sim_new.derivedDF["trace_cat"] = bin_vector(
-        sim_new.derivedDF["trace_standardized"], gridsize=gridsize
-    )
-
-    sim_new.derivedDF["visibility_cat"] = bin_vector(
-        sim_new.derivedDF["visibility"], gridsize=gridsize
-    )
-
-    sim_new.derivedDF["communicate_cat"] = bin_vector(
-        sim_new.derivedDF["communicate_standardized"], gridsize=gridsize
-    )
-
-    columns_to_normalize = [
-        "trace_standardized",
-        "proximity_standardized",
-        "communicate_standardized",
-        "visibility",
-        "how_far_squared_scaled",
-    ]
-
-    for column in columns_to_normalize:
-        sim_new.derivedDF[column] = normalize(sim_new.derivedDF[column])
-
-    sim_new_df = sim_new.derivedDF
-
-    sim_new_df["proximity_id"] = sim_new_df.proximity_cat.astype("category").cat.codes
-    sim_new_df["trace_id"] = sim_new_df.trace_cat.astype("category").cat.codes
-    sim_new_df["communicate_id"] = sim_new_df.communicate_cat.astype(
-        "category"
-    ).cat.codes
-    sim_new_df["how_far"] = sim_new_df.how_far_squared_scaled
-
-    sim_new.derivedDF = sim_new_df
-    return sim_new_df
+    predictor_tensors = {key: torch.tensor(df[key].values, dtype=torch.float32) for key in predictors}
+    outcome_tensors = {key: torch.tensor(df[key].values, dtype=torch.float32) for key in outcome_vars}
 
 
-def get_tensorized_data(sim_derived):
-    print("Initial dataset size:", sim_derived.derivedDF.shape[0])
-    df = sim_derived.derivedDF.copy().dropna()
-    print("Complete cases:", df.shape[0])
-
-    for column_name, column in df.items():
-        if column.dtype.name == "category":
-            df[column_name] = column.cat.codes
-
-    trace_standardized = torch.tensor(
-        df["trace_standardized"].values, dtype=torch.float32
-    )
-    trace_cat = torch.tensor(df["trace_cat"].values, dtype=torch.int8)
-    proximity_standardized = torch.tensor(
-        df["proximity_standardized"].values, dtype=torch.float32
-    )
-    proximity_cat = torch.tensor(df["proximity_cat"].values, dtype=torch.int8)
-    visibility = torch.tensor(df["visibility"].values, dtype=torch.float32)
-    visibility_cat = torch.tensor(df["visibility_cat"].values, dtype=torch.int8)
-    communicate_standardized = torch.tensor(
-        df["communicate_standardized"].values, dtype=torch.float32
-    )
-    communicate_cat = torch.tensor(df["communicate_cat"].values, dtype=torch.int8)
-    how_far_squared_scaled = torch.tensor(
-        df["how_far_squared_scaled"].values, dtype=torch.float32
-    )
-
-    data = {
-        "trace_standardized": trace_standardized,
-        "trace_cat": trace_cat,
-        "proximity_standardized": proximity_standardized,
-        "proximity_cat": proximity_cat,
-        "visibility": visibility,
-        "visibility_cat": visibility_cat,
-        "communicate_standardized": communicate_standardized,
-        "communicate_cat": communicate_cat,
-        "how_far": how_far_squared_scaled,
-    }
-
-    return data
+    return predictor_tensors, outcome_tensors
 
 
-def summary(samples, sites=None):
-    if sites is None:
-        sites = [site_name for site_name in samples.keys()]
-
+def summary(samples, sites):
     site_stats = {}
     for site_name, values in samples.items():
         if site_name in sites:
@@ -126,3 +41,78 @@ def summary(samples, sites=None):
                 ["mean", "std", "5%", "25%", "50%", "75%", "95%"]
             ]
     return site_stats
+
+def run_svi_inference(
+    model,
+    verbose=True,
+    lr=0.03,
+    vi_family=AutoMultivariateNormal,
+    guide=None,
+    n_steps=100,
+    ylim=None,
+    plot=True,
+    **model_kwargs
+):
+    losses = []
+    if guide is None:
+        guide = vi_family(
+            model, init_loc_fn=init_to_mean
+        )
+    elbo = pyro.infer.Trace_ELBO()(model, guide)
+
+    elbo(**model_kwargs)
+    adam = torch.optim.Adam(elbo.parameters(), lr=lr)
+
+    for step in range(1, n_steps + 1):
+        adam.zero_grad()
+        loss = elbo(**model_kwargs)
+        loss.backward()
+        losses.append(loss.item())
+        adam.step()
+        if (step % 50 == 0) or (step == 1) & verbose:
+            print("[iteration %04d] loss: %.4f" % (step, loss))
+
+    if plot:
+        plt.plot(losses)
+        if ylim:
+            plt.ylim(ylim)
+        plt.show()
+
+    return guide
+
+
+def get_samples(
+    model,
+    predictors,
+    outcome,
+    num_svi_iters,
+    num_samples,
+):
+
+    logging.info(f"Starting SVI inference with {num_svi_iters} iterations.")
+    start_time = time.time()
+    pyro.clear_param_store()
+    guide = run_svi_inference(model, n_steps=num_svi_iters, predictors = predictors, outcome = outcome)
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    logging.info("SVI inference completed in %.2f seconds.", elapsed_time)
+
+    predictive = pyro.infer.Predictive(model = model, guide = guide, num_samples=num_samples, parallel = True)
+
+    samples = {
+        k: v.flatten().reshape(num_samples, -1).detach().cpu().numpy()
+        for k, v in predictive(predictors,outcome).items()
+        if k != "obs"
+    }
+    print(samples.keys())
+
+    sites = [key for key in samples.keys() if (key.startswith("weight") and not key.endswith("sigma"))]
+    print(sites)
+
+    print("Coefficient marginals:")
+    for site, values in summary(samples, sites).items():
+        print("Site: {}".format(site))
+        print(values, "\n")
+    
+    return {"samples": samples, "guide": guide, "predictive": predictive}
+

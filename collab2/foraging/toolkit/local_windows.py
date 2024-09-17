@@ -1,6 +1,6 @@
 import copy
 from itertools import product
-from typing import Callable, List, Optional
+from typing import Any, Callable, List, Optional
 
 import numpy as np
 import pandas as pd
@@ -54,7 +54,7 @@ def _generate_local_windows(
     random_seed: int = 0,
     skip_incomplete_frames: bool = False,
     grid_constraint: Optional[Callable[[pd.DataFrame], pd.DataFrame]] = None,
-    **grid_constraint_params,
+    grid_constraint_params: dict[str, Any] = {},
 ) -> List[List[pd.DataFrame]]:
     """
     A function that calculates local_windows, i.e. grid points to compute predictors over,
@@ -73,7 +73,7 @@ def _generate_local_windows(
         for other foragers in the frame
     :param grid_constraint: Optional callable to model inaccessible points in the grid. This function takes as arguments
         the grid (as a pd.DataFrame) and any additional kwargs, and returns a DataFrame of accessible grid points
-    :param grid_constrain_params: optional additional kwargs for `grid_constraint`
+    :param grid_constrain_params: optional dictionary of kwargs for `grid_constraint`, to be passed to `_get_grid`
 
     :return: Nested list of local_windows (DataFrames with "x","y" columns) grouped by forager index and time
     """

@@ -30,6 +30,10 @@ def _add_velocity(
             #     """Using existing velocity data.
             #     Delete corresponding columns from foragersDF to re-calculate velocity values."""
             # )
+            # warnings.warn(
+            #     """Using existing velocity data.
+            #     Delete corresponding columns from foragersDF to re-calculate velocity values."""
+            # )
             continue
         else:
             # define v_x(t) = (x(t) - x(t-dt))/dt
@@ -89,7 +93,7 @@ def _generic_velocity_predictor(
     interaction_constraint: Optional[
         Callable[[List[int], int, int, pd.DataFrame], List[int]]
     ] = None,
-    **interaction_constraint_params: Optional[Any],
+    interaction_constraint_params: dict[str, Any] = {},
 ) -> List[List[pd.DataFrame]]:
     """
     A function that calculates predictor scores for arbitrary velocity alignment mechanisms, as specified by

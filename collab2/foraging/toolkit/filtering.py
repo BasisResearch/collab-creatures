@@ -1,5 +1,5 @@
 import copy
-from typing import Any, Callable, List, Optional
+from typing import Callable, List, Optional
 
 import numpy as np
 import pandas as pd
@@ -11,9 +11,11 @@ def filter_by_distance(
     t: int,
     interaction_length: float,
     interaction_constraint: Optional[
-        Callable[[List[int], int, int, pd.DataFrame], List[int]]
-    ] = None,  # TODO add ,... to type hints? ] = None,
-    **interaction_constraint_params: Any,
+        Callable[
+            [List[int], int, int, pd.DataFrame], List[int]
+        ]  # TODO add ,... to type hints?
+    ] = None,
+    **interaction_constraint_params,
 ) -> List[int]:
     """
     Filters and returns a list of foragers that are within a specified distance of a given forager at a particular time.

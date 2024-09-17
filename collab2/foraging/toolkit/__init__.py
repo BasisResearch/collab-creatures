@@ -15,12 +15,7 @@ from .dynamical_utils import (  # noqa: F401
     run_svi_inference,
 )
 from .filtering import constraint_filter_nearest, filter_by_distance  # noqa: F401
-from .inference import (  # noqa: F401
-    get_tensorized_data,
-    normalize,
-    prep_data_for_robust_inference,
-    summary,
-)
+
 from .local_windows import (  # noqa: F401
     _generate_local_windows,
     _get_grid,
@@ -33,6 +28,11 @@ from .next_step_score import (  # noqa: F401
 from .proximity import (  # noqa: F401; foragers_to_forager_distances,
     generate_proximity_predictor,
 )
+
+from .food import (  # noqa: F401
+    generate_food_predictor,
+)
+
 from .subsampling import (  # noqa: F401
     rescale_to_grid,
     sample_time_slices,
@@ -58,5 +58,22 @@ from .visibility import (  # noqa: F401
     visibility_vs_distance,
 )
 from .visualization import animate_predictors, plot_predictor  # noqa: F401
+
+from .models import (  # noqa: F401
+    continuous_contribution,
+    add_linear_heteroskedastic_component,
+    HeteroskedasticLinear,
+)
+
+from .inference import (  # noqa: F401
+    prep_data_for_inference,
+    summary,
+    run_svi_inference,
+    get_samples
+)
+
+from .evaluate import (  # noqa: F401
+    evaluate_performance,
+)
 
 # from .trace import rewards_to_trace, rewards_trace  # noqa: F401

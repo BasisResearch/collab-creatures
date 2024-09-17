@@ -81,8 +81,8 @@ def add_follower_foragers(
                 new_row = {
                     "x": new_x,
                     "y": new_y,
-                    "time": t + 2,
-                    "forager": b + 1,
+                    "time": t + 1,
+                    "forager": b ,
                     "type": "follower",
                 }
 

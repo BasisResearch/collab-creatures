@@ -154,3 +154,28 @@ def generate_grid(grid_size):
     return pd.DataFrame(grid, columns=["x", "y"])
 
 
+# remove rewards eaten by foragers in proximity
+def update_rewards(sim, rewards, foragers, start=1, end=None):
+    if end is None:
+        end = foragers[0].shape[0]
+
+    for t in range(start, end):
+        rewards[t] = rewards[t - 1].copy()
+        eaten = []
+
+        for b in range(len(foragers)):
+            eaten_b = rewards[t][
+                (abs(rewards[t]["x"] - foragers[b].iloc[t]["x"]) <= sim.grab_range)
+                & (abs(rewards[t]["y"] - foragers[b].iloc[t]["y"]) <= sim.grab_range)
+            ].index.tolist()
+            if eaten_b:
+                eaten.extend(eaten_b)
+
+        if eaten:
+            rewards[t] = rewards[t].drop(eaten)
+
+        rewards[t]["time"] = t + 1
+
+    rewardsDF = pd.concat(rewards)
+
+    return {"rewards": rewards, "rewardsDF": rewardsDF}

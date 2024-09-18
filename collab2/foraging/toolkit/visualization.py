@@ -172,6 +172,7 @@ def animate_predictors(
         ]
 
         # Update positions of the particles
+        print(frame)
         current_positions = filtered_foragers.loc[
             foragersDF["time"] == frame, ["x", "y"]
         ].values
@@ -201,6 +202,7 @@ def animate_predictors(
         return foragers_scat, *predictors_scat_list
 
     # Create the animation
+    print(num_frames)
     ani = animation.FuncAnimation(
         fig,
         update,

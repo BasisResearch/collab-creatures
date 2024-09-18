@@ -2,12 +2,7 @@ import logging
 
 import numpy as np
 import pandas as pd
-
-from collab.foraging.toolkit import (
-    construct_visibility,
-    generate_proximity_score,
-    update_rewards,
-)
+from rhf_helpers import construct_visibility, generate_proximity_score, update_rewards
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s:  %(message)s")
 
@@ -82,7 +77,7 @@ def add_follower_foragers(
                     "x": new_x,
                     "y": new_y,
                     "time": t + 1,
-                    "forager": b ,
+                    "forager": b,
                     "type": "follower",
                 }
 

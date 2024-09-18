@@ -1,4 +1,5 @@
-from typing import List, Optional, Dict
+import warnings
+from typing import Dict, List
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -6,10 +7,8 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import torch
-import warnings
 
-warnings.simplefilter(action='ignore', category=FutureWarning)
-
+warnings.simplefilter(action="ignore", category=FutureWarning)
 
 
 def plot_trajectories(df, title):
@@ -47,104 +46,6 @@ def plot_distances(distances, title=""):
 
     fig.update_layout(showlegend=False)
     return fig
-
-
-def new_animate_foragers(
-        sim,
-        width: float =800,
-        height: float =800,
-        point_size: float =10,
-        color_by: str = "forager",
-        transition = 500,
-        derivedDF: Optional[pd.DataFrame] = None,
-        predictors: Optional[Dict[str,str]] = None,  #the second one is column to color by
-):
-
-
-    df = sim.foragersDF.copy()
-
-    
-    if df[color_by].dtype != 'category':
-        df[color_by] = df[color_by].astype('category')
-
-    if derivedDF is not None:
-        pred_df = derivedDF.copy()
-
-        colors = {}
-
-        for key in predictors.keys():
-            color_column_name = predictors[key]["color_by"]
-            if color_column_name in df.columns:
-                colors[key] = df[color_column_name].astype('category')
-            else:
-                colors[key] = pred_df[color_column_name]
-           
-
-    fig = px.scatter(df, x="x", y="y", animation_frame="time", color=color_by)
- 
-    if derivedDF is not None:
-        for key in predictors.keys():
-            fig.add_trace(
-                    go.Scatter(
-                        x=pred_df['x'],
-                        y=pred_df['y'],
-                        mode='markers',
-                        marker=dict(
-                            symbol=predictors[key]["symbol"],  # Square marker
-                            size=point_size,
-                            color= colors[key],  # Color by the variable from second DataFrame
-                            opacity=0.7,
-                            line=dict(width=1, color='DarkSlateGrey')  # Optional marker styling
-                        ),
-                        name=f"{key} (f)"
-                    )
-                )
-
-
-
-
-
-    fig = go.Figure(
-        data=fig["frames"][0]["data"],
-        frames=fig["frames"],
-        layout=fig.layout,
-    )
-
-    fig.update_layout(
-        template="presentation",
-        xaxis=dict(
-            range=[-1, sim.grid_size + 1],
-            showgrid=False,
-            zeroline=False,
-            ticks="",
-            showticklabels=False,
-            title="",
-        ),
-        yaxis=dict(
-            range=[-1, sim.grid_size + 1],
-            showgrid=False,
-            zeroline=False,
-            ticks="",
-            showticklabels=False,
-            title="",
-            scaleanchor="x",  # This makes the y-axis scale to match the x-axis
-        ),
-        autosize=False,
-        width=width,
-        height=height,
-    )
-
-    
-    
-    fig.layout.updatemenus[0].buttons[0].args[1]["transition"]["duration"] = transition
-
-    fig.update_traces(marker=dict(size=point_size))
-    
-    return fig
-    
-        # rew = sim.rewardsDF.copy()
-        # rew["forager"] = "reward"
-        # df = pd.concat([df, rew])
 
 
 def animate_foragers(
@@ -414,9 +315,14 @@ def visualise_forager_predictors(
 
 
 def plot_coefs(
-    selected_samples: Dict[str,torch.Tensor], title: str, nbins=20, ann_start_y=100, ann_break_y=50, generate_object=False
+    selected_samples: Dict[str, torch.Tensor],
+    title: str,
+    nbins=20,
+    ann_start_y=100,
+    ann_break_y=50,
+    generate_object=False,
 ):
-    
+
     for key in selected_samples.keys():
         selected_samples[key] = selected_samples[key].flatten()
 
@@ -461,11 +367,11 @@ def plot_coefs(
     fig_coefs.update_layout(
         legend=dict(
             orientation="h",  # Horizontal legend
-            yanchor="top",    # Anchor the legend to the top of the container
-            y=-0.25,           # Position it below the plot
-            xanchor="center", # Center it horizontally
-            x=0.5,            # Center it horizontally in the plot
-            title_text='Legend' # Optional: Title for the legend
+            yanchor="top",  # Anchor the legend to the top of the container
+            y=-0.25,  # Position it below the plot
+            xanchor="center",  # Center it horizontally
+            x=0.5,  # Center it horizontally in the plot
+            title_text="Legend",  # Optional: Title for the legend
         )
     )
 

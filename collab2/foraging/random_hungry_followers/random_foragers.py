@@ -2,8 +2,7 @@ import warnings
 
 import numpy as np
 import pandas as pd
-
-from collab.foraging.toolkit import generate_grid, update_rewards
+from rhf_helpers import generate_grid, update_rewards
 
 
 class Foragers:

@@ -143,12 +143,12 @@ def animate_predictors(
     ax.set_xlim(0, grid_size)
     ax.set_ylim(0, grid_size)
     ax.set_aspect("equal")
-    #TODO potentially expand with forager legend
-    #ax.legend()
+    # TODO potentially expand with forager legend
+    # ax.legend()
 
     ax.set_xticks([])
     ax.set_yticks([])
-    ax.axis('off')
+    ax.axis("off")
 
     # Initialize function to set up the background of each frame
     def init():
@@ -202,7 +202,12 @@ def animate_predictors(
 
     # Create the animation
     ani = animation.FuncAnimation(
-        fig, update, frames=num_frames, init_func=init, blit=True, interval = 500,
-        repeat_delay = 3500
+        fig,
+        update,
+        frames=num_frames,
+        init_func=init,
+        blit=True,
+        interval=500,
+        repeat_delay=3500,
     )
     return ani

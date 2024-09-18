@@ -1,30 +1,34 @@
-import copy
-
-import numpy as np
-import pandas as pd
-import torch
-from typing import List, Tuple, Dict
-from pyro.infer.autoguide import AutoMultivariateNormal, init_to_mean
-import pyro
-import time
 import logging
+import time
+from typing import Dict, List, Tuple
 
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
+import pandas as pd
+import pyro
+import torch
+from pyro.infer.autoguide import AutoMultivariateNormal, init_to_mean
 
 
-def prep_data_for_inference(sim_derived, predictors: List[str],
-                            outcome_vars: str) -> Tuple[Dict[str, torch.Tensor],
-                                                        Dict[str, torch.Tensor]]:
-    df = sim_derived.derivedDF[predictors + outcome_vars].copy()
+def prep_data_for_inference(
+    sim_derived, predictors: List[str], outcome_vars: str
+) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]:
 
+    if isinstance(outcome_vars, str):
+        outcome_list = [outcome_vars]
+    else:
+        outcome_list = outcome_vars
 
-    
+    df = sim_derived.derivedDF[predictors + outcome_list].copy()
+
     # assert no nas in df
     assert df.notna().all().all(), "Dataframe contains NaN values"
 
-    predictor_tensors = {key: torch.tensor(df[key].values, dtype=torch.float32) for key in predictors}
-    outcome_tensors = {key: torch.tensor(df[key].values, dtype=torch.float32) for key in outcome_vars}
-
+    predictor_tensors = {
+        key: torch.tensor(df[key].values, dtype=torch.float32) for key in predictors
+    }
+    outcome_tensors = {
+        key: torch.tensor(df[key].values, dtype=torch.float32) for key in outcome_vars
+    }
 
     return predictor_tensors, outcome_tensors
 
@@ -42,6 +46,7 @@ def summary(samples, sites):
             ]
     return site_stats
 
+
 def run_svi_inference(
     model,
     verbose=True,
@@ -51,13 +56,11 @@ def run_svi_inference(
     n_steps=100,
     ylim=None,
     plot=True,
-    **model_kwargs
+    **model_kwargs,
 ):
     losses = []
     if guide is None:
-        guide = vi_family(
-            model, init_loc_fn=init_to_mean
-        )
+        guide = vi_family(model, init_loc_fn=init_to_mean)
     elbo = pyro.infer.Trace_ELBO()(model, guide)
 
     elbo(**model_kwargs)
@@ -92,27 +95,34 @@ def get_samples(
     logging.info(f"Starting SVI inference with {num_svi_iters} iterations.")
     start_time = time.time()
     pyro.clear_param_store()
-    guide = run_svi_inference(model, n_steps=num_svi_iters, predictors = predictors, outcome = outcome)
+    guide = run_svi_inference(
+        model, n_steps=num_svi_iters, predictors=predictors, outcome=outcome
+    )
     end_time = time.time()
     elapsed_time = end_time - start_time
     logging.info("SVI inference completed in %.2f seconds.", elapsed_time)
 
-    predictive = pyro.infer.Predictive(model = model, guide = guide, num_samples=num_samples, parallel = True)
+    predictive = pyro.infer.Predictive(
+        model=model, guide=guide, num_samples=num_samples, parallel=True
+    )
 
     samples = {
         k: v.flatten().reshape(num_samples, -1).detach().cpu().numpy()
-        for k, v in predictive(predictors,outcome).items()
+        for k, v in predictive(predictors, outcome).items()
         if k != "obs"
     }
     print(samples.keys())
 
-    sites = [key for key in samples.keys() if (key.startswith("weight") and not key.endswith("sigma"))]
+    sites = [
+        key
+        for key in samples.keys()
+        if (key.startswith("weight") and not key.endswith("sigma"))
+    ]
     print(sites)
 
     print("Coefficient marginals:")
     for site, values in summary(samples, sites).items():
         print("Site: {}".format(site))
         print(values, "\n")
-    
-    return {"samples": samples, "guide": guide, "predictive": predictive}
 
+    return {"samples": samples, "guide": guide, "predictive": predictive}

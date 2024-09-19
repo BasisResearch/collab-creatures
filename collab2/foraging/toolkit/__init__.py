@@ -5,6 +5,8 @@ from .animate_foragers import (  # noqa: F401
     plot_trajectories,
     visualise_forager_predictors,
 )
+from .access import generate_access_predictor
+
 from .communicates import generate_communicates  # noqa: F401
 from .derive import derive_predictors_and_scores  # noqa: F401
 

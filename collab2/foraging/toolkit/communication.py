@@ -2,6 +2,7 @@ import copy
 from typing import Callable, List, Optional
 
 import pandas as pd
+import numpy as np
 
 from collab2.foraging.toolkit import filter_by_distance
 from collab2.foraging.toolkit.filtering import constraint_filter_close_to_reward
@@ -41,24 +42,9 @@ def _generate_communication_predictor(
     for f in range(num_foragers):
         for t in range(num_frames):
             if predictor[f][t] is not None:
-                # add column for predictor_name
-                # add coefficient multiplied past predictor frames
-                # with memory steps back
 
                 predictor[f][t][predictor_name] = 0
-                remembered_predictors = []
-                if memory>0:
-                    print(range(1, memory))
-                    for m in range(1, memory+1):
-                        print(m)
-                        if t - m >= 0:
-                            print(t,m, "appending")
-                            remembered_predictors.append(
-                                predictor[f][t - m][predictor_name] * 1/(m+1)
-                                )
-                            
 
-                    predictor[f][t][predictor_name] = sum(remembered_predictors)
 
                 # find confocals within interaction length
                 interaction_partners = filter_by_distance(

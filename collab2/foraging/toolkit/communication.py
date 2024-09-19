@@ -45,7 +45,21 @@ def _generate_communication_predictor(
                 # add coefficient multiplied past predictor frames
                 # with memory steps back
 
-                # predictor[f][t][predictor_name] = 0
+                predictor[f][t][predictor_name] = 0
+                remembered_predictors = []
+                if memory>0:
+                    print(range(1, memory))
+                    for m in range(1, memory+1):
+                        print(m)
+                        if t - m >= 0:
+                            print(t,m, "appending")
+                            remembered_predictors.append(
+                                predictor[f][t - m][predictor_name] * 1/(m+1)
+                                )
+                            
+
+                    predictor[f][t][predictor_name] = sum(remembered_predictors)
+
                 # find confocals within interaction length
                 interaction_partners = filter_by_distance(
                     foragersDF,

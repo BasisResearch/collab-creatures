@@ -61,8 +61,6 @@ from .visibility import (  # noqa: F401
     filter_by_visibility,
     visibility_vs_distance,
 )
-
-from .access import generate_access_predictor
 from .visualization import animate_predictors, plot_predictor  # noqa: F401
 
 # from .trace import rewards_to_trace, rewards_trace  # noqa: F401

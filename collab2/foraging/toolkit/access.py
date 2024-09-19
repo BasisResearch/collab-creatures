@@ -10,7 +10,6 @@ from collab2.foraging.toolkit.point_contribution import (
 from collab2.foraging.toolkit.utils import dataObject
 
 
-
 def _generate_access_predictor(
     foragers: List[pd.DataFrame],
     local_windows: List[List[pd.DataFrame]],
@@ -32,7 +31,6 @@ def _generate_access_predictor(
                 current_x = foragers[f].loc[foragers[f]["time"] == t, "x"].item()
                 current_y = foragers[f].loc[foragers[f]["time"] == t, "y"].item()
 
-
                 predictor[f][t][predictor_name] += _point_contribution(
                     current_x,
                     current_y,
@@ -40,8 +38,6 @@ def _generate_access_predictor(
                     decay_contribution_function,
                     **decay_contribution_function_kwargs,
                 )
-
-            
 
                 max_abs_over_grid = predictor[f][t][predictor_name].abs().max()
                 if max_abs_over_grid > 0:
@@ -64,4 +60,3 @@ def generate_access_predictor(foragers_object: dataObject, predictor_name: str):
     )
 
     return predictor
-

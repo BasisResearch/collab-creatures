@@ -17,7 +17,6 @@ def _generate_communication_predictor(
     foragers: List[pd.DataFrame],
     foragersDF: pd.DataFrame,
     rewards: List[pd.DataFrame],
-    memory: int,
     local_windows: List[List[pd.DataFrame]],
     predictor_name: str,
     interaction_length: float,
@@ -52,7 +51,7 @@ def _generate_communication_predictor(
                     f,
                     t,
                     interaction_length,
-                    interaction_constraint=constraint_filter_close_to_reward,
+                    interaction_constraint=interaction_constraint,
                     **interaction_constraint_params,
                 )
 

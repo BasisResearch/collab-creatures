@@ -172,7 +172,6 @@ def animate_predictors(
         ]
 
         # Update positions of the particles
-        print(frame)
         current_positions = filtered_foragers.loc[
             foragersDF["time"] == frame, ["x", "y"]
         ].values

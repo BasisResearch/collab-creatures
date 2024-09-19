@@ -2,7 +2,11 @@ import warnings
 
 import numpy as np
 import pandas as pd
-from collab2.foraging.random_hungry_followers.rhf_helpers import (generate_grid, update_rewards)
+
+from collab2.foraging.random_hungry_followers.rhf_helpers import (
+    generate_grid,
+    update_rewards,
+)
 
 
 class Foragers:

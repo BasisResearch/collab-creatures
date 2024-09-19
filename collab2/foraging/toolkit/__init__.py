@@ -1,3 +1,4 @@
+from .access import generate_access_predictor  # noqa: F401
 from .animate_foragers import (  # noqa: F401
     animate_foragers,
     plot_coefs,

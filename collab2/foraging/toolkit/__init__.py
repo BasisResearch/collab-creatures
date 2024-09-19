@@ -23,7 +23,6 @@ from .inference import get_samples, prep_data_for_inference, summary  # noqa: F4
 from .local_windows import (  # noqa: F401
     _generate_local_windows,
     _get_grid,
-    _get_grid,
     generate_local_windows,
 )
 from .models import (  # noqa: F401

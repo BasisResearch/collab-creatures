@@ -188,8 +188,6 @@ def animate_predictors(
                 size = (
                     abs(predictor[f][frame][predictor_name])
                     / abs(predictor[f][frame][predictor_name]).max()
-                    abs(predictor[f][frame][predictor_name])
-                    / abs(predictor[f][frame][predictor_name]).max()
                 )
                 size[np.isnan(size)] = 0
                 predictors_scat_list[i].set_offsets(current_features)

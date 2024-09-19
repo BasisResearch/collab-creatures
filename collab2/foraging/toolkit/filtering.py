@@ -93,3 +93,29 @@ def constraint_filter_nearest(
     )
 
     return current_positions["forager"][distances == distances.min()].to_list()
+
+
+def constraint_filter_close_to_reward(
+    f_ind, f, t, foragersDF, grid_size, finders_tolerance, time_lag, rewards
+):
+
+    current_positions = foragersDF.loc[
+        np.logical_and(foragersDF["forager"].isin(f_ind), foragersDF["time"] == t)
+    ]
+
+    on_reward = []
+
+    for _, row in current_positions.iterrows():
+        on_reward.append(
+            any(
+                np.sqrt(
+                    (row["x"].item() - rewards[int(t - time_lag)]["x"]) ** 2
+                    + (row["y"].item() - rewards[int(t - time_lag)]["y"]) ** 2
+                )
+                < finders_tolerance
+            )
+        )
+
+    f_ind_constr = [f for f, rew in zip(f_ind, on_reward) if rew]
+
+    return [int(f) for f in f_ind_constr]

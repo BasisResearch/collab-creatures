@@ -16,7 +16,11 @@ from .dynamical_utils import (  # run_svi_inference # noqa: F401;
     plot_ds_trajectories,
 )
 from .evaluate import evaluate_performance  # noqa: F401
-from .filtering import constraint_filter_nearest, filter_by_distance  # noqa: F401
+from .filtering import (  # noqa F401
+    constraint_filter_close_to_reward,
+    constraint_filter_nearest,
+    filter_by_distance,
+)
 from .food import generate_food_predictor  # noqa: F401
 from .inference import run_svi_inference  # type: ignore # noqa: F401
 from .inference import get_samples, prep_data_for_inference, summary  # noqa: F401

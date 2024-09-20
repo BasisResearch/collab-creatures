@@ -1,11 +1,12 @@
 import copy
-from typing import Callable, List, Optional
+from typing import Any, Callable, List, Optional, Union
 
 import pandas as pd
-import numpy as np
 
-from collab2.foraging.toolkit import filter_by_distance
-from collab2.foraging.toolkit.filtering import constraint_filter_close_to_reward
+from collab2.foraging.toolkit.filtering import (
+    constraint_filter_close_to_reward,
+    filter_by_distance,
+)
 from collab2.foraging.toolkit.point_contribution import (
     _exponential_decay,
     _point_contribution,
@@ -21,7 +22,10 @@ def _generate_communication_predictor(
     predictor_name: str,
     interaction_length: float,
     interaction_constraint: Optional[
-        Callable[[List[int], int, int, pd.DataFrame], List[int]]
+        Union[
+            Callable[[List[int], int, int, pd.DataFrame], List[int]],
+            Callable[[list[int], int, int, Any, float, list[int]], list[int]],
+        ]
     ] = constraint_filter_close_to_reward,
     interaction_constraint_params: Optional[dict] = None,
     communication_contribution_function: Callable = _exponential_decay,
@@ -43,7 +47,6 @@ def _generate_communication_predictor(
             if predictor[f][t] is not None:
 
                 predictor[f][t][predictor_name] = 0
-
 
                 # find confocals within interaction length
                 interaction_partners = filter_by_distance(

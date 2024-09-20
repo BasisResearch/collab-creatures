@@ -7,6 +7,7 @@ from .animate_foragers import (  # noqa: F401
     visualise_forager_predictors,
 )
 from .communicates import generate_communicates  # noqa: F401
+from .communication import generate_communication_predictor  # noqa: F401
 from .derive import derive_predictors_and_scores  # noqa: F401
 
 #  TODO resolve if any major differences between them and potentially unify

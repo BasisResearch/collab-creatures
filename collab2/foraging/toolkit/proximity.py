@@ -176,9 +176,9 @@ def generate_proximity_predictor(foragers_object: dataObject, predictor_name: st
     params = foragers_object.predictor_kwargs[predictor_name]
 
     predictor = _generate_proximity_predictor(
-        foragers = foragers_object.foragers,
-        foragersDF = foragers_object.foragersDF,
-        local_windows= foragers_object.local_windows,
+        foragers=foragers_object.foragers,
+        foragersDF=foragers_object.foragersDF,
+        local_windows=foragers_object.local_windows,
         predictor_name=predictor_name,
         **params,
     )

@@ -2,81 +2,124 @@ from typing import Any, Optional
 
 import numpy as np
 
-
-class Fish_IndependentRates:
+class StochasticFish_IndependentRates:
     def __init__(
         self,
         N: Optional[int] = 4,
         arena_size: Optional[float] = 50,
         Tmax: Optional[float] = 10,
-        dt: Optional[float] = 0.1,
+        dt: Optional[float] = None,
         random_state: Optional[int] = 0,
         interaction_params: Optional[dict[str, dict[str, Any]]] = None,
+        vscale : Optional[float] = None
     ):
         """
         :param N: number of fish
         :param arena_size: Radius of arena
         :param Tmax: simulation end time
-        :param dt: time-step for logging fish positions, speed, and heading
+        :param dt: time-step for logging fish positions, speed, and heading. 
+            If None, a timestep is chosen based on total interaction rate
         :param random_state: random seed for reproducibility
         :param interaction_params: nested dictionary of parameters of the interactions in the model.
             the keys of the dictionary are interaction names, each corresponding value is a dictionary of
             parameters for the interaction, eg, "rate" (required for all interactions). There must exist a method
             named "{interaction}_interaction" to implement each interaction.
+        :param vscale: Scale used to sample initial velocity magnitude from Rayleigh distribution
+            If None, vscale is chosen based on avg_rate and arena_size  
         """
         self.N = N
         self.arena_size = arena_size
         self.Tmax = Tmax
-        self.dt = dt
-
-        # choose default parameters
-        if interaction_params is None:
-            interaction_params = {
-                "vicsek": {
-                    "rate": 0.5 * np.ones(N),
-                    "interaction_length": arena_size / 3 * np.ones(N),
-                    "sigma_v": 5 * np.ones(N),
-                    "sigma_t": 1 * np.ones(N),
-                },
-                "pairwiseCopying": {
-                    "rate": 0.5 * np.ones(N),
-                    "interaction_length": arena_size / 3 * np.ones(N),
-                    "sigma_v": 5 * np.ones(N),
-                    "sigma_t": 1 * np.ones(N),
-                },
-                "diffusion": {
-                    "rate": 0.5 * np.ones(N),
-                    "sigma_v": 5 * np.ones(N),
-                    "sigma_t": 1 * np.ones(N),
-                },
-            }
+        self.dt = dt 
         self.interaction_params = interaction_params
+        self.random_state = random_state
+        self.vscale = vscale 
 
-        ## initialize matrices to save trajectory and velocity information ##
-        time_steps = np.ceil(Tmax / dt).astype(int) + 1
-
-        # trajectories matrix has shape (N x time_steps x 2), with the last column representing x,y
-        self.trajectories = np.full((N, time_steps, 2), np.nan)
-        # velocities matrix has shape (N x time_steps x 2), with the last column representing v, theta
-        self.velocities = np.full((N, time_steps, 2), np.nan)
-
-        ## choose random initial conditions ##
-        self.time = 0
+    def init_for_simulation(self):
 
         # initialize random number generator
-        self.rng = np.random.default_rng(seed=random_state)
+        self.rng = np.random.default_rng(seed=self.random_state)
 
-        # random positions inside the arena
-        r1 = arena_size * self.rng.random(N)
-        r2 = 2 * np.pi * self.rng.random(N)
+        # initialize simulation time
+        self.time = 0 
+
+        # choose default params if interaction_params not specified
+        if self.interaction_params is None :
+            self.interaction_params = {
+                "vicsek": {
+                    "rate": 0.5 * np.ones(self.N),
+                    "interaction_length": self.arena_size / 3 * np.ones(self.N),
+                    "sigma_v": 5 * np.ones(self.N),
+                    "sigma_t": 1 * np.ones(self.N),
+                },
+                "pairwiseCopying": {
+                    "rate": 0.5 * np.ones(self.N),
+                    "interaction_length": self.arena_size / 3 * np.ones(self.N),
+                    "sigma_v": 5 * np.ones(self.N),
+                    "sigma_t": 1 * np.ones(self.N),
+                },
+                "diffusion": {
+                    "rate": 0.5 * np.ones(self.N),
+                    "sigma_v": 5 * np.ones(self.N),
+                    "sigma_t": 1 * np.ones(self.N),
+                }
+            }
+            
+        # calculate total rate 
+        total_rate = 0
+        for param_dict in self.interaction_params.values():
+            total_rate += np.sum(param_dict["rate"])
+
+        self.total_rate = total_rate
+
+        # choose dt based on total_rate if not specified
+        if self.dt is None:
+            self.dt = 0.01/self.total_rate 
+        
+        print(f"Logging time step: {self.dt}")
+
+        # choose vscale based on arena_size and avg_rate if not provided
+        if self.vscale is None:
+            avg_rate = self.total_rate/(len(self.interaction_params) * self.N)
+            self.vscale = 0.01 * self.arena_size*avg_rate
+
+        print(f"Velocity scale for initialization: {self.vscale : .2f}")
+
+        # initialize arrays
+        # add 1 since we also log time=0
+        total_time_steps = np.ceil(self.Tmax/self.dt).astype(int) + 1
+        print(f"Total time steps: {total_time_steps}")
+
+        # trajectories matrix has shape (N x total_time_steps x 2), with the last dimension representing x,y
+        self.trajectories = np.full((self.N, total_time_steps, 2), np.nan)
+        
+        # velocities matrix has shape (N x total_time_steps x 2), with the last column representing v, theta
+        self.velocities = np.full((self.N, total_time_steps, 2), np.nan)
+
+        # randomly choose intial conditions
+        # choose random positions inside the arena from uniform distribution
+        r1 = self.arena_size * self.rng.random(self.N)
+        r2 = 2 * np.pi * self.rng.random(self.N)
         self.trajectories[:, 0, 0] = r1 * np.cos(r2)
         self.trajectories[:, 0, 1] = r1 * np.sin(r2)
 
-        # random velocity magnitude and direction
-        self.velocities[:, 0, 0] = arena_size / 10 * self.rng.random(N)
+        # choose theta from uniform distribution, v from rayleigh
         self.velocities[:, 0, 1] = (
-            2 * np.pi * self.rng.random(N) - np.pi
+            2 * np.pi * self.rng.random(self.N) - np.pi
         )  # heading angles in [-np.pi, np.pi)
+
+        self.velocities[:, 0 ,0] = self.rng.rayleigh(scale=self.vscale,size=self.N)
+
+        # for each interaction, estimate avg interaction number before leaving interaction radius
+        for interaction,params in self.interaction_params.items():
+            try:
+                L = np.mean(params["interaction_length"])
+                rate = np.mean(params["rate"])
+                print(f"Average number of {interaction} interactions before leaving interaction radius: {int(L*rate/(self.vscale))}")
+            except KeyError:
+                pass
+        
+
 
     def apply_reflective_bc(self, t_ind):
         """
@@ -136,14 +179,8 @@ class Fish_IndependentRates:
             idx_0 += 1
 
     def time_to_next_interaction(self):
-        total_rate = np.sum(
-            [
-                np.sum(self.interaction_params[key]["rate"])
-                for key in self.interaction_params.keys()
-            ]
-        )
         r1 = self.rng.random()
-        return 1 / total_rate * np.log(1 / r1)
+        return 1 / self.total_rate * np.log(1 / r1)
 
     def sample_next_interaction(self):
         rate_matrix = np.stack(
@@ -197,10 +234,16 @@ class Fish_IndependentRates:
                 * np.sin(self.velocities[neighbors, t_ind, 1])
             )
             v = np.sqrt(vx**2 + vy**2)
-            theta = np.arctan2(vy, vx)
+            
+            if v:
+                theta = np.arctan2(vy, vx)
+            else:
+                # resample theta since there is no reason for it to default to zero
+                theta = 2*np.pi*self.rng.random() 
 
             # add noise and update f
-            self.velocities[f, t_ind, 0] = v + self.rng.normal(loc=0, scale=sigma_v)
+            # preferred velocity magnitude is same as before interactions
+            self.velocities[f, t_ind, 0] += self.rng.normal(loc=0, scale=sigma_v)
             self.velocities[f, t_ind, 1] = theta + self.rng.normal(loc=0, scale=sigma_t)
 
             # make sure velocity magnitude is not negative!
@@ -240,10 +283,6 @@ class Fish_IndependentRates:
         self.velocities[f, t_ind, 0] = np.maximum(0, self.velocities[f, t_ind, 0])
 
     def simulate(self):
-        # t_init = 0
-        # nSteps = np.ceil(self.Tmax/self.dt).astype(int)
-        # self.evolve_positions(t_init, nSteps)
-
         while True:
             # find time to next reaction
             tau = self.time_to_next_interaction()

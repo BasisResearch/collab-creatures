@@ -79,7 +79,7 @@ def _velocity_predictor_contribution(
     # have angular preference in the predictor.
     # therefore, we check for that condition and return an isotropic gaussian if true
 
-    if v_pref == 0:  # then theta_pref does not matter!
+    if v_pref == 0 or np.isnan(theta_pref):  # then theta_pref does not matter!
         P_theta = 1
     else:
         # there is a discontinuity when taking the difference of angles (2pi \equiv 0 !),

@@ -88,6 +88,8 @@ class StochasticFish_IndependentRates:
         # initialize arrays
         # add 1 since we also log time=0
         total_time_steps = np.ceil(self.Tmax/self.dt).astype(int) + 1
+        self.total_time_steps = total_time_steps
+
         print(f"Total time steps: {total_time_steps}")
 
         # trajectories matrix has shape (N x total_time_steps x 2), with the last dimension representing x,y
@@ -248,6 +250,7 @@ class StochasticFish_IndependentRates:
 
             # make sure velocity magnitude is not negative!
             self.velocities[f, t_ind, 0] = np.maximum(0, self.velocities[f, t_ind, 0])
+        return len(neighbors)
 
     def pairwiseCopying_interaction(self, f):
         t_ind = int(self.time / self.dt)
@@ -272,6 +275,8 @@ class StochasticFish_IndependentRates:
             # make sure velocity magnitude is not negative!
             self.velocities[f, t_ind, 0] = np.maximum(0, self.velocities[f, t_ind, 0])
 
+        return len(neighbors)
+
     def diffusion_interaction(self, f):
         t_ind = int(self.time / self.dt)
         sigma_v = self.interaction_params["diffusion"]["sigma_v"][f]
@@ -282,8 +287,13 @@ class StochasticFish_IndependentRates:
         # make sure velocity magnitude is not negative!
         self.velocities[f, t_ind, 0] = np.maximum(0, self.velocities[f, t_ind, 0])
 
+        return -1 # since interaction does not involve neighbors 
+
     def simulate(self):
         self.init_for_simulation()
+        
+        # number of neighbors involved in each interaction type
+        interaction_nn = {key : [] for key in self.interaction_params.keys()}
 
         while True:
             # find time to next reaction
@@ -304,7 +314,14 @@ class StochasticFish_IndependentRates:
 
             # apply transformation
             interaction_func = getattr(self, f"{interaction}_interaction")
-            interaction_func(f)
+            nn = interaction_func(f)
+            interaction_nn[interaction].append(nn)
 
             if self.time >= self.Tmax:
                 break
+
+        # print statistics of interactions
+        for interaction,nn in interaction_nn.items():
+            print(f"Time-steps with {interaction} interaction: {len(nn)} ({100*len(nn)/self.total_time_steps :.2f}%)")
+            nn = np.array(nn)
+            print(f"Number {interaction} interactions with more than 1 neighbor: {np.sum(nn>1)} ({100*np.sum(nn>1)/len(nn) :.2f}%)")

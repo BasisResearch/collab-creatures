@@ -144,10 +144,10 @@ class Foragers:
                 self.grid_size / 2
             )  # make centered
 
-            if any(forager_x < 0) or any(forager_x > self.grid_size):
+            if any(forager_x < 0) or any(forager_x >= self.grid_size):
                 size_warning_flag = True
                 forager_x[forager_x < 0] = 0
-                forager_x[forager_x > self.grid_size] = self.grid_size
+                forager_x[forager_x >= self.grid_size] = self.grid_size - 1
 
             forager_y = np.cumsum(
                 np.random.choice(
@@ -158,9 +158,9 @@ class Foragers:
                 )
             ) + (self.grid_size / 2)
 
-            if any(forager_y < 0) or any(forager_y > self.grid_size):
+            if any(forager_y < 0) or any(forager_y >= self.grid_size):
                 forager_y[forager_y < 0] = 0
-                forager_y[forager_y > self.grid_size] = self.grid_size
+                forager_y[forager_y >= self.grid_size] = self.grid_size - 1
 
             if size_warning_flag:
                 warnings.warn(
@@ -190,11 +190,11 @@ class Foragers:
     def generate_random_rewards(self, size=None):
         if size is None:
             size = self.num_rewards
-        rewardsX = np.random.choice(range(1, self.grid_size + 1), size=size)
-        rewardsY = np.random.choice(range(1, self.grid_size + 1), size=size)
+        rewardsX = np.random.choice(range(0, self.grid_size), size=size)
+        rewardsY = np.random.choice(range(0, self.grid_size), size=size)
 
         rewards = []
-        for t in range(1, self.num_frames + 1):
+        for t in range(0, self.num_frames):
             rewards.append(pd.DataFrame({"x": rewardsX, "y": rewardsY, "time": t}))
 
         return {"rewards": rewards, "rewardsDF": pd.concat(rewards)}

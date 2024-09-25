@@ -6,7 +6,7 @@ import pandas as pd
 
 
 def generate_grid(grid_size):
-    grid = list(product(range(1, grid_size + 1), repeat=2))
+    grid = list(product(range(0, grid_size), repeat=2))
     return pd.DataFrame(grid, columns=["x", "y"])
 
 

@@ -144,6 +144,21 @@ def generate_local_windows(foragers_object: dataObject) -> List[List[pd.DataFram
         Must have `local_windows_kwargs` as an attribute
 
     :return: Nested list of local_windows (DataFrames with "x","y" columns) grouped by forager index and time
+    
+    The list of keyword arguments:
+        :param window_size: radius of local_windows. Default: 1.0
+        :param sampling_fraction: fraction of grid points to sample. It may be advisable to subsample
+            grid points for speed
+        :param random_seed: random state for subsampling. Default: 0
+        :param skip_incomplete_frames: Defaults to False. If True, `local_windows` for *all* foragers are set to `None`
+            whenever tracks for *any* forager is missing. This implies that frames with incomplete
+            tracking would be skipped entirely from subsequent predictor/score computations. If False (default
+            behavior) `local_windows` are set to `None` only for the missing foragers, and computations proceed as normal
+            for other foragers in the frame
+        :param grid_constraint: Optional callable to model inaccessible points in the grid. This function takes as arguments
+            the grid (as a pd.DataFrame) and any additional kwargs, and returns a DataFrame of accessible grid points
+        :param grid_constrain_params: optional dictionary of kwargs for `grid_constraint`, to be passed to `_get_grid`
+
     """
     # grab parameters specific to local_windows
     params = foragers_object.local_windows_kwargs

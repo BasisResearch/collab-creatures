@@ -74,7 +74,7 @@ class StochasticFish_IndependentRates:
 
         # choose dt based on total_rate if not specified
         if self.dt is None:
-            self.dt = 0.01/self.total_rate 
+            self.dt = 0.1/self.total_rate 
         
         print(f"Logging time step: {self.dt}")
 
@@ -283,6 +283,8 @@ class StochasticFish_IndependentRates:
         self.velocities[f, t_ind, 0] = np.maximum(0, self.velocities[f, t_ind, 0])
 
     def simulate(self):
+        self.init_for_simulation()
+
         while True:
             # find time to next reaction
             tau = self.time_to_next_interaction()

@@ -4,7 +4,7 @@ from IPython.display import HTML
 from matplotlib.animation import FuncAnimation
 
 
-def animate_trajectories(sim, frames_skipped = 1, fMin=None, fMax = None):
+def animate_trajectories(sim, frames_skipped = 1, Tmin=None, Tmax = None):
 
     x = sim.trajectories[:, :, 0]  # shape : nfish x time
     y = sim.trajectories[:, :, 1]
@@ -14,10 +14,10 @@ def animate_trajectories(sim, frames_skipped = 1, fMin=None, fMax = None):
     dt = sim.dt
     L = sim.arena_size/10
 
-    if fMin is None:
-        fMin = 0
-    if fMax is None:
-        fMax = x.shape[1]
+    if Tmin is None:
+        Tmin = 0
+    if Tmax is None:
+        Tmax = sim.Tmax
 
 
     # Set up the figure and axis
@@ -50,7 +50,8 @@ def animate_trajectories(sim, frames_skipped = 1, fMin=None, fMax = None):
         return particles, *velocity_lines
 
     # Create the animation
-    anim = FuncAnimation(fig, update, frames=range(fMin,fMax,frames_skipped), interval=1/dt, blit=True)
+    interval = 1000*frames_skipped*dt #multiple by 1000 to convert to ms
+    anim = FuncAnimation(fig, update, frames=range(int(Tmin/dt),int(Tmax/dt),frames_skipped), interval=interval, blit=False)
 
     # Display the animation inline in Jupyter Notebook
     return HTML(anim.to_jshtml())

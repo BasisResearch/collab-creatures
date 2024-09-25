@@ -38,7 +38,7 @@ def _generate_combined_DF(
 
     :param predictors_and_scoress: dictionary of computed predictors/scores
     :param dropna: set to `True` to drop NaN elements from final DataFrame
-    :param add_scaled_values: set to `True` to scale the predictor/score columns and
+    :param add_scaled_values: set to `True` to scale the predictor/score columns using empirical CDF and
         add the values as additional columns in final DataFrame
     :return: final, flattened DataFrame containing all computed predictors as columns
     """
@@ -63,21 +63,17 @@ def _generate_combined_DF(
         if dropped_frames:
             warnings.warn(
                 f"""
-                      Dropped {dropped_frames}/{og_frames} frames from `derivedDF` due to NaN values.
-                      Missing values can arise when computations depend on next/previous step positions
-                      that are unavailable. See documentation of the corresponding predictor/score generating
-                      functions for more information.
+                      Dropped {dropped_frames}/{og_frames} (~{100*dropped_frames/og_frames:.2f}%) rows from `derivedDF`
+                      due to NaN values. Missing values can arise when computations depend on next/previous positions
+                      that are unavailable. See documentation of the corresponding predictor/score generating functions
+                      for more information.
                       """
             )
 
     # scale predictor columns
     if add_scaled_values:
         for key in predictors_and_scores.keys():
-            column_min = combinedDF[key].min()
-            column_max = combinedDF[key].max()
-            combinedDF[f"{key}_scaled"] = (combinedDF[key] - column_min) / (
-                column_max - column_min
-            )
+            combinedDF[f"{key}_scaled"] = combinedDF[key].rank(method="dense", pct=True)
 
     return combinedDF
 
@@ -114,8 +110,8 @@ def derive_predictors_and_scores(
                 "nextStep_squared" : {"nonlinearity_exponent" : 2},
             }
     :param dropna: set to `True` to drop NaN elements from the final DataFrame
-    :param add_scaled_values: set to `True` to compute scaled predictor scores
-        and add them as additional columns in final DataFrame
+    :param add_scaled_values: set to `True` to compute scaled predictors/scores using empirical
+        CDF and add them as additional columns in final DataFrame
     :return: final, flattened DataFrame containing all computed predictors as columns
     """
 

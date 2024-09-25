@@ -7,7 +7,11 @@ from .animate_foragers import (  # noqa: F401
     visualise_forager_predictors,
 )
 from .communicates import generate_communicates  # noqa: F401
-from .derive import derive_predictors_and_scores, get_list_of_predictors, get_list_of_scores  # noqa: F401
+from .derive import (  # noqa: F401
+    derive_predictors_and_scores,
+    get_list_of_predictors,
+    get_list_of_scores,
+)
 
 #  TODO resolve if any major differences between them and potentially unify
 from .dynamical_utils import tensorize_and_dump_count_data  # noqa: F401

@@ -4,16 +4,21 @@ from IPython.display import HTML
 from matplotlib.animation import FuncAnimation
 
 
-def animate_trajectories(sim, interval=100):
+def animate_trajectories(sim, frames_skipped = 1, fMin=None, fMax = None):
 
     x = sim.trajectories[:, :, 0]  # shape : nfish x time
     y = sim.trajectories[:, :, 1]
     theta = sim.velocities[:, :, 1]
     N = sim.N
-    n_frames = x.shape[1]
     arena_size = sim.arena_size
     dt = sim.dt
     L = sim.arena_size/10
+
+    if fMin is None:
+        fMin = 0
+    if fMax is None:
+        fMax = x.shape[1]
+
 
     # Set up the figure and axis
     fig, ax = plt.subplots()
@@ -41,11 +46,11 @@ def animate_trajectories(sim, interval=100):
             line.set_data(
                 [x[i, frame], x[i, frame] + dx], [y[i, frame], y[i, frame] + dy]
             )
-            ax.set_title(f"t={frame*dt : .2f}")
+            ax.set_title(f"t={frame*dt : .0f}")
         return particles, *velocity_lines
 
     # Create the animation
-    anim = FuncAnimation(fig, update, frames=n_frames, interval=interval, blit=True)
+    anim = FuncAnimation(fig, update, frames=range(fMin,fMax,frames_skipped), interval=1/dt, blit=True)
 
     # Display the animation inline in Jupyter Notebook
     return HTML(anim.to_jshtml())

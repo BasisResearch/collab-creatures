@@ -49,7 +49,27 @@ def _generate_access_predictor(
 
 
 def generate_access_predictor(foragers_object: dataObject, predictor_name: str):
+    """
+    Generates access-based predictors for a group of foragers. Access is defined as the ability of a forager
+    to reach a specific location in space. For a homogeneous environment, the value of the predictor is
+    inversely proportional to the distance between the forager and the target location. The decay function
+    can be customized.
 
+    Arguments:
+    :param foragers_object: A data object containing information about the foragers, including their positions,
+                            trajectories, and local windows. Such objects can be generated using `object_from_data`.
+    :param predictor_name: The name of the access predictor to be generated, used to fetch relevant parameters
+                           from `foragers_object.predictor_kwargs` and to store the computed values.
+
+    :return: A list of lists of pandas DataFrames where each DataFrame has been updated with the computed access
+             predictor values.
+
+    Predictor-specific keyword arguments:
+        :param decay_contribution_function: The decay function used to compute the value of the access predictor.
+            The default value is the exponential decay function: f(dist) - exp(-decay_factor * dist).
+            The default decay factor is 0.5, it can be customized by passing
+            an additional `decay_factor` keyword argument.
+    """
     params = foragers_object.predictor_kwargs[predictor_name]
 
     predictor = _generate_access_predictor(

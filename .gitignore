@@ -155,3 +155,5 @@ data/communicators/communicators_data/*
 data/central_park_birds_2022/*
 data/foraging/central_park_birds_cleaned_2022/*
 .vscode/launch.json
+docs/foraging/random-hungry-followers/random_hungry_followers.ipynb
+docs/foraging/random-hungry-followers/random_hungry_followers.ipynb

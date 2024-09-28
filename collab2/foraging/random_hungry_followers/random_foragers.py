@@ -48,7 +48,7 @@ class Foragers:
 
             include_random_foragers (bool): Whether to include random foragers in
                             the final output (if you only use the sim as
-                            a starting point for another foragint strategy,
+                            a starting point for another foraging strategy,
                             you might want to set this to False).
 
         Other attributes:

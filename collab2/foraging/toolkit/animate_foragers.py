@@ -17,13 +17,17 @@ def plot_trajectories(df, title):
 
     for forager in unique_foragers:
         df_forager = df[df["forager"] == forager]
-        line, = plt.plot(df_forager["x"], df_forager["y"])
-        init_loc = df_forager[df_forager.time==0]
-        # use same color as the trajectory        
-        plt.scatter(init_loc["x"], init_loc["y"], color=line.get_color(), s=50,marker="o")
-        final_loc = df_forager[df_forager.time==df_forager.time.max()]
-        plt.scatter(final_loc["x"], final_loc["y"], color=line.get_color(), s=50,marker="x")
-    
+        (line,) = plt.plot(df_forager["x"], df_forager["y"])
+        init_loc = df_forager[df_forager.time == 0]
+        # use same color as the trajectory
+        plt.scatter(
+            init_loc["x"], init_loc["y"], color=line.get_color(), s=50, marker="o"
+        )
+        final_loc = df_forager[df_forager.time == df_forager.time.max()]
+        plt.scatter(
+            final_loc["x"], final_loc["y"], color=line.get_color(), s=50, marker="x"
+        )
+
     plt.axis("equal")
     plt.gca().invert_yaxis()
     plt.axis("off")

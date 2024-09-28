@@ -55,8 +55,8 @@ def construct_visibility(
             range_df["visibility"] = range_df["distance"].apply(
                 lambda d: visibility_vs_distance(d, visibility_range)
             )
-            range_df["forager"] = forager # DB: CHECK!
-            range_df["time"] = frame # DB: CHECK!
+            range_df["forager"] = forager  # DB: CHECK!
+            range_df["time"] = frame  # DB: CHECK!
 
             range_df["time"] = range_df["time"] + time_shift
             ranges.append(range_df)
@@ -179,7 +179,7 @@ def rewards_to_trace(
         rewt = rewards[t]
         trace = grid.copy()
         trace["trace"] = 0
-        trace["time"] = t # DB: CHECK!
+        trace["time"] = t  # DB: CHECK!
         trace["trace_standardized"] = 0
 
         if len(rewt) > 0:
@@ -225,7 +225,7 @@ def update_rewards(sim, rewards, foragers, start=1, end=None):
         if eaten:
             rewards[t] = rewards[t].drop(eaten)
 
-        rewards[t]["time"] = t # DB: CHECK!
+        rewards[t]["time"] = t  # DB: CHECK!
 
     rewardsDF = pd.concat(rewards)
 

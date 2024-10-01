@@ -73,7 +73,7 @@ def generate_food_predictor(foragers_object: dataObject, predictor_name: str):
         :param decay_contribution_function: The decay function for computing the value for each reward.
         The value of the food predictor will be equal to the total contribution from the
         individual rewards.
-            The default value is the exponential decay function: f(dist) - exp(-decay_factor * dist).
+            The default value is the exponential decay function: f(dist) = exp(-decay_factor * dist).
             The default decay factor is 0.5, it can be customized by passing
             an additional `decay_factor` keyword argument.
     """

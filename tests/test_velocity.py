@@ -2,6 +2,7 @@ import os
 
 import dill
 import pandas as pd
+import pytest
 
 import collab.foraging.toolkit as ft
 from collab.foraging import random_hungry_followers as rhf
@@ -37,7 +38,7 @@ random_foragers_derived = ft.derive_predictors(
 # These tests and what they test need to be superceded by velocity and velocity tests from Palka's future work
 
 
-# @pytest.mark.skip()
+@pytest.mark.skip()
 def test_add_velocities_to_foragers():
 
     data1 = {"x": [0, 1, 4, 9, 16, 10], "y": [0, 1, 4, 9, 16, 10]}

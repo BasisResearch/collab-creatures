@@ -13,11 +13,13 @@ def continuous_contribution(
 
     contributions = torch.zeros(1)
 
-    for key, value in continuous.items():
-        bias_continuous = pyro.sample(
-            f"bias_continuous_{key}_{child_name}",
+    bias_continuous = pyro.sample(
+            f"bias_continuous_{child_name}",
             dist.Normal(0.0, leeway),  # type: ignore
         )
+
+    for key, value in continuous.items():
+        
 
         weight_continuous = pyro.sample(
             f"weight_continuous_{key}_{child_name}",

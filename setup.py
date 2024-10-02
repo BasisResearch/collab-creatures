@@ -44,7 +44,7 @@ setup(
             "flake8",
             "isort==5.13.2",
             "nbval",
-            "nbqa",
+            "nbqa==1.9.0",
             "autoflake",
         ],
     },

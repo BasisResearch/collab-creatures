@@ -11,12 +11,13 @@ def continuous_contribution(
     leeway: float,
 ) -> torch.Tensor:
 
-    contributions = torch.zeros(1)
 
     bias_continuous = pyro.sample(
             f"bias_continuous_{child_name}",
             dist.Normal(0.0, leeway),  # type: ignore
         )
+
+    weight_contributions = torch.zeros(1)
 
     for key, value in continuous.items():
         
@@ -26,11 +27,9 @@ def continuous_contribution(
             dist.Normal(0.0, leeway),  # type: ignore
         )
 
-        contribution = bias_continuous + weight_continuous * value
-        contributions = contribution + contributions
-
-    return contributions
-
+        weight_contributions = weight_contributions + weight_continuous * value
+    
+    return bias_continuous + weight_contributions
 
 def add_linear_heteroskedastic_component(
     child_name: str,

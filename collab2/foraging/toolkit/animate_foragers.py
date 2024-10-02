@@ -21,11 +21,21 @@ def plot_trajectories(df, title):
         init_loc = df_forager[df_forager.time == 0]
         # use same color as the trajectory
         plt.scatter(
-            init_loc["x"], init_loc["y"], color=line.get_color(), s=50, marker="o", label=f'Forager {forager}: initial'
+            init_loc["x"],
+            init_loc["y"],
+            color=line.get_color(),
+            s=50,
+            marker="o",
+            label=f"Forager {forager}: initial",
         )
         final_loc = df_forager[df_forager.time == df_forager.time.max()]
         plt.scatter(
-            final_loc["x"], final_loc["y"], color=line.get_color(), s=50, marker="x", label=f'Forager {forager}: final'
+            final_loc["x"],
+            final_loc["y"],
+            color=line.get_color(),
+            s=50,
+            marker="x",
+            label=f"Forager {forager}: final",
         )
 
     plt.axis("equal")

@@ -19,7 +19,7 @@ def add_follower_foragers(
     getting_worse=1.5,
     optimal=4,
     proximity_decay=1,
-    initial_positions = None
+    initial_positions=None,
 ):
     """
         A function to add follower foragers to a simulation.
@@ -37,10 +37,8 @@ def add_follower_foragers(
     how_many_foragers_already = len(old_foragers)
 
     new_foragers = sim.generate_random_foragers(
-            num_follower_foragers,
-            size=1,
-            initial_positions = initial_positions
-        )["random_foragers"]
+        num_follower_foragers, size=1, initial_positions=initial_positions
+    )["random_foragers"]
 
     for new_forager in new_foragers:
         new_forager["forager"] = new_forager["forager"] + how_many_foragers_already

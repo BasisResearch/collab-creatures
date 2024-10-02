@@ -128,11 +128,13 @@ class Foragers:
     def generate_random_foragers(self, num_foragers, size=None, initial_positions=None):
         if size is None:
             size = self.num_frames
-            
+
         # set to (grid_size/2,grid_size/2) for each forager if not provided
         if initial_positions is None:
-            initial_positions = np.array([[self.grid_size / 2, self.grid_size / 2]]* num_foragers )            
-            
+            initial_positions = np.array(
+                [[self.grid_size / 2, self.grid_size / 2]] * num_foragers
+            )
+
         random_foragers = []
 
         size_warning_flag = False
@@ -145,9 +147,7 @@ class Foragers:
                     p=self.probabilities,
                     replace=True,
                 )
-            ) + (
-                initial_positions[forager,0]
-            )
+            ) + (initial_positions[forager, 0])
 
             if any(forager_x < 0) or any(forager_x >= self.grid_size):
                 size_warning_flag = True
@@ -161,7 +161,7 @@ class Foragers:
                     p=self.probabilities,
                     replace=True,
                 )
-            ) + (initial_positions[forager,1])
+            ) + (initial_positions[forager, 1])
 
             if any(forager_y < 0) or any(forager_y >= self.grid_size):
                 forager_y[forager_y < 0] = 0

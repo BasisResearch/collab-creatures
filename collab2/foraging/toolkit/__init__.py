@@ -1,3 +1,4 @@
+from .access import generate_access_predictor  # noqa: F401
 from .animate_foragers import (  # noqa: F401
     animate_foragers,
     plot_coefs,
@@ -6,29 +7,37 @@ from .animate_foragers import (  # noqa: F401
     visualise_forager_predictors,
 )
 from .communicates import generate_communicates  # noqa: F401
-from .derive import derive_predictors  # noqa: F401
+from .derive import (  # noqa: F401
+    derive_predictors_and_scores,
+    get_list_of_predictors,
+    get_list_of_scores,
+)
+
+#  TODO resolve if any major differences between them and potentially unify
 from .dynamical_utils import tensorize_and_dump_count_data  # noqa: F401
-from .dynamical_utils import (  # noqa: F401
+from .dynamical_utils import (  # run_svi_inference # noqa: F401;
     add_ring,
     ds_uncertainty_plot,
     plot_ds_trajectories,
-    run_svi_inference,
 )
+from .evaluate import evaluate_performance  # noqa: F401
 from .filtering import constraint_filter_nearest, filter_by_distance  # noqa: F401
-from .inference import (  # noqa: F401
-    get_tensorized_data,
-    normalize,
-    prep_data_for_robust_inference,
-    summary,
-)
+from .food import generate_food_predictor  # noqa: F401
+from .inference import run_svi_inference  # type: ignore # noqa: F401
+from .inference import get_samples, prep_data_for_inference, summary  # noqa: F401
 from .local_windows import (  # noqa: F401
     _generate_local_windows,
+    _get_grid,
     generate_local_windows,
-    get_grid,
+)
+from .models import (  # noqa: F401
+    HeteroskedasticLinear,
+    add_linear_heteroskedastic_component,
+    continuous_contribution,
 )
 from .next_step_score import (  # noqa: F401
-    _generate_next_step_score,
-    generate_next_step_score,
+    _generate_nextStep_score,
+    generate_nextStep_score,
 )
 from .proximity import (  # noqa: F401; foragers_to_forager_distances,
     generate_proximity_predictor,
@@ -47,10 +56,9 @@ from .utils import (  # noqa: F401
 )
 from .velocity import (  # noqa: F401
     _add_velocity,
-    _generic_velocity_predictor,
     _velocity_predictor_contribution,
-    generate_pairwiseCopying,
-    generate_vicsek,
+    generate_pairwiseCopying_predictor,
+    generate_vicsek_predictor,
 )
 from .visibility import (  # noqa: F401
     construct_visibility,

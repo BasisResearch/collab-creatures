@@ -1,20 +1,8 @@
 import copy
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Callable, List, Optional
 
 import numpy as np
 import pandas as pd
-
-# PP_comment : even with passing constraint params as a dictionary, we might have a limitation :
-# we cannot have a constraint that depends on quantities derived within the predictor function (eg, fastest v)
-# One workaround could be to locally (i.e. within the function) modify foragersDF with the derived quantities
-# and pass that to the constraint function via filter_by_distance
-
-# RU_comment I think the proper workaround is to instantiate object, add velocities and then use the object
-# to write a constraint because now it will have velocities available
-# and then pass this constraint to predictor derivation.
-# If we can isolate velocities addition from derived predictor calculation.
-
-# TODO keep in mind and test for this functionality in the future
 
 
 def filter_by_distance(
@@ -23,9 +11,11 @@ def filter_by_distance(
     t: int,
     interaction_length: float,
     interaction_constraint: Optional[
-        Callable[[List[int], int, int, pd.DataFrame, Optional[dict]], List[int]]
+        Callable[
+            [List[int], int, int, pd.DataFrame], List[int]
+        ]  # TODO add ,... to type hints?
     ] = None,
-    interaction_constraint_params: Optional[dict] = None,
+    **interaction_constraint_params,
 ) -> List[int]:
     """
     Filters and returns a list of foragers that are within a specified distance of a given forager at a particular time.
@@ -35,8 +25,8 @@ def filter_by_distance(
     constraint can be applied to further filter the resulting foragers based on custom logic.
 
     :param foragersDF: A pandas DataFrame containing the foragers' positions and times. Must include columns 'x',
-                       'y', 'forager', and 'time'.
-    :param f: The index of the forager whose neighbors are being filtered.
+                       'y', 'forager', and 'time'
+    :param f: The index of the forager whose neighbors are being filtered
     :param t: The time step at which the filtering is performed.
     :param interaction_length: The maximum distance within which foragers are considered neighbors.
     :param interaction_constraint: An optional callable that imposes additional filtering criteria. The callable should
@@ -45,8 +35,10 @@ def filter_by_distance(
     :param interaction_constraint_params: Optional parameters passed to the interaction constraint function.
 
     :return: A list of forager indices that are within the specified interaction length of forager `f` at time `t`,
-             possibly further filtered by the interaction constraint.
+             possibly further filtered by the interaction constraint
     """
+    interaction_constraint_params = interaction_constraint_params or {}
+
     positions = copy.deepcopy(foragersDF[foragersDF["time"] == t])
     positions["distance"] = np.sqrt(
         (positions["x"] - positions.loc[positions["forager"] == f, "x"].values) ** 2
@@ -59,17 +51,13 @@ def filter_by_distance(
 
     if interaction_constraint is not None:
         foragers_ind = interaction_constraint(
-            foragers_ind, f, t, foragersDF, interaction_constraint_params
+            foragers_ind, f, t, foragersDF, **interaction_constraint_params
         )
     return foragers_ind
 
 
 def constraint_filter_nearest(
-    f_ind: List[int],
-    f: int,
-    t: int,
-    foragersDF: pd.DataFrame,
-    params: Union[Dict[str, Any], None] = None,
+    f_ind: List[int], f: int, t: int, foragersDF: pd.DataFrame, **params
 ) -> List[int]:
     """
     Filters and returns the index of the nearest forager to a given forager at a specified time step.
@@ -78,15 +66,15 @@ def constraint_filter_nearest(
     Euclidean distances to the focal forager `f` at time step `t`. The forager with the smallest distance
     is returned.
 
-    :param f_ind: A list of forager indices to consider as potential neighbors.
-    :param f: The index of the focal forager.
-    :param t: The time step at which to compute distances.
+    :param f_ind: A list of forager indices to consider as potential neighbors
+    :param f: The index of the focal forager
+    :param t: The time step at which to compute distances
     :param foragersDF: A pandas DataFrame containing forager positions and times. The DataFrame must include
-                       columns 'x', 'y', 'forager', and 'time'.
+                       columns 'x', 'y', 'forager', and 'time'
     :param params: Additional parameters that may be required by this or other filter functions. Not used in
-                   this implementation but included for compatibility with the filtering pipeline.
+                   this implementation but included for compatibility with the filtering pipeline
 
-    :return: A list containing the index of the nearest forager to forager `f` at time `t`.
+    :return: A list containing the index of the nearest forager to forager `f` at time `t`
     """
     current_positions = foragersDF.loc[
         np.logical_and(foragersDF["forager"].isin(f_ind), foragersDF["time"] == t)

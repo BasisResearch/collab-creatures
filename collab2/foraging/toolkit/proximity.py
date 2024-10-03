@@ -76,7 +76,7 @@ def _generate_proximity_predictor(
     predictor_name: str,
     interaction_length: float,
     interaction_constraint: Optional[
-        Callable[[List[int], int, int, pd.DataFrame, Optional[dict]], List[int]]
+        Callable[[List[int], int, int, pd.DataFrame], List[int]]
     ] = None,
     interaction_constraint_params: Optional[dict] = None,
     proximity_contribution_function: Callable = _piecewise_proximity_function,
@@ -111,6 +111,9 @@ def _generate_proximity_predictor(
              proximity predictor values.
     """
 
+    if interaction_constraint_params is None:
+        interaction_constraint_params = {}
+
     num_foragers = len(foragers)
     num_frames = len(foragers[0])
     predictor = copy.deepcopy(local_windows)
@@ -127,7 +130,7 @@ def _generate_proximity_predictor(
                     t,
                     interaction_length,
                     interaction_constraint,
-                    interaction_constraint_params,
+                    **interaction_constraint_params,
                 )
 
                 if len(interaction_partners) > 0:
@@ -168,6 +171,23 @@ def generate_proximity_predictor(foragers_object: dataObject, predictor_name: st
 
     :return: A list of lists of pandas DataFrames where each DataFrame has been updated with the computed proximity
              predictor values.
+
+    Predictor-specific keyword arguments:
+        interaction_length: The maximum distance within which foragers can interact.
+        interaction_constraint: An optional callable that imposes additional constraints on which
+                                    foragers can interact based on custom logic.
+        interaction_constraint_params: Optional parameters to pass to the `interaction_constraint`
+                                            function.
+        proximity_contribution_function: A callable function used to compute proximity scores based on distance.
+                                Defaults to `_piecewise_proximity_function`.
+
+        Additional keyword arguments for the proximity function. The `_piecewise_proximity_function`
+        function has the following parameters:
+            :param repulsion_radius: The distance threshold below which the score becomes negative. Defaults to 1.5.
+            :param optimal_distance: The distance where proximity reaches its peak. Defaults to 4.
+            :param proximity_decay: The rate at which proximity decays beyond the optimal range. Defaults to 1.
+
+
     """
 
     params = foragers_object.predictor_kwargs[predictor_name]

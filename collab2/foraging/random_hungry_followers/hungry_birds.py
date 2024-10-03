@@ -3,13 +3,11 @@ import logging
 import numpy as np
 import pandas as pd
 
-from collab.foraging.toolkit import (
+from collab2.foraging.random_hungry_followers.rhf_helpers import (
     construct_visibility,
     rewards_to_trace,
     update_rewards,
 )
-
-logging.basicConfig(level=logging.INFO, format="%(asctime)s:  %(message)s")
 
 
 def add_hungry_foragers(
@@ -53,9 +51,10 @@ def add_hungry_foragers(
             end=t + 1,
         )["visibility"]
 
-        sim.rewards = update_rewards(
-            sim, sim.rewards, new_foragers, start=t, end=t + 1
-        )["rewards"]
+        if t > 0:  # DB: no need to update rewards for the first frame
+            sim.rewards = update_rewards(
+                sim, sim.rewards, new_foragers, start=t, end=t + 1
+            )["rewards"]
 
         sim.traces = rewards_to_trace(
             sim.rewards,
@@ -79,8 +78,8 @@ def add_hungry_foragers(
                 new_row = {
                     "x": new_x,
                     "y": new_y,
-                    "time": t + 2,
-                    "forager": b + 1,
+                    "time": t + 1,
+                    "forager": b,
                     "type": "hungry",
                 }
 

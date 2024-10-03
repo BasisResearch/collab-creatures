@@ -27,7 +27,6 @@ from .inference import run_svi_inference  # type: ignore # noqa: F401
 from .inference import get_samples, prep_data_for_inference, summary  # noqa: F401
 from .local_windows import (  # noqa: F401
     _generate_local_windows,
-    _get_grid,
     generate_local_windows,
 )
 from .models import (  # noqa: F401
@@ -57,8 +56,8 @@ from .utils import (  # noqa: F401
 from .velocity import (  # noqa: F401
     _add_velocity,
     _velocity_predictor_contribution,
-    generate_pairwiseCopying_predictor,
-    generate_vicsek_predictor,
+    generate_pairwiseCopying,
+    generate_vicsek,
 )
 from .visibility import (  # noqa: F401
     construct_visibility,

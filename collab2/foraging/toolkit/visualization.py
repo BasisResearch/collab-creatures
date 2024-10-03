@@ -104,9 +104,12 @@ def animate_predictors(
     predictor_name: str,
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     forager_position_indices: List[int],
     forager_predictor_indices: List[int],
 =======
+=======
+>>>>>>> 4cc7d95b1d5591bb508f2856b4ba680f61f3d756
 =======
 >>>>>>> 4cc7d95b1d5591bb508f2856b4ba680f61f3d756
     forager_index: List[int],
@@ -123,9 +126,12 @@ def animate_predictors(
         - predictor : Nested list of DataFrames containing computed predictor scores, grouped by forager index and time
         - predictor_name : Name of column containing predictor scores in `predictor`
 <<<<<<< HEAD
+<<<<<<< HEAD
         - forager_position_indices : Index of foragers whose positions are to be plotted
         - forager_predictor_indices : Index of foragers whose predictors are to be plotted
 =======
+=======
+>>>>>>> 4cc7d95b1d5591bb508f2856b4ba680f61f3d756
         - forager_index : Index of foragers whose predictors are to be plotted
 >>>>>>> 4cc7d95b1d5591bb508f2856b4ba680f61f3d756
         - grid_size : size of grid used to compute forager positions (used for setting x,y limits in figure)

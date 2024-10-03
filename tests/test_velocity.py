@@ -12,9 +12,7 @@ from collab.foraging.toolkit.velocity import (
 )
 from collab.utils import find_repo_root
 
-
 root = find_repo_root()
-
 
 
 random_foragers_sim = rhf.RandomForagers(
@@ -37,6 +35,7 @@ random_foragers_derived = ft.derive_predictors(
 )
 
 # These tests and what they test need to be superceded by velocity and velocity tests from Palka's future work
+
 
 # @pytest.mark.skip()
 def test_add_velocities_to_foragers():

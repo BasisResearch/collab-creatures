@@ -7,8 +7,11 @@ from .animate_foragers import (  # noqa: F401
     visualise_forager_predictors,
 )
 from .communicates import generate_communicates  # noqa: F401
-from .communication import generate_communication_predictor  # noqa: F401
-from .derive import derive_predictors_and_scores  # noqa: F401
+from .derive import (  # noqa: F401
+    derive_predictors_and_scores,
+    get_list_of_predictors,
+    get_list_of_scores,
+)
 
 #  TODO resolve if any major differences between them and potentially unify
 from .dynamical_utils import tensorize_and_dump_count_data  # noqa: F401
@@ -18,11 +21,7 @@ from .dynamical_utils import (  # run_svi_inference # noqa: F401;
     plot_ds_trajectories,
 )
 from .evaluate import evaluate_performance  # noqa: F401
-from .filtering import (  # noqa F401
-    constraint_filter_close_to_reward,
-    constraint_filter_nearest,
-    filter_by_distance,
-)
+from .filtering import constraint_filter_nearest, filter_by_distance  # noqa: F401
 from .food import generate_food_predictor  # noqa: F401
 from .inference import run_svi_inference  # type: ignore # noqa: F401
 from .inference import get_samples, prep_data_for_inference, summary  # noqa: F401

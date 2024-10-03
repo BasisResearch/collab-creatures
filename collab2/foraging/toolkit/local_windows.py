@@ -146,6 +146,9 @@ def generate_local_windows(foragers_object: dataObject) -> List[List[pd.DataFram
     :return: Nested list of local_windows (DataFrames with "x","y" columns) grouped by forager index and time
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 11663e1c0f8756caeae7fa889ad2ce013dde4674
 
     The list of keyword arguments:
         :param window_size: radius of local_windows. Default: 1.0
@@ -162,10 +165,13 @@ def generate_local_windows(foragers_object: dataObject) -> List[List[pd.DataFram
             the grid (as a pd.DataFrame) and any additional kwargs, and returns a DataFrame of accessible grid points
         :param grid_constrain_params: optional dictionary of kwargs for `grid_constraint`, to be passed to `_get_grid`
 
+<<<<<<< HEAD
 =======
 >>>>>>> 4cc7d95b1d5591bb508f2856b4ba680f61f3d756
 =======
 >>>>>>> 4cc7d95b1d5591bb508f2856b4ba680f61f3d756
+=======
+>>>>>>> 11663e1c0f8756caeae7fa889ad2ce013dde4674
     """
     # grab parameters specific to local_windows
     params = foragers_object.local_windows_kwargs

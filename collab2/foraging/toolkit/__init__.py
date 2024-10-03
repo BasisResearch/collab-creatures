@@ -9,6 +9,9 @@ from .animate_foragers import (  # noqa: F401
 from .communicates import generate_communicates  # noqa: F401
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 11663e1c0f8756caeae7fa889ad2ce013dde4674
 from .derive import (  # noqa: F401
     derive_predictors_and_scores,
     get_list_of_predictors,
@@ -16,12 +19,15 @@ from .derive import (  # noqa: F401
 )
 
 #  TODO resolve if any major differences between them and potentially unify
+<<<<<<< HEAD
 =======
 from .derive import derive_predictors_and_scores  # noqa: F401
 >>>>>>> 4cc7d95b1d5591bb508f2856b4ba680f61f3d756
 =======
 from .derive import derive_predictors_and_scores  # noqa: F401
 >>>>>>> 4cc7d95b1d5591bb508f2856b4ba680f61f3d756
+=======
+>>>>>>> 11663e1c0f8756caeae7fa889ad2ce013dde4674
 from .dynamical_utils import tensorize_and_dump_count_data  # noqa: F401
 from .dynamical_utils import (  # run_svi_inference # noqa: F401;
     add_ring,
@@ -48,6 +54,11 @@ from .models import (  # noqa: F401
 >>>>>>> 4cc7d95b1d5591bb508f2856b4ba680f61f3d756
 =======
 >>>>>>> 4cc7d95b1d5591bb508f2856b4ba680f61f3d756
+)
+from .models import (  # noqa: F401
+    HeteroskedasticLinear,
+    add_linear_heteroskedastic_component,
+    continuous_contribution,
 )
 from .next_step_score import (  # noqa: F401
     _generate_nextStep_score,

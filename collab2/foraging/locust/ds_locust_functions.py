@@ -218,9 +218,9 @@ class LocustDynamics(pyro.nn.PyroModule):
 
 def bayesian_locust(base_model=LocustDynamics) -> Dynamics[torch.Tensor]:
     with pyro.plate("attr", size=5):
-        attraction = pyro.sample("attraction", dist.Uniform(0.00001, 0.1))
+        attraction = pyro.sample("attraction", dist.Uniform(0.00001, 0.1))  # type: ignore
     with pyro.plate("wond", size=4):
-        wander = pyro.sample("wander", dist.Uniform(0.00001, 0.3))
+        wander = pyro.sample("wander", dist.Uniform(0.00001, 0.3))  # type: ignore
     locust_model = base_model(attraction, wander)
     return locust_model
 
@@ -237,7 +237,7 @@ def locust_noisy_model(X: State[torch.Tensor]) -> None:
     with pyro.plate("data", len(X["edge_l"])):
         pyro.sample(
             "counts_obs",
-            dist.Multinomial(total_count, probs=probs),  # .to_event(event_dim)
+            dist.Multinomial(total_count, probs=probs),  # type: ignore
         )
 
 

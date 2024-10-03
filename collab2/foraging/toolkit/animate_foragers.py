@@ -1,4 +1,5 @@
-from typing import List
+import warnings
+from typing import Dict, List
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -7,6 +8,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 import torch
 
+warnings.simplefilter(action="ignore", category=FutureWarning)
+
 
 def plot_trajectories(df, title):
     unique_foragers = df["forager"].unique()
@@ -14,10 +17,31 @@ def plot_trajectories(df, title):
 
     for forager in unique_foragers:
         df_forager = df[df["forager"] == forager]
-        plt.plot(df_forager["x"], df_forager["y"])
+        (line,) = plt.plot(df_forager["x"], df_forager["y"])
+        init_loc = df_forager[df_forager.time == 0]
+        # use same color as the trajectory
+        plt.scatter(
+            init_loc["x"],
+            init_loc["y"],
+            color=line.get_color(),
+            s=50,
+            marker="o",
+            label=f"Forager {forager}: initial",
+        )
+        final_loc = df_forager[df_forager.time == df_forager.time.max()]
+        plt.scatter(
+            final_loc["x"],
+            final_loc["y"],
+            color=line.get_color(),
+            s=50,
+            marker="x",
+            label=f"Forager {forager}: final",
+        )
+
     plt.axis("equal")
     plt.gca().invert_yaxis()
     plt.axis("off")
+    plt.legend()
     plt.suptitle(f"Trajectories: {title}", fontsize=16)
     return plt
 
@@ -312,16 +336,18 @@ def visualise_forager_predictors(
 
 
 def plot_coefs(
-    samples, title, nbins=20, ann_start_y=100, ann_break_y=50, generate_object=False
+    selected_samples: Dict[str, torch.Tensor],
+    title: str,
+    nbins=20,
+    ann_start_y=100,
+    ann_break_y=50,
+    generate_object=False,
 ):
-    if "svi_samples" in samples.keys():
-        svi_samples = samples["svi_samples"]
-    else:
-        svi_samples = samples
-    for key in svi_samples.keys():
-        svi_samples[key] = svi_samples[key].flatten()
 
-    samplesDF = pd.DataFrame(svi_samples)
+    for key in selected_samples.keys():
+        selected_samples[key] = selected_samples[key].flatten()
+
+    samplesDF = pd.DataFrame(selected_samples)
     samplesDF_medians = samplesDF.median(axis=0)
 
     fig_coefs = px.histogram(
@@ -354,10 +380,21 @@ def plot_coefs(
             text=f"{samplesDF_medians.iloc[i]:.2f}",
             showarrow=False,
             bordercolor="black",
-            borderwidth=2,
+            borderwidth=0.5,
             bgcolor="white",
             opacity=0.8,
         )
+
+    fig_coefs.update_layout(
+        legend=dict(
+            orientation="h",  # Horizontal legend
+            yanchor="top",  # Anchor the legend to the top of the container
+            y=-0.25,  # Position it below the plot
+            xanchor="center",  # Center it horizontally
+            x=0.5,  # Center it horizontally in the plot
+            title_text="Legend",  # Optional: Title for the legend
+        )
+    )
 
     fig_coefs.update_traces(marker=dict(line=dict(width=2, color="Black")))
 

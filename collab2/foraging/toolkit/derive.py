@@ -156,3 +156,35 @@ def derive_predictors_and_scores(
     foragers_object.derivedDF = derivedDF
 
     return derivedDF
+
+
+def get_list_of_predictors() -> List[str]:
+    """
+    A function that returns a list of all available predictors in Collab.
+    """
+
+    # get all functions from ftk that start with "generate_" and end with "_predictor"
+    predictor_functions = [
+        f for f in dir(ftk) if f.startswith("generate_") and f.endswith("_predictor")
+    ]
+
+    # extract predictor names
+    predictor_names = [f.split("_")[1] for f in predictor_functions]
+
+    return predictor_names
+
+
+def get_list_of_scores() -> List[str]:
+    """
+    A function that returns a list of all available scores in Collab.
+    """
+
+    # get all functions from ftk that start with "generate_" and end with "_score"
+    score_functions = [
+        f for f in dir(ftk) if f.startswith("generate_") and f.endswith("_score")
+    ]
+
+    # extract score names
+    score_names = [f.split("_")[1] for f in score_functions]
+
+    return score_names

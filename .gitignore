@@ -166,3 +166,5 @@ docs/foraging/communicators/communicators6.pkl
 data/foraging/locust/ds/length_s0_e10_i500_15EQ20191202.pkl
 data/foraging/locust/ds/priors_sam30_15EQ20191202_s0_e10.pkl
 docs/foraging/random-hungry-followers/sim_data/hungry_sim.dill
+docs/foraging/random-hungry-followers/sim_data/hungry_foragers_samples.dill
+docs/foraging/random-hungry-followers/sim_data/hungry_foragers_samples.dill

@@ -64,12 +64,25 @@ def _generate_nextStep_score(
 def generate_nextStep_score(foragers_object: dataObject, score_name: str):
     """
     A wrapper function that computes `next_step_score` only taking `foragers_object` as argument,
-    and calling `_generate_next_step_score` under the hood
+    and calling `_generate_next_step_score` under the hood.
+
+    The next step score computes a score for how far grid points are from the next position of a forager.
+    If the next position of the forager is unavailable, nan values are assigned to the scores.
+
+    The formula for the score is:
+        next_step_score(i,t,x,y) = 1 - (d_scaled) ** n
+        where d_scaled = (d - min(d)) / (max(d) - min(d))
+
+    Here d is the vector of distances of grid points in the local window of forager i at time t
+    from the position of forager i at time t+1.
 
     :param foragers_object: dataObject containing positional data, local_windows, score_kwargs
     :param score_name : name of column to save the calculated nextStep scores under
 
     :return: Nested list of calculated scores, grouped by foragers and time
+
+    Keyword arguments:
+        :param nonlinearity_exponent: Nonlinearity in  nextStep score calculation. Default value n=1
     """
     params = foragers_object.score_kwargs[score_name]
     return _generate_nextStep_score(

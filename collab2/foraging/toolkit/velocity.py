@@ -20,26 +20,12 @@ def _add_velocity(
         - list of DataFrames containing forager positions + computed velocity,
         grouped by forager index
         - flattened DataFrame obtained by concatenating aforementioned list
-    :param foragers : list of DataFrames containing forager positions, grouped by forager index
-    :param dt : time interval (in frames) used to compute velocity
-    :return: tuple containing
-        - list of DataFrames containing forager positions + computed velocity,
-        grouped by forager index
-        - flattened DataFrame obtained by concatenating aforementioned list
     """
     foragers_processed = copy.deepcopy(foragers)
     for df in foragers_processed:
         v_ID = f"v_dt={dt}"
         theta_ID = f"theta_dt={dt}"
         if v_ID in df.columns and theta_ID in df.columns:
-            # warnings.warn(
-            #     """Using existing velocity data.
-            #     Delete corresponding columns from foragersDF to re-calculate velocity values."""
-            # )
-            # warnings.warn(
-            #     """Using existing velocity data.
-            #     Delete corresponding columns from foragersDF to re-calculate velocity values."""
-            # )
             # warnings.warn(
             #     """Using existing velocity data.
             #     Delete corresponding columns from foragersDF to re-calculate velocity values."""
@@ -69,11 +55,6 @@ def _velocity_predictor_contribution(
     """
     A function that calculates Gaussian predictor scores over a grid, given a preferred velocity magnitude/direction
     for the next time-step and the current position of the focal forager.
-    :param v_pref : Preferred velocity magnitude
-    :param theta_pref : Preferred velocity direction. Must be specified as an angle in [-pi,pi)
-    :param x : current x position of focal forager
-    :param y : current y position of focal forager
-    :param grid : grid to compute predictor scores over.
     :param v_pref : Preferred velocity magnitude
     :param theta_pref : Preferred velocity direction. Must be specified as an angle in [-pi,pi)
     :param x : current x position of focal forager
@@ -360,6 +341,7 @@ def generate_vicsek_predictor(foragers_object: dataObject, predictor_name: str):
     # calculate predictor values
     predictor = _generate_vicsek_predictor(
         foragers_object.foragers,
+        foragers_object.foragersDF,
         foragers_object.local_windows,
         predictor_name,
         **params,

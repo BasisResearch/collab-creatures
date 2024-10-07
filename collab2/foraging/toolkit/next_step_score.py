@@ -55,8 +55,9 @@ def _generate_nextStep_score(
                     score[f][t][score_name] = np.nan
 
         # save nans for last frame
-        score[f][num_frames - 1]["distance_to_next_step"] = np.nan
-        score[f][num_frames - 1][score_name] = np.nan
+        if score[f][num_frames-1] is not None:
+            score[f][num_frames - 1]["distance_to_next_step"] = np.nan
+            score[f][num_frames - 1][score_name] = np.nan
 
     return score
 
@@ -86,5 +87,78 @@ def generate_nextStep_score(foragers_object: dataObject, score_name: str):
     """
     params = foragers_object.score_kwargs[score_name]
     return _generate_nextStep_score(
+        foragers_object.foragers, foragers_object.local_windows, score_name, **params
+    )
+
+def _generate_nextStepExponential_score(
+    foragers: List[pd.DataFrame],
+    local_windows: List[List[pd.DataFrame]],
+    score_name: str,
+    decay_length: Optional[float] = 1.0,
+):
+    """
+    A function that computes a score for how far grid points are from the next position of a forager,
+    using an exponential decay.
+    If the next position of the forager is unavailable, nan values are assigned to the scores.
+
+    :param foragers: list of DataFrames containing forager positions, grouped by forager index
+    :param local_windows:  Nested list of DataFrames containing grid points to compute predictor over,
+        grouped by forager index and time
+    :param score_name: name of column to save the calculated nextStep scores under
+    :param decay_length: length scale of exponential decay
+
+    :return: Nested list of calculated scores, grouped by foragers and time
+    """
+
+    num_foragers = len(foragers)
+    num_frames = len(foragers[0])
+    score = copy.deepcopy(local_windows)
+
+    for f in range(num_foragers):
+        for t in range(num_frames - 1):
+            if score[f][t] is not None:
+                x_new = foragers[f].at[t + 1, "x"]
+                y_new = foragers[f].at[t + 1, "y"]
+                if np.isfinite(x_new) and np.isfinite(y_new):
+                    distance_to_next_step = np.sqrt(
+                        (score[f][t]["x"] - x_new) ** 2
+                        + (score[f][t]["y"] - y_new) ** 2
+                    )
+
+                    score[f][t][score_name] = np.exp(-distance_to_next_step/decay_length) 
+                else:
+                    score[f][t][score_name] = np.nan
+
+        # save nans for last frame
+        if score[f][num_frames-1] is not None:
+            score[f][num_frames - 1][score_name] = np.nan
+
+    return score
+
+
+def generate_nextStepExponential_score(foragers_object: dataObject, score_name: str):
+    """
+    A wrapper function that computes nextStepExponential score only taking `foragers_object` as argument,
+    and calling `_generate_nextStepExponential_score` under the hood.
+
+    The next step score computes a score for how far grid points are from the next position of a forager,
+    using an exponential decay.
+    If the next position of the forager is unavailable, nan values are assigned to the scores.
+
+    The formula for the score is:
+        next_step_score(i,t,x,y) = exp(-d_nextStep/decay_length)
+        where d_nextStep is the distance of (x,y) grid point from the position of forager i
+        at time t+1
+
+    :param foragers_object: dataObject containing positional data, local_windows, score_kwargs
+    :param score_name : name of column to save the calculated nextStep scores under
+
+    :return: Nested list of calculated scores, grouped by foragers and time
+
+    Keyword arguments:
+        :param decay_length: length scale of exponential decay    
+    """
+    params = foragers_object.score_kwargs[score_name]
+    return _generate_nextStepExponential_score(
         foragers_object.foragers, foragers_object.local_windows, score_name, **params
     )

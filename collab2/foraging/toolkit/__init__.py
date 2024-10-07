@@ -38,6 +38,7 @@ from .models import (  # noqa: F401
 from .next_step_score import (  # noqa: F401
     _generate_nextStep_score,
     generate_nextStep_score,
+    generate_nextStepExponential_score
 )
 from .proximity import (  # noqa: F401; foragers_to_forager_distances,
     generate_proximity_predictor,

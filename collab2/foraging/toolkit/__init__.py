@@ -55,10 +55,6 @@ from .utils import (  # noqa: F401
     update_rewards,
 )
 from .velocity import (  # noqa: F401
-    _add_velocity,
-    _generate_velocityDiffusion_predictor,
-    _generic_velocity_predictor,
-    _velocity_predictor_contribution,
     generate_pairwiseCopying_predictor,
     generate_velocityDiffusion_predictor,
     generate_vicsek_predictor,

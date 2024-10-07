@@ -124,9 +124,7 @@ def animate_predictors(
     Returns :
         - ani : animation
     """
-    trajectory_data = foragersDF[
-        foragersDF["forager"].isin(forager_position_indices)
-    ]
+    trajectory_data = foragersDF[foragersDF["forager"].isin(forager_position_indices)]
 
     num_foragers = foragersDF["forager"].nunique()
     num_frames = foragersDF["time"].nunique()
@@ -150,9 +148,9 @@ def animate_predictors(
     # TODO potentially expand with forager legend
     # ax.legend()
 
-    ax.set_xticks([0,grid_size])
-    ax.set_yticks([0,grid_size])
-    #ax.axis("off")
+    ax.set_xticks([0, grid_size])
+    ax.set_yticks([0, grid_size])
+    # ax.axis("off")
 
     # Initialize function to set up the background of each frame
     def init():
@@ -178,8 +176,12 @@ def animate_predictors(
         foragers_scat.set_offsets(current_positions)
 
         # Update face and edge colors of the particles
-        foragers_scat.set_facecolor(colors[forager_position_indices])  # Set face colors directly
-        foragers_scat.set_edgecolor(colors[forager_position_indices])  # Set edge colors directly
+        foragers_scat.set_facecolor(
+            colors[forager_position_indices]
+        )  # Set face colors directly
+        foragers_scat.set_edgecolor(
+            colors[forager_position_indices]
+        )  # Set edge colors directly
 
         # Update predictor
         for i, f in enumerate(forager_predictor_indices):

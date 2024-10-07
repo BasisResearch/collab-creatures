@@ -107,6 +107,9 @@ def animate_predictors(
     grid_size: int,
     random_state: Optional[int] = 0,
     size_multiplier: Optional[int] = 10,
+    fMin : Optional[int] = 0,
+    fMax : Optional[int] = None,
+    frames_skipped : Optional[int] = 1
 ):
     """
     A function to animate a computed predictor for specified foragers.
@@ -128,6 +131,9 @@ def animate_predictors(
 
     num_foragers = foragersDF["forager"].nunique()
     num_frames = foragersDF["time"].nunique()
+
+    if fMax is None:
+        fMax = num_frames
 
     # Generate random colors for each particle
     np.random.seed(random_state)
@@ -151,7 +157,8 @@ def animate_predictors(
     ax.set_xticks([0, grid_size])
     ax.set_yticks([0, grid_size])
     # ax.axis("off")
-
+    fig.suptitle(predictor_name)
+    fig.tight_layout()
     # Initialize function to set up the background of each frame
     def init():
         foragers_scat.set_offsets(np.empty((0, 2)))
@@ -200,13 +207,14 @@ def animate_predictors(
             else:
                 predictors_scat_list[i].set_offsets(np.empty((0, 2)))
 
+        ax.set_title(f"Frame {frame}")
         return foragers_scat, *predictors_scat_list
 
     # Create the animation
     ani = animation.FuncAnimation(
         fig,
         update,
-        frames=num_frames,
+        frames=range(fMin,fMax,frames_skipped),
         init_func=init,
         blit=True,
         interval=500,

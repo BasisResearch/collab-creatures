@@ -102,23 +102,8 @@ def animate_predictors(
     foragersDF: pd.DataFrame,
     predictor: List[List[pd.DataFrame]],
     predictor_name: str,
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
     forager_position_indices: List[int],
     forager_predictor_indices: List[int],
-=======
-=======
->>>>>>> 4cc7d95b1d5591bb508f2856b4ba680f61f3d756
-=======
->>>>>>> 4cc7d95b1d5591bb508f2856b4ba680f61f3d756
-    forager_index: List[int],
->>>>>>> 4cc7d95b1d5591bb508f2856b4ba680f61f3d756
-=======
-    forager_position_indices: List[int],
-    forager_predictor_indices: List[int],
->>>>>>> 11663e1c0f8756caeae7fa889ad2ce013dde4674
     grid_size: int,
     random_state: Optional[int] = 0,
     size_multiplier: Optional[int] = 10,
@@ -130,20 +115,8 @@ def animate_predictors(
         - foragersDF : flattened DataFrame of forager positions
         - predictor : Nested list of DataFrames containing computed predictor scores, grouped by forager index and time
         - predictor_name : Name of column containing predictor scores in `predictor`
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-        - forager_position_indices : Index of foragers whose positions are to be plotted
-        - forager_predictor_indices : Index of foragers whose predictors are to be plotted
-=======
-=======
->>>>>>> 4cc7d95b1d5591bb508f2856b4ba680f61f3d756
-        - forager_index : Index of foragers whose predictors are to be plotted
->>>>>>> 4cc7d95b1d5591bb508f2856b4ba680f61f3d756
-=======
         - forager_position_incices : Index of foragers whose positions are to be plotted
         - forager_predictor_indices : Index of foragers whose predictors are to be plotted
->>>>>>> 11663e1c0f8756caeae7fa889ad2ce013dde4674
         - grid_size : size of grid used to compute forager positions (used for setting x,y limits in figure)
         - random_state : used to choose plot colors for each forager
         - size_multiplier : used to select marker size in scatter plot

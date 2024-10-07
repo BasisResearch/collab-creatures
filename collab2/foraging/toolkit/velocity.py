@@ -102,12 +102,10 @@ def _generate_pairwiseCopying_predictor(
     interaction_constraint_params: dict[str, Any] = {},
 ) -> List[List[pd.DataFrame]]:
     """
-    A function that calculates predictor scores for arbitrary velocity alignment mechanisms, as specified by
-    `transformation_function`. This function takes the velocities of interaction partners and outputs a transformation
-    (eg, average, identity, max) as required by the corresponding mechanism
-    Predictors are not calculated for frames where interaction partners have missing velocities.
-    In this case, fraction of dropped frames is reported.
-    Predictors are normalized by dividing by their max value for each forager & frame.
+    A function that calculates predictor scores for a pairwise copying interaction, using
+    `_velocity_predictor_contribution`. Predictors are not calculated for frames where
+    interaction partners have missing velocities.
+    Predictors are rescaled by dividing by their max value for each forager & frame.
 
     :param foragers : List of DataFrames containing forager positions and velocities grouped by forager index
     :param foragersDF : Flattened DataFrame of forager positions and velocities

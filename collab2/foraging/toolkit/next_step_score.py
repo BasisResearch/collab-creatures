@@ -55,7 +55,7 @@ def _generate_nextStep_score(
                     score[f][t][score_name] = np.nan
 
         # save nans for last frame
-        if score[f][num_frames-1] is not None:
+        if score[f][num_frames - 1] is not None:
             score[f][num_frames - 1]["distance_to_next_step"] = np.nan
             score[f][num_frames - 1][score_name] = np.nan
 
@@ -89,6 +89,7 @@ def generate_nextStep_score(foragers_object: dataObject, score_name: str):
     return _generate_nextStep_score(
         foragers_object.foragers, foragers_object.local_windows, score_name, **params
     )
+
 
 def _generate_nextStepExponential_score(
     foragers: List[pd.DataFrame],
@@ -125,12 +126,19 @@ def _generate_nextStepExponential_score(
                         + (score[f][t]["y"] - y_new) ** 2
                     )
 
-                    score[f][t][score_name] = np.exp(-distance_to_next_step/decay_length) 
+                    score[f][t][score_name] = np.exp(
+                        -distance_to_next_step / decay_length
+                    )
+
+                    # rescale over the grid
+                    score[f][t][score_name] = (
+                        score[f][t][score_name] - score[f][t][score_name].min()
+                    ) / (score[f][t][score_name].max() - score[f][t][score_name].min())
                 else:
                     score[f][t][score_name] = np.nan
 
         # save nans for last frame
-        if score[f][num_frames-1] is not None:
+        if score[f][num_frames - 1] is not None:
             score[f][num_frames - 1][score_name] = np.nan
 
     return score
@@ -156,7 +164,7 @@ def generate_nextStepExponential_score(foragers_object: dataObject, score_name: 
     :return: Nested list of calculated scores, grouped by foragers and time
 
     Keyword arguments:
-        :param decay_length: length scale of exponential decay    
+        :param decay_length: length scale of exponential decay
     """
     params = foragers_object.score_kwargs[score_name]
     return _generate_nextStepExponential_score(

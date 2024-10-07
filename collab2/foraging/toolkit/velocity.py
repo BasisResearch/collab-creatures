@@ -286,7 +286,7 @@ def _generate_vicsek_predictor(
                     if v_values.notna().all(axis=None):
                         x = foragers[f].loc[t, "x"]
                         y = foragers[f].loc[t, "y"]
-                        v_pref = foragers[f].loc[t, f"v_{dt}"]
+                        v_pref = foragers[f].loc[t, f"v_dt={dt}"]
 
                         # calculate theta_pref from avg of neighbors
                         v_x = np.mean(v_values.iloc[:, 0] * np.cos(v_values.iloc[:, 1]))

@@ -202,6 +202,8 @@ def distances_and_peaks(distances, bins=40, x_min=None, x_max=None):
             fontsize=10,
             color="red",
         )
+    
+    plt.show()
 
 
 # remove rewards eaten by foragers in proximity

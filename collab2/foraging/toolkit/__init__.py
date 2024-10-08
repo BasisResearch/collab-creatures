@@ -36,6 +36,9 @@ from .models import (  # noqa: F401
     add_linear_heteroskedastic_component,
     continuous_contribution,
 )
+
+#from .waic import compute_waic  # noqa: F401
+
 from .next_step_score import (  # noqa: F401
     _generate_nextStep_score,
     generate_nextStep_score,

@@ -83,7 +83,7 @@ def _generate_communication_predictor(
 
 def generate_communication_predictor(foragers_object: dataObject, predictor_name: str):
     """
-    Generates communication-based predictors for a group of foragers. When a forager 
+    Generates communication-based predictors for a group of foragers. When a forager
     is in the vicinity of food, it can communicate this information with the other
     foragers. The predictor value is proportional to the proximity of the communicating
     partner, but only if that partner is close to a food source.
@@ -103,7 +103,8 @@ def generate_communication_predictor(foragers_object: dataObject, predictor_name
     Predictor-specific keyword arguments:
         :param interaction_length: The maximum distance to the communicating partner.
         :param interaction_constraint: An optional callable that imposes additional constraints on which
-                                    foragers can interact based on custom logic. Default is `constraint_filter_close_to_reward`
+                                    foragers can interact based on custom logic. Default is
+                                    `constraint_filter_close_to_reward`
         :param interaction_constraint_params: Optional parameters to pass to the `interaction_constraint`
                                             function. For `constraint_filter_close_to_reward`, this
                                             includes `finders_tolerance` - the maximal distance

@@ -150,6 +150,8 @@ tmp_files/
 # folder to temporarily store files
 data/user_data/*
 
+**/xmemo/
+
 data/communicators/communicators_strong/*
 data/communicators/communicators_data/*
 data/central_park_birds_2022/*

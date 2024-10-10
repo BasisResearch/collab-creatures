@@ -77,7 +77,6 @@ def filter_by_visibility(
     finders_tolerance: float = 2.0,
     filter_by_on_reward: bool = False,
 ):
-
     other_foragers_df = sim.foragersDF[sim.foragersDF["forager"] != subject]
 
     myself = sim.foragersDF[sim.foragersDF["forager"] == subject]

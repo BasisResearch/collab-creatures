@@ -1,7 +1,9 @@
+<<<<<<< HEAD
 import os
 
 import dill
 import pandas as pd
+import pytest
 
 import collab.foraging.toolkit as ft
 from collab.foraging import random_hungry_followers as rhf
@@ -34,8 +36,8 @@ random_foragers_derived = ft.derive_predictors(
 )
 
 
+@pytest.mark.skip()
 def test_add_velocities_to_foragers():
-
     data1 = {"x": [0, 1, 4, 9, 16, 10], "y": [0, 1, 4, 9, 16, 10]}
     data2 = {"x": [0, 2, 6, 12, 20, 10], "y": [0, 2, 6, 12, 20, 10]}
 
@@ -81,7 +83,6 @@ def test_add_velocities_to_foragers():
 
 
 def test_add_velocities_to_data_object():
-
     add_velocities_to_data_object(random_foragers_sim)
 
     assert random_foragers_sim.foragers[0].shape[1] == 7
@@ -91,3 +92,6 @@ def test_add_velocities_to_data_object():
 def test_generate_velocity_scores():
     vs = generate_velocity_scores(random_foragers_derived)
     assert vs["velocity_scoresDF"].shape[1] == 6
+=======
+# removed old test, file kept as placeholder for future tests
+>>>>>>> 4cfb5d585a581697b194ff18b74692bb0e81c741

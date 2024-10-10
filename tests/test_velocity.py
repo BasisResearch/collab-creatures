@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import os
 
 import dill
@@ -91,3 +92,6 @@ def test_add_velocities_to_data_object():
 def test_generate_velocity_scores():
     vs = generate_velocity_scores(random_foragers_derived)
     assert vs["velocity_scoresDF"].shape[1] == 6
+=======
+# removed old test, file kept as placeholder for future tests
+>>>>>>> 4cfb5d585a581697b194ff18b74692bb0e81c741

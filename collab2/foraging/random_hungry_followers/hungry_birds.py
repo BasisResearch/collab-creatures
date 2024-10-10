@@ -51,9 +51,10 @@ def add_hungry_foragers(
             end=t + 1,
         )["visibility"]
 
-        sim.rewards = update_rewards(
-            sim, sim.rewards, new_foragers, start=t, end=t + 1
-        )["rewards"]
+        if t > 0:  # DB: no need to update rewards for the first frame
+            sim.rewards = update_rewards(
+                sim, sim.rewards, new_foragers, start=t, end=t + 1
+            )["rewards"]
 
         sim.traces = rewards_to_trace(
             sim.rewards,

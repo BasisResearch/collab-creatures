@@ -48,7 +48,7 @@ class Foragers:
 
             include_random_foragers (bool): Whether to include random foragers in
                             the final output (if you only use the sim as
-                            a starting point for another foragint strategy,
+                            a starting point for another foraging strategy,
                             you might want to set this to False).
 
         Other attributes:
@@ -125,9 +125,16 @@ class Foragers:
             self.rewards = rew["rewards"]
             self.rewardsDF = rew["rewardsDF"]
 
-    def generate_random_foragers(self, num_foragers, size=None):
+    def generate_random_foragers(self, num_foragers, size=None, initial_positions=None):
         if size is None:
             size = self.num_frames
+
+        # set to (grid_size/2,grid_size/2) for each forager if not provided
+        if initial_positions is None:
+            initial_positions = np.array(
+                [[self.grid_size / 2, self.grid_size / 2]] * num_foragers
+            )
+
         random_foragers = []
 
         size_warning_flag = False
@@ -140,14 +147,12 @@ class Foragers:
                     p=self.probabilities,
                     replace=True,
                 )
-            ) + (
-                self.grid_size / 2
-            )  # make centered
+            ) + (initial_positions[forager, 0])
 
-            if any(forager_x < 0) or any(forager_x > self.grid_size):
+            if any(forager_x < 0) or any(forager_x >= self.grid_size):
                 size_warning_flag = True
                 forager_x[forager_x < 0] = 0
-                forager_x[forager_x > self.grid_size] = self.grid_size
+                forager_x[forager_x >= self.grid_size] = self.grid_size - 1
 
             forager_y = np.cumsum(
                 np.random.choice(
@@ -156,11 +161,11 @@ class Foragers:
                     p=self.probabilities,
                     replace=True,
                 )
-            ) + (self.grid_size / 2)
+            ) + (initial_positions[forager, 1])
 
-            if any(forager_y < 0) or any(forager_y > self.grid_size):
+            if any(forager_y < 0) or any(forager_y >= self.grid_size):
                 forager_y[forager_y < 0] = 0
-                forager_y[forager_y > self.grid_size] = self.grid_size
+                forager_y[forager_y >= self.grid_size] = self.grid_size - 1
 
             if size_warning_flag:
                 warnings.warn(
@@ -190,11 +195,11 @@ class Foragers:
     def generate_random_rewards(self, size=None):
         if size is None:
             size = self.num_rewards
-        rewardsX = np.random.choice(range(1, self.grid_size + 1), size=size)
-        rewardsY = np.random.choice(range(1, self.grid_size + 1), size=size)
+        rewardsX = np.random.choice(range(0, self.grid_size), size=size)
+        rewardsY = np.random.choice(range(0, self.grid_size), size=size)
 
         rewards = []
-        for t in range(1, self.num_frames + 1):
+        for t in range(0, self.num_frames):
             rewards.append(pd.DataFrame({"x": rewardsX, "y": rewardsY, "time": t}))
 
         return {"rewards": rewards, "rewardsDF": pd.concat(rewards)}

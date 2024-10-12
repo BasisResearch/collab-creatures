@@ -132,4 +132,6 @@ def get_samples(
         print("Site: {}".format(site))
         print(values, "\n")
 
-    return {"samples": samples, "guide": guide, "predictive": predictive}
+    return {"samples": samples, "guide": guide, "predictive": predictive, 
+            "summaries":
+            summary(samples, sites)}

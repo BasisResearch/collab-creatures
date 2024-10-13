@@ -40,6 +40,47 @@ def prep_data_for_inference(
     return predictor_tensors, outcome_tensors
 
 
+def prep_DF_data_for_inference(
+    DF, predictors: List[str], outcome_vars: str, subsample_rate: float = 1.0
+) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]:
+
+    if isinstance(outcome_vars, str):
+        outcome_list = [outcome_vars]
+    else:
+        outcome_list = outcome_vars
+
+    df = DF[predictors + outcome_list].copy()
+
+    # assert no NaNs in df
+    assert df.notna().all().all(), "Dataframe contains NaN values"
+
+    # Apply subsampling
+    if subsample_rate < 1.0:
+        df = df.sample(frac=subsample_rate).reset_index(drop=True)
+
+    predictor_tensors = {
+        key: torch.tensor(df[key].values, dtype=torch.float32) for key in predictors
+    }
+    outcome_tensors = {
+        key: torch.tensor(df[key].values, dtype=torch.float32) for key in outcome_list
+    }
+
+    # print size
+    print("Sample size:", len(df))
+
+    return predictor_tensors, outcome_tensors
+
+
+
+
+
+
+
+
+
+
+
+
 def summary(samples, sites):
     site_stats = {}
     for site_name, values in samples.items():

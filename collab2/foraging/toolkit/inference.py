@@ -120,7 +120,7 @@ def run_svi_inference(
         loss.backward()
         losses.append(loss.item())
         adam.step()
-        if (step % 50 == 0) or (step == 1) & verbose:
+        if (step % 200 == 0) or (step == 1) & verbose:
             print("[iteration %04d] loss: %.4f" % (step, loss))
 
     if plot:
@@ -138,13 +138,16 @@ def get_samples(
     outcome,
     num_svi_iters,
     num_samples,
+    plot = True,
+    verbose = True,
 ):
 
     logging.info(f"Starting SVI inference with {num_svi_iters} iterations.")
     start_time = time.time()
     pyro.clear_param_store()
     guide = run_svi_inference(
-        model, n_steps=num_svi_iters, predictors=predictors, outcome=outcome
+        model, n_steps=num_svi_iters, predictors=predictors, outcome=outcome, 
+        plot = plot, verbose = verbose
     )
     end_time = time.time()
     elapsed_time = end_time - start_time
@@ -159,7 +162,6 @@ def get_samples(
         for k, v in predictive(predictors, outcome).items()
         if k != "obs"
     }
-    print(samples.keys())
 
     sites = [
         key

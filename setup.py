@@ -31,7 +31,6 @@ setup(
         "torch", "scipy", "scikit-learn",
         "matplotlib>=3.8.2", "dill", "torchdiffeq",
         "numpy==2.1.2",
-        "xetcache @ git+https://github.com/xetdata/xetcache.git"
     ],
     extras_require={
         "extras": EXTRAS_REQUIRE,

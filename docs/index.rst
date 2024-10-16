@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Collaborative Intelligence Systems's documentation!
-==============================================================
+Welcome to Collaborative Intelligence Systems!
+==============================================
 
 .. toctree::
    :maxdepth: 1
@@ -18,6 +18,12 @@ Welcome to Collaborative Intelligence Systems's documentation!
 
    foraging/random-hungry-followers/index
    foraging/communicators/index
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Documentation
+
+   foraging_toolkit
 
 Indices and tables
 ==================

@@ -26,6 +26,9 @@ More specifically (code generating some variants is commented out, but can be re
 - `fig3_no_communication.png`
    (and other fig3 variants)
 
+`communicators_impact_45.ipynb`
+- `fig4_trust_linear.png`
+
 `central_park_birds_predictors.ipynb`
 - `fig_bird_trajectories_ducks.png``
 - `fig_bird_trajectories_sps.png`

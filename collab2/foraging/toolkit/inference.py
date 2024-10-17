@@ -71,16 +71,6 @@ def prep_DF_data_for_inference(
     return predictor_tensors, outcome_tensors
 
 
-
-
-
-
-
-
-
-
-
-
 def summary(samples, sites):
     site_stats = {}
     for site_name, values in samples.items():
@@ -138,16 +128,20 @@ def get_samples(
     outcome,
     num_svi_iters,
     num_samples,
-    plot = True,
-    verbose = True,
+    plot=True,
+    verbose=True,
 ):
 
     logging.info(f"Starting SVI inference with {num_svi_iters} iterations.")
     start_time = time.time()
     pyro.clear_param_store()
     guide = run_svi_inference(
-        model, n_steps=num_svi_iters, predictors=predictors, outcome=outcome, 
-        plot = plot, verbose = verbose
+        model,
+        n_steps=num_svi_iters,
+        predictors=predictors,
+        outcome=outcome,
+        plot=plot,
+        verbose=verbose,
     )
     end_time = time.time()
     elapsed_time = end_time - start_time
@@ -168,13 +162,15 @@ def get_samples(
         for key in samples.keys()
         if (key.startswith("weight") and not key.endswith("sigma"))
     ]
-    
 
     print("Coefficient marginals:")
     for site, values in summary(samples, sites).items():
         print("Site: {}".format(site))
         print(values, "\n")
 
-    return {"samples": samples, "guide": guide, "predictive": predictive, 
-            "summaries":
-            summary(samples, sites)}
+    return {
+        "samples": samples,
+        "guide": guide,
+        "predictive": predictive,
+        "summaries": summary(samples, sites),
+    }

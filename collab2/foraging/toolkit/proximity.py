@@ -42,7 +42,10 @@ def _piecewise_proximity_function(
 
     result = np.where(
         cond1,
-        np.sin(np.pi / ((2 * repulsion_radius) * (distance + 3 * repulsion_radius)) + 0.0001),  # division by zero errors
+        np.sin(
+            np.pi / ((2 * repulsion_radius) * (distance + 3 * repulsion_radius))
+            + 0.0001
+        ),  # division by zero errors
         np.where(
             cond2,
             np.sin(

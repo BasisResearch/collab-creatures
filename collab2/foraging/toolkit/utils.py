@@ -100,8 +100,8 @@ class dataObject:
             data = self.foragers[f].dropna()
             unique_t = data["time"].unique()
             for t in unique_t:
-                if (t-1) in unique_t:
-                    step_ago = data[data["time"] == t-1]
+                if (t - 1) in unique_t:
+                    step_ago = data[data["time"] == t - 1]
                     xdiff = data[data["time"] == t]["x"].values - step_ago["x"].values
                     ydiff = data[data["time"] == t]["y"].values - step_ago["y"].values
                     step_distance = np.sqrt(xdiff**2 + ydiff**2)
@@ -217,7 +217,7 @@ def distances_and_peaks(distances, bins=40, x_min=None, x_max=None):
             fontsize=10,
             color="red",
         )
-    
+
     plt.show()
 
 

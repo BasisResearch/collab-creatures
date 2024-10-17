@@ -11,7 +11,7 @@ import torch
 warnings.simplefilter(action="ignore", category=FutureWarning)
 
 
-def plot_trajectories(df, title, legend = True):
+def plot_trajectories(df, title, legend=True):
     unique_foragers = df["forager"].unique()
     plt.figure()
 

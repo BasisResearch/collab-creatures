@@ -40,31 +40,29 @@ def _piecewise_proximity_function(
         distance <= repulsion_radius + 1.5 * (optimal_distance - repulsion_radius)
     )
 
-    result = np.where(
+    denominator1 = (2 * (optimal_distance - repulsion_radius)) * (distance + 3 * repulsion_radius) 
+    
+result = np.where(
+    cond1 & (denominator == 0),  # Check if both cond1 holds and denominator is 0
+    0,  # Set result to 0 if both conditions are true
+    np.where(
         cond1,
-        np.sin(np.pi / ((2 * repulsion_radius) * (distance + 3 * repulsion_radius)) + 0.0001),  # division by zero errors
+        np.sin(np.pi / denominator),  # Handle division by zero errors
         np.where(
             cond2,
             np.sin(
-                np.pi
-                / (2 * (optimal_distance - repulsion_radius))
-                * (distance - repulsion_radius)
+                np.pi / (2 * (optimal_distance - repulsion_radius)) * (distance - repulsion_radius)
             ),
             np.sin(
-                np.pi
-                / (2 * (optimal_distance - repulsion_radius))
-                * (1.5 * (optimal_distance - repulsion_radius))
-            )
-            * np.exp(
-                -proximity_decay
-                * (
-                    distance
-                    - optimal_distance
-                    - 0.5 * (optimal_distance - repulsion_radius)
+                np.pi / (2 * (optimal_distance - repulsion_radius)) * (1.5 * (optimal_distance - repulsion_radius))
+            ) * np.exp(
+                -proximity_decay * (
+                    distance - optimal_distance - 0.5 * (optimal_distance - repulsion_radius)
                 )
             ),
         ),
     )
+)
 
     return result
 

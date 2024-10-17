@@ -168,7 +168,7 @@ def get_samples(
         for key in samples.keys()
         if (key.startswith("weight") and not key.endswith("sigma"))
     ]
-    print(sites)
+    
 
     print("Coefficient marginals:")
     for site, values in summary(samples, sites).items():

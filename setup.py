@@ -10,7 +10,6 @@ EXTRAS_REQUIRE = [
     "jupyter",
     "graphviz",
     "matplotlib",
-    "pandas",
     "seaborn",
     "kaleido",
 ]
@@ -19,7 +18,7 @@ setup(
     name="collab",
     version=VERSION,
     description="Tools for animal behavior foraging modeling.",
-    packages=find_packages(include=["collab", "collab.*"]),
+    packages=find_packages(include=["collab", "collab.*", "collab2", "collab2.*"]),
     author="Basis",
     url="https://www.basis.ai/",
     project_urls={
@@ -27,10 +26,12 @@ setup(
         "Source": "https://github.com/BasisResearch/collaborative-intelligence",
     },
     install_requires=[
-        "pyro-ppl>=1.8.5", "pandas==2.2.1", "plotly", "plotly.express", 
+        "chirho @ git+https://github.com/BasisResearch/chirho.git#egg=chirho",
+        "pyro-ppl>=1.8.6", "pandas==2.2.3", "plotly", "plotly.express", 
         "torch", "scipy", "scikit-learn",
-        "matplotlib>=3.8.2", "numpyro", "dill", "torchdiffeq",
-        "chirho @ git+https://github.com/BasisResearch/chirho.git#egg=chirho"
+        "matplotlib>=3.8.2", "dill", "torchdiffeq",
+        "bayesian-optimization",
+        "numpy==1.24.1" #torch dies with newer numpy
     ],
     extras_require={
         "extras": EXTRAS_REQUIRE,
@@ -40,11 +41,11 @@ setup(
             "pytest-cov",
             "pytest-xdist",
             "mypy",
-            "black",
+            "black==24.8.0",
             "flake8",
-            "isort",
+            "isort==5.13.2",
             "nbval",
-            "nbqa",
+            "nbqa==1.9.0",
             "autoflake",
         ],
     },

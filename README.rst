@@ -8,7 +8,7 @@ branch and supersedes this version. This version is preserved only as an archive
 https://www.nature.com/articles/s41598-024-71931-0
 
 - All figures are in the `docs/figures` folder. The notebooks that generated the figures are in the `docs` folder.
-More specifically:
+More specifically (code generating some variants is commented out, but can be revived):
 
 `duck_coefs_plot.png` is generated in `central_park_birds_inference.ipynb`.
 
@@ -18,10 +18,13 @@ More specifically:
 - `fig2_rfh.png`
 - `fig2_trace_cropped.png`
 - `fig2_trace.png`
+( and other fig2 variants)
+
 
 `communicators_inference.ipynb`
 - `fig3_communication06.png`
 - `fig3_no_communication.png`
+   (and other fig3 variants)
 
 `central_park_birds_predictors.ipynb`
 - `fig_bird_trajectories_ducks.png``
@@ -31,6 +34,16 @@ More specifically:
 - `sps_coefs_plot.png`
 
 
+
+\includegraphics[width=0.32\textwidth]{Figures/fig2_trajectories_random.png}
+\includegraphics[width=0.32\textwidth]{Figures/fig2_trajectories_hungry.png}
+\includegraphics[width=0.32\textwidth]{Figures/fig2_trajectories_follower.png}
+
+
+\includegraphics[width=0.32\textwidth]{Figures/fig2_proximity_cropped.png}
+\includegraphics[width=0.32\textwidth]{Figures/fig2_trace_cropped.png}
+\includegraphics[width=0.32\textwidth]{Figures/fig2_rfh.png}
+\end{center}
 
 
 

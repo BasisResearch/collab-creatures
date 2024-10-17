@@ -11,7 +11,6 @@ from pyro.infer.autoguide import AutoMultivariateNormal, init_to_mean
 
 def prep_data_for_inference(
     sim_derived, predictors: List[str], outcome_vars: str, subsample_rate: float = 1.0
-    sim_derived, predictors: List[str], outcome_vars: str, subsample_rate: float = 1.0
 ) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]:
 
     if isinstance(outcome_vars, str):

@@ -18,6 +18,7 @@ Welcome to Collaborative Intelligence Systems!
 
    foraging/random-hungry-followers/index
    foraging/communicators/index
+   foraging/locust/index
 
 .. toctree::
    :maxdepth: 1

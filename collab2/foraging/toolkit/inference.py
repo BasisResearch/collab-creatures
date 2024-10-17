@@ -11,6 +11,7 @@ from pyro.infer.autoguide import AutoMultivariateNormal, init_to_mean
 
 def prep_data_for_inference(
     sim_derived, predictors: List[str], outcome_vars: str, subsample_rate: float = 1.0
+    sim_derived, predictors: List[str], outcome_vars: str, subsample_rate: float = 1.0
 ) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]:
 
     if isinstance(outcome_vars, str):
@@ -58,12 +59,19 @@ def prep_DF_data_for_inference(
     if subsample_rate < 1.0:
         df = df.sample(frac=subsample_rate).reset_index(drop=True)
 
+    # Apply subsampling
+    if subsample_rate < 1.0:
+        df = df.sample(frac=subsample_rate).reset_index(drop=True)
+
     predictor_tensors = {
         key: torch.tensor(df[key].values, dtype=torch.float32) for key in predictors
     }
     outcome_tensors = {
         key: torch.tensor(df[key].values, dtype=torch.float32) for key in outcome_list
     }
+
+    # print size
+    print("Sample size:", len(df))
 
     # print size
     print("Sample size:", len(df))

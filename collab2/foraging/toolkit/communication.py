@@ -82,7 +82,40 @@ def _generate_communication_predictor(
 
 
 def generate_communication_predictor(foragers_object: dataObject, predictor_name: str):
+    """
+    Generates communication-based predictors for a group of foragers. When a forager
+    is in the vicinity of food, it can communicate this information with the other
+    foragers. The predictor value is proportional to the proximity of the communicating
+    partner, but only if that partner is close to a food source.
+    The predictor can be customized by providing a custom communication function
+    (default: exponential decay) and/or a custom interaction function (default: closeness to food).
 
+
+    Arguments:
+    :param foragers_object: A data object containing information about the foragers, including their positions,
+                            trajectories, and local windows. Such objects can be generated using `object_from_data`.
+    :param predictor_name: The name of the food predictor to be generated, used to fetch relevant parameters
+                           from `foragers_object.predictor_kwargs` and to store the computed values.
+
+    :return: A list of lists of pandas DataFrames where each DataFrame has been updated with the computed food
+             predictor values.
+
+    Predictor-specific keyword arguments:
+        :param interaction_length: The maximum distance to the communicating partner.
+        :param interaction_constraint: An optional callable that imposes additional constraints on which
+                                    foragers can interact based on custom logic. Default is
+                                    `constraint_filter_close_to_reward`
+        :param interaction_constraint_params: Optional parameters to pass to the `interaction_constraint`
+                                            function. For `constraint_filter_close_to_reward`, this
+                                            includes `finders_tolerance` - the maximal distance
+                                            of the communicating partner to the food source.
+        :param communication_contribution_function: The decay function for computing the strength of the communication.
+        The value of the communication predictor will be equal to the total contribution from the
+        individual communicating partners.
+            The default value is the exponential decay function: f(dist) = exp(-decay_factor * dist).
+            The default decay factor is 0.5, it can be customized by passing
+            an additional `decay_factor` keyword argument.
+    """
     params = foragers_object.predictor_kwargs[predictor_name]
 
     predictor = _generate_communication_predictor(

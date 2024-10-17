@@ -1,3 +1,41 @@
+DISCLAIMER
+===================================================
+
+
+This is an outdated branch of the package. The current version of the package is available at the `main` 
+branch and supersedes this version. This version is preserved only as an archive related to this paper:
+
+https://www.nature.com/articles/s41598-024-71931-0
+
+- All figures are in the `docs/figures` folder. The notebooks that generated the figures are in the `docs` folder.
+More specifically:
+
+`duck_coefs_plot.png` is generated in `central_park_birds_inference.ipynb`.
+
+`random_hungry_followers.ipynb`:
+- `fig2_proximity_cropped.png``
+- `fig2_proximity.png`
+- `fig2_rfh.png`
+- `fig2_trace_cropped.png`
+- `fig2_trace.png`
+
+`communicators_inference.ipynb`
+- `fig3_communication06.png`
+- `fig3_no_communication.png`
+
+`central_park_birds_predictors.ipynb`
+- `fig_bird_trajectories_ducks.png``
+- `fig_bird_trajectories_sps.png`
+- `fig_distance_distribution_ducks.png`
+- `fig_distance_distribution_sps.png`
+- `sps_coefs_plot.png`
+
+
+
+
+
+
+
 .. image:: https://github.com/BasisResearch/collaborative-intelligence/actions/workflows/test_notebooks.yml/badge.svg
    :alt: Test Notebooks Badge
    :target: https://github.com/BasisResearch/collaborative-intelligence/actions/workflows/test_notebooks.yml

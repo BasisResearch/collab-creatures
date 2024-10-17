@@ -1,0 +1,16 @@
+duck_coefs_plot.png
+fig2_proximity_cropped.png
+fig2_proximity.png
+fig2_rfh.png
+fig2_trace_cropped.png
+fig2_trace.png
+fig3_communication06.png
+fig3_no_communication.png
+fig_bird_trajectories_ducks.png
+fig_bird_trajectories_sps.png
+fig_distance_distribution_ducks.png
+fig_distance_distribution_sps.png
+figure_list.txt
+locust_ds_validation.png
+locust_posterior_check.png
+sps_coefs_plot.png

@@ -150,6 +150,8 @@ tmp_files/
 # folder to temporarily store files
 data/user_data/*
 
+**/xmemo/
+
 data/communicators/communicators_strong/*
 data/communicators/communicators_data/*
 data/central_park_birds_2022/*
@@ -163,3 +165,12 @@ docs/foraging/communicators/communicators_derivedDF_0.pkl
 docs/foraging/communicators/communicators_derivedDF_6.pkl
 docs/foraging/communicators/communicators0.pkl
 docs/foraging/communicators/communicators6.pkl
+data/foraging/locust/ds/length_s0_e10_i500_15EQ20191202.pkl
+data/foraging/locust/ds/priors_sam30_15EQ20191202_s0_e10.pkl
+docs/foraging/random-hungry-followers/sim_data/hungry_sim.dill
+docs/foraging/random-hungry-followers/sim_data/hungry_foragers_samples.dill
+docs/foraging/random-hungry-followers/sim_data/hungry_foragers_samples.dill
+docs/foraging/central-park-birds/ducks_proximity_single_optimizer.pkl
+docs/foraging/central-park-birds/ducks_proximity_optimizer.pkl
+docs/foraging/central-park-birds/sparrows_proximity_single_optimizer.pkl
+docs/foraging/central-park-birds/ducks_access_optimizer.pkl

@@ -10,7 +10,6 @@ EXTRAS_REQUIRE = [
     "jupyter",
     "graphviz",
     "matplotlib",
-    "pandas",
     "seaborn",
     "kaleido",
 ]
@@ -28,9 +27,11 @@ setup(
     },
     install_requires=[
         "chirho @ git+https://github.com/BasisResearch/chirho.git#egg=chirho",
-        "pyro-ppl>=1.8.6", "pandas==2.2.1", "plotly", "plotly.express", 
+        "pyro-ppl>=1.8.6", "pandas==2.2.3", "plotly", "plotly.express", 
         "torch", "scipy", "scikit-learn",
         "matplotlib>=3.8.2", "dill", "torchdiffeq",
+        "bayesian-optimization",
+        "numpy==1.24.1" #torch dies with newer numpy
     ],
     extras_require={
         "extras": EXTRAS_REQUIRE,
@@ -40,11 +41,11 @@ setup(
             "pytest-cov",
             "pytest-xdist",
             "mypy",
-            "black",
+            "black==24.8.0",
             "flake8",
-            "isort",
+            "isort==5.13.2",
             "nbval",
-            "nbqa",
+            "nbqa==1.9.0",
             "autoflake",
         ],
     },

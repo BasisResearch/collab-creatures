@@ -54,8 +54,11 @@ def _generate_nextStep_score(
                     score[f][t]["distance_to_next_step"] = np.nan
                     score[f][t][score_name] = np.nan
 
-        # save nans for last frame
-        if score[f][num_frames - 1] is not None:
+        # save nans for last fram
+        if (
+            score[f][num_frames - 1] is not None
+        ):  # conditioning needed as last frame is not always present
+            # as in cp birds data
             score[f][num_frames - 1]["distance_to_next_step"] = np.nan
             score[f][num_frames - 1][score_name] = np.nan
 

@@ -7,6 +7,7 @@ from .animate_foragers import (  # noqa: F401
     visualise_forager_predictors,
 )
 from .communicates import generate_communicates  # noqa: F401
+from .communication import generate_communication_predictor  # noqa: F401
 from .derive import (  # noqa: F401
     derive_predictors_and_scores,
     get_list_of_predictors,
@@ -24,7 +25,12 @@ from .evaluate import evaluate_performance  # noqa: F401
 from .filtering import constraint_filter_nearest, filter_by_distance  # noqa: F401
 from .food import generate_food_predictor  # noqa: F401
 from .inference import run_svi_inference  # type: ignore # noqa: F401
-from .inference import get_samples, prep_data_for_inference, summary  # noqa: F401
+from .inference import (  # noqa: F401
+    get_samples,
+    prep_data_for_inference,
+    prep_DF_data_for_inference,
+    summary,
+)
 from .local_windows import (  # noqa: F401
     _generate_local_windows,
     _get_grid,
@@ -68,5 +74,8 @@ from .visibility import (  # noqa: F401
     visibility_vs_distance,
 )
 from .visualization import animate_predictors, plot_predictor  # noqa: F401
+
+# from .waic import compute_waic  # noqa: F401
+
 
 # from .trace import rewards_to_trace, rewards_trace  # noqa: F401

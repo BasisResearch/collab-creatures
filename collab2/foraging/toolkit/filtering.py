@@ -10,11 +10,7 @@ def filter_by_distance(
     f: int,
     t: int,
     interaction_length: float,
-    interaction_constraint: Optional[
-        Callable[
-            [List[int], int, int, pd.DataFrame], List[int]
-        ]  # TODO add ,... to type hints?
-    ] = None,
+    interaction_constraint: Optional[Callable] = None,  # TODO add more type hints?
     **interaction_constraint_params,
 ) -> List[int]:
     """
@@ -93,3 +89,42 @@ def constraint_filter_nearest(
     )
 
     return current_positions["forager"][distances == distances.min()].to_list()
+
+
+def constraint_filter_close_to_reward(
+    f_ind: List[int],
+    f: int,
+    t: int,
+    foragersDF: pd.DataFrame,
+    finders_tolerance: float,
+    rewards: List[pd.DataFrame],
+) -> List[int]:
+
+    current_positions = foragersDF.loc[
+        np.logical_and(foragersDF["forager"].isin(f_ind), foragersDF["time"] == t)
+    ]
+
+    on_reward = []
+
+    for _, row in current_positions.iterrows():
+
+        try:
+            row_x = row["x"].item()
+            row_y = row["y"].item()
+        except AttributeError:
+            row_x = row["x"]
+            row_y = row["y"]
+
+        on_reward.append(
+            any(
+                np.sqrt(
+                    (row_x - rewards[int(t)]["x"]) ** 2
+                    + (row_y - rewards[int(t)]["y"]) ** 2
+                )
+                < finders_tolerance
+            )
+        )
+
+    f_ind_constr = [f for f, rew in zip(f_ind, on_reward) if rew]
+
+    return [int(f) for f in f_ind_constr]

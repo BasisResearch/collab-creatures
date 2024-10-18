@@ -95,7 +95,9 @@ def plot_predictor(
             for c in range(len(time) % ncols, ncols):
                 fig.delaxes(axes[c])
 
+    fig.suptitle(f"Predictor: {predictor_name}")
     fig.tight_layout(pad=2)
+    fig.show()
 
 
 def animate_predictors(

@@ -7,10 +7,20 @@ import pandas as pd
 import pyro
 import torch
 from pyro.infer.autoguide import AutoMultivariateNormal, init_to_mean
-
+from .utils import dataObject
 
 def prep_data_for_inference(
-    sim_derived, predictors: List[str], outcome_vars: str, subsample_rate: float = 1.0
+    sim_derived: dataObject, predictors: List[str], outcome_vars: str, subsample_rate: float = 1.0
+) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]:
+    
+    assert hasattr(sim_derived, "derivedDF"), "dataObject must contain a derivedDF DataFrame attribute"
+    
+    return prep_DF_data_for_inference(
+        sim_derived.derivedDF, predictors, outcome_vars, subsample_rate
+    )
+
+def prep_DF_data_for_inference(
+    DF: pd.DataFrame, predictors: List[str], outcome_vars: str, subsample_rate: float = 1.0
 ) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]:
 
     if isinstance(outcome_vars, str):
@@ -18,7 +28,7 @@ def prep_data_for_inference(
     else:
         outcome_list = outcome_vars
 
-    df = sim_derived.derivedDF[predictors + outcome_list].copy()
+    df = DF[predictors + outcome_list].copy()
 
     # assert no NaNs in df
     assert df.notna().all().all(), "Dataframe contains NaN values"
@@ -35,7 +45,7 @@ def prep_data_for_inference(
     }
 
     # print size
-    print("Sample size:", len(df))
+    logging.info(f"Sample size: {len(df)}")
 
     return predictor_tensors, outcome_tensors
 
@@ -79,7 +89,7 @@ def run_svi_inference(
         loss.backward()
         losses.append(loss.item())
         adam.step()
-        if (step % 50 == 0) or (step == 1) & verbose:
+        if (step % 200 == 0) or (step == 1) & verbose:
             print("[iteration %04d] loss: %.4f" % (step, loss))
 
     if plot:
@@ -97,13 +107,20 @@ def get_samples(
     outcome,
     num_svi_iters,
     num_samples,
+    plot=True,
+    verbose=True,
 ):
 
     logging.info(f"Starting SVI inference with {num_svi_iters} iterations.")
     start_time = time.time()
     pyro.clear_param_store()
     guide = run_svi_inference(
-        model, n_steps=num_svi_iters, predictors=predictors, outcome=outcome
+        model,
+        n_steps=num_svi_iters,
+        predictors=predictors,
+        outcome=outcome,
+        plot=plot,
+        verbose=verbose,
     )
     end_time = time.time()
     elapsed_time = end_time - start_time
@@ -118,18 +135,22 @@ def get_samples(
         for k, v in predictive(predictors, outcome).items()
         if k != "obs"
     }
-    print(samples.keys())
 
     sites = [
         key
         for key in samples.keys()
         if (key.startswith("weight") and not key.endswith("sigma"))
     ]
-    print(sites)
 
-    print("Coefficient marginals:")
-    for site, values in summary(samples, sites).items():
-        print("Site: {}".format(site))
-        print(values, "\n")
+    if verbose:
+        print("Coefficient marginals:")
+        for site, values in summary(samples, sites).items():
+            print("Site: {}".format(site))
+            print(values, "\n")
 
-    return {"samples": samples, "guide": guide, "predictive": predictive}
+    return {
+        "samples": samples,
+        "guide": guide,
+        "predictive": predictive,
+        "summaries": summary(samples, sites),
+    }

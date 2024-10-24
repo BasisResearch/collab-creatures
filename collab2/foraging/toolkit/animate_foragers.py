@@ -11,16 +11,18 @@ import torch
 warnings.simplefilter(action="ignore", category=FutureWarning)
 
 
-def plot_trajectories(df, title):
+def plot_trajectories(df, title, ax=None, show_legend=True):
     unique_foragers = df["forager"].unique()
-    plt.figure()
+
+    if ax is None:
+        _, ax = plt.subplots()
 
     for forager in unique_foragers:
         df_forager = df[df["forager"] == forager]
-        (line,) = plt.plot(df_forager["x"], df_forager["y"])
+        (line,) = ax.plot(df_forager["x"], df_forager["y"])
         init_loc = df_forager[df_forager.time == 0]
         # use same color as the trajectory
-        plt.scatter(
+        ax.scatter(
             init_loc["x"],
             init_loc["y"],
             color=line.get_color(),
@@ -29,7 +31,7 @@ def plot_trajectories(df, title):
             label=f"Forager {forager}: initial",
         )
         final_loc = df_forager[df_forager.time == df_forager.time.max()]
-        plt.scatter(
+        ax.scatter(
             final_loc["x"],
             final_loc["y"],
             color=line.get_color(),
@@ -38,12 +40,15 @@ def plot_trajectories(df, title):
             label=f"Forager {forager}: final",
         )
 
-    plt.axis("equal")
-    plt.gca().invert_yaxis()
-    plt.axis("off")
-    plt.legend()
-    plt.suptitle(f"Trajectories: {title}", fontsize=16)
-    return plt
+    ax.set_aspect("equal")
+    ax.invert_yaxis()
+    ax.set_axis_off()
+
+    if show_legend:
+        ax.legend()
+
+    ax.set_title(f"Trajectories: {title}", fontsize=16)
+    return ax
 
 
 def plot_distances(distances, title=""):

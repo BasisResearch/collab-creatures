@@ -25,7 +25,12 @@ from .evaluate import evaluate_performance  # noqa: F401
 from .filtering import constraint_filter_nearest, filter_by_distance  # noqa: F401
 from .food import generate_food_predictor  # noqa: F401
 from .inference import run_svi_inference  # type: ignore # noqa: F401
-from .inference import get_samples, prep_data_for_inference, summary  # noqa: F401
+from .inference import (  # noqa: F401
+    get_samples,
+    prep_data_for_inference,
+    prep_DF_data_for_inference,
+    summary,
+)
 from .local_windows import (  # noqa: F401
     _generate_local_windows,
     _get_grid,

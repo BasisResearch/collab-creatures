@@ -13,11 +13,9 @@ warnings.simplefilter(action="ignore", category=FutureWarning)
 
 def plot_trajectories(df, title, ax=None, show_legend=True):
     unique_foragers = df["forager"].unique()
-    
+
     if ax is None:
         _, ax = plt.subplots()
-
-
 
     for forager in unique_foragers:
         df_forager = df[df["forager"] == forager]
@@ -42,13 +40,13 @@ def plot_trajectories(df, title, ax=None, show_legend=True):
             label=f"Forager {forager}: final",
         )
 
-    ax.set_aspect('equal')
+    ax.set_aspect("equal")
     ax.invert_yaxis()
     ax.set_axis_off()
-    
+
     if show_legend:
         ax.legend()
-    
+
     ax.set_title(f"Trajectories: {title}", fontsize=16)
     return ax
 

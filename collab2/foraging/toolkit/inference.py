@@ -7,20 +7,31 @@ import pandas as pd
 import pyro
 import torch
 from pyro.infer.autoguide import AutoMultivariateNormal, init_to_mean
+
 from .utils import dataObject
 
+
 def prep_data_for_inference(
-    sim_derived: dataObject, predictors: List[str], outcome_vars: str, subsample_rate: float = 1.0
+    sim_derived: dataObject,
+    predictors: List[str],
+    outcome_vars: str,
+    subsample_rate: float = 1.0,
 ) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]:
-    
-    assert hasattr(sim_derived, "derivedDF"), "dataObject must contain a derivedDF DataFrame attribute"
-    
+
+    assert hasattr(
+        sim_derived, "derivedDF"
+    ), "dataObject must contain a derivedDF DataFrame attribute"
+
     return prep_DF_data_for_inference(
         sim_derived.derivedDF, predictors, outcome_vars, subsample_rate
     )
 
+
 def prep_DF_data_for_inference(
-    DF: pd.DataFrame, predictors: List[str], outcome_vars: str, subsample_rate: float = 1.0
+    DF: pd.DataFrame,
+    predictors: List[str],
+    outcome_vars: str,
+    subsample_rate: float = 1.0,
 ) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]:
 
     if isinstance(outcome_vars, str):

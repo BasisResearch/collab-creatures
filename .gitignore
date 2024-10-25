@@ -171,3 +171,7 @@ data/foraging/locust/ds/priors_sam30_15EQ20191202_s0_e10.pkl
 docs/foraging/random-hungry-followers/sim_data/hungry_sim.dill
 docs/foraging/random-hungry-followers/sim_data/hungry_foragers_samples.dill
 docs/foraging/random-hungry-followers/sim_data/hungry_foragers_samples.dill
+docs/foraging/central-park-birds/duck_distances.pkl
+docs/foraging/central-park-birds/sps_distances.pkl
+docs/foraging/central-park-birds/ducks_proximity_single_optimizer.pkl
+docs/foraging/central-park-birds/sparrows_proximity_single_optimizer.pkl

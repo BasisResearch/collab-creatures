@@ -120,7 +120,17 @@ class dataObject:
         self.step_size_max = max(step_maxes)
 
 
-def foragers_to_forager_distances(obj):
+def foragers_to_forager_distances(obj: dataObject) -> List[List[pd.DataFrame]]:
+    """
+    Calculate the distances between foragers at each time frame.
+
+    Args:
+        obj (dataObject): An object containing foragers and foragersDF data.
+
+    Returns:
+        list: A nested list where each sublist contains DataFrames of distances
+              between foragers at each time frame.
+    """
     distances = []
     foragers = obj.foragers
     foragersDF = obj.foragersDF

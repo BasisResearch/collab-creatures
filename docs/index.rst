@@ -19,6 +19,7 @@ Welcome to Collaborative Intelligence Systems!
    foraging/random-hungry-followers/index
    foraging/communicators/index
    foraging/locust/index
+   foraging/central-park-birds/index
 
 .. toctree::
    :maxdepth: 1

@@ -5,4 +5,4 @@ Central Park Birds
    :maxdepth: 1
 
 
-   central_park_birds_predictors_new.ipynb
+   central_park_birds.ipynb

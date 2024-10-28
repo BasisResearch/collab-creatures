@@ -92,6 +92,7 @@ def animate_foragers(
     velocity_multiplier=10,
     color_by_state=False,
     produce_object=False,
+    autosize=False,
 ):
     if plot_rewards:
         rew = sim.rewardsDF.copy()
@@ -163,9 +164,9 @@ def animate_foragers(
             ticks="",
             showticklabels=False,
             title="",
-            scaleanchor="x",  # This makes the y-axis scale to match the x-axis
+            scaleanchor="x",  # This makes the y-axis scale match the x-axis
         ),
-        autosize=False,
+        autosize=autosize,
         width=width,
         height=height,
     )

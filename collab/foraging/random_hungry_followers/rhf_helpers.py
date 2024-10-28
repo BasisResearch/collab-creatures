@@ -313,7 +313,7 @@ def generate_proximity_score(
 
             proximity[b][t]["proximity_standardized"].fillna(0, inplace=True)
 
-            proximity[b][t]["forager"] = b + 1
+            proximity[b][t]["forager"] = b 
             proximity[b][t]["time"] = t + 1 + time_shift
 
     proximityDF = pd.concat([pd.concat(p) for p in proximity])

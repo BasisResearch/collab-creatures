@@ -63,8 +63,8 @@ def add_follower_foragers(
             getting_worse=getting_worse,
             optimal=optimal,
             proximity_decay=proximity_decay,
-            start=0,
-            end=1,
+            start=t,
+            end=None,
         )["proximity"]
 
         for b in range(num_follower_foragers):

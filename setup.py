@@ -30,7 +30,7 @@ setup(
         "pyro-ppl>=1.8.6", "pandas==2.2.3", "plotly", "plotly.express", 
         "torch", "scipy", "scikit-learn",
         "matplotlib>=3.8.2", "dill", "torchdiffeq",
-        "numpy==2.1.2",
+        "numpy==1.25", # the latest compatible with current pytorch
     ],
     extras_require={
         "extras": EXTRAS_REQUIRE,

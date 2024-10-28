@@ -3,7 +3,7 @@ from typing import Callable, Union
 import numpy as np
 import pandas as pd
 
-from collab2.foraging.toolkit.utils import dataObject  # noqa: F401
+from collab.foraging.toolkit.utils import dataObject  # noqa: F401
 
 
 def _exponential_decay(distance: Union[float, np.ndarray], decay_factor: float = 0.5):

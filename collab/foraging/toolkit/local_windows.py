@@ -5,7 +5,7 @@ from typing import Any, Callable, List, Optional
 import numpy as np
 import pandas as pd
 
-from collab2.foraging.toolkit.utils import dataObject
+from collab.foraging.toolkit.utils import dataObject
 
 
 def _get_grid(

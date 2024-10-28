@@ -3,7 +3,7 @@ import logging
 import numpy as np
 import pandas as pd
 
-from collab2.foraging.random_hungry_followers.rhf_helpers import (
+from collab.foraging.random_hungry_followers.rhf_helpers import (
     construct_visibility,
     rewards_to_trace,
     update_rewards,

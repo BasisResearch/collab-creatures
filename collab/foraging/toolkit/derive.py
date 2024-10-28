@@ -5,9 +5,9 @@ from typing import Any, Dict, List, Optional
 
 import pandas as pd
 
-from collab2.foraging import toolkit as ftk
-from collab2.foraging.toolkit.local_windows import generate_local_windows
-from collab2.foraging.toolkit.utils import dataObject
+from collab.foraging import toolkit as ftk
+from collab.foraging.toolkit.local_windows import generate_local_windows
+from collab.foraging.toolkit.utils import dataObject
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
 derivation_logger = logging.getLogger(__name__)

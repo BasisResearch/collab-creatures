@@ -4,9 +4,9 @@ from typing import Callable, List, Optional, Union
 import numpy as np
 import pandas as pd
 
-from collab2.foraging.toolkit import filter_by_distance
-from collab2.foraging.toolkit.point_contribution import _point_contribution
-from collab2.foraging.toolkit.utils import dataObject  # noqa: F401
+from collab.foraging.toolkit import filter_by_distance
+from collab.foraging.toolkit.point_contribution import _point_contribution
+from collab.foraging.toolkit.utils import dataObject  # noqa: F401
 
 
 def _piecewise_proximity_function(

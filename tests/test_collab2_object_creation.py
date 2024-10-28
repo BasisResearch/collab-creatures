@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from collab2.foraging.toolkit import (
+from collab.foraging.toolkit import (
     dataObject,
     rescale_to_grid,
     subsample_frames_constant_frame_rate,

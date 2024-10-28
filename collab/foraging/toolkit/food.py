@@ -3,11 +3,11 @@ from typing import Callable, List
 
 import pandas as pd
 
-from collab2.foraging.toolkit.point_contribution import (
+from collab.foraging.toolkit.point_contribution import (
     _exponential_decay,
     _point_contribution,
 )
-from collab2.foraging.toolkit.utils import dataObject
+from collab.foraging.toolkit.utils import dataObject
 
 
 def _generate_food_predictor(

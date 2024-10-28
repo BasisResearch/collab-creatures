@@ -3,7 +3,7 @@ from itertools import product
 import numpy as np
 import pandas as pd
 
-from collab2.foraging.toolkit import dataObject, generate_local_windows, rescale_to_grid
+from collab.foraging.toolkit import dataObject, generate_local_windows, rescale_to_grid
 
 
 def test_local_windows():

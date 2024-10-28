@@ -3,15 +3,15 @@ from typing import Any, Callable, List, Optional, Union
 
 import pandas as pd
 
-from collab2.foraging.toolkit.filtering import (
+from collab.foraging.toolkit.filtering import (
     constraint_filter_close_to_reward,
     filter_by_distance,
 )
-from collab2.foraging.toolkit.point_contribution import (
+from collab.foraging.toolkit.point_contribution import (
     _exponential_decay,
     _point_contribution,
 )
-from collab2.foraging.toolkit.utils import dataObject  # noqa: F401
+from collab.foraging.toolkit.utils import dataObject  # noqa: F401
 
 
 def _generate_communication_predictor(

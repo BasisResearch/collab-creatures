@@ -6,7 +6,6 @@ from .animate_foragers import (  # noqa: F401
     plot_trajectories,
     visualise_forager_predictors,
 )
-from .communicates import generate_communicates  # noqa: F401
 from .communication import generate_communication_predictor  # noqa: F401
 from .derive import (  # noqa: F401
     derive_predictors_and_scores,
@@ -66,11 +65,6 @@ from .velocity import (  # noqa: F401
     _velocity_predictor_contribution,
     generate_pairwiseCopying_predictor,
     generate_vicsek_predictor,
-)
-from .visibility import (  # noqa: F401
-    construct_visibility,
-    filter_by_visibility,
-    visibility_vs_distance,
 )
 from .visualization import animate_predictors, plot_predictor  # noqa: F401
 

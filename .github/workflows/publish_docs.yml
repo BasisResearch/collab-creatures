@@ -28,22 +28,36 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install Graphviz and Pandoc
+      - name: Install Graphviz, Pandoc, and LaTeX
         run: |
           sudo apt update
-          sudo apt install -y graphviz pandoc
+          sudo apt install -y graphviz pandoc texlive texlive-latex-extra texlive-fonts-recommended dvipng
+  
+  pages:
+    runs-on: ubuntu-22.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+    - id: pandoc-install
+      run: |
+        sudo apt install -y pandoc
+    - id: deployment
+      uses: sphinx-notes/pages@v3
+      with:
+        documentation_path: ./docs/
+        requirements_path: ./docs/requirements.txt
+    
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r docs/requirements.txt
+      # - name: Build Sphinx Documentation
+      #   working-directory: ./docs
+      #   run: make html
 
-      - name: Build Sphinx Documentation
-        working-directory: ./docs
-        run: make html
-
-      - name: Deploy to GitHub Pages
-        uses: sphinx-notes/pages@v3
-        with:
-          documentation_path: docs/_build/html
-          requirements_path: docs/requirements.txt
+      # - name: Deploy to GitHub Pages
+      #   uses: sphinx-notes/pages@v3
+      #   with:
+      #     documentation_path: docs/_build/html
+      #     requirements_path: docs/requirements.txt

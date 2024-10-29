@@ -1,5 +1,5 @@
 # source: https://github.com/sphinx-notes/pages
-name: Deploy Sphinx documentation to Pages
+name: Deploy Docs
 
 on:
   push:

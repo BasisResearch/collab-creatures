@@ -3,7 +3,7 @@ name: Deploy Docs
 
 on:
   push:
-    branches: [docs-deploy] # branch to trigger deployment
+    branches: [docs-deploy, main] # branch to trigger deployment
 
 jobs:
   pages:

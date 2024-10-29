@@ -10,4 +10,10 @@ test_modules: FORCE
 test_notebooks: FORCE
 	./scripts/test_notebooks.sh
 
+gendoc: FORCE
+	cd docs && rm -rf _build && make html
+
+docserve: FORCE
+	python -m http.server -d docs/_build/html 8080
+
 FORCE:

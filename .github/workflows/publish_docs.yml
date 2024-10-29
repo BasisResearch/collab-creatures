@@ -5,8 +5,14 @@ on:
     branches: [docs-deploy, main]
 
 jobs:
-  build:
+  build-and-pages:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
     strategy:
       fail-fast: false
       matrix:
@@ -33,23 +39,14 @@ jobs:
           sudo apt update
           sudo apt install -y graphviz pandoc texlive texlive-latex-extra texlive-fonts-recommended dvipng
   
-  pages:
-    runs-on: ubuntu-22.04
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    permissions:
-      pages: write
-      id-token: write
-    steps:
-    - id: pandoc-install
-      run: |
-        sudo apt install -y pandoc
-    - id: deployment
-      uses: sphinx-notes/pages@v3
-      with:
-        documentation_path: ./docs/
-        requirements_path: ./docs/requirements.txt
+      - id: pandoc-install
+        run: |
+          sudo apt install -y pandoc
+      - id: deployment
+        uses: sphinx-notes/pages@v3
+        with:
+          documentation_path: ./docs/
+          requirements_path: ./docs/requirements.txt
     
 
       # - name: Build Sphinx Documentation

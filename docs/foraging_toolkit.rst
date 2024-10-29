@@ -1,4 +1,4 @@
-Foraging Toolkit (Collab 2)
+Foraging Toolkit
 ===========================
 
 .. automodule:: collab.foraging.toolkit

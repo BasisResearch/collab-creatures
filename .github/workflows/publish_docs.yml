@@ -1,9 +1,8 @@
-# source: https://github.com/sphinx-notes/pages
 name: Deploy Docs
 
 on:
   push:
-    branches: [docs-deploy, main] # branch to trigger deployment
+    branches: [docs-deploy, main]
 
 jobs:
   build:
@@ -12,7 +11,6 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ['3.10']
-        
 
     steps:
       - uses: actions/checkout@v2
@@ -25,37 +23,27 @@ jobs:
           restore-keys: |
             deploy-docs-
 
-
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v1
         with:
           python-version: ${{ matrix.python-version }}
-      
-      - name: Setup Graphviz
-        uses: ts-graphviz/setup-graphviz@v1
+
+      - name: Install Graphviz and Pandoc
+        run: |
+          sudo apt update
+          sudo apt install -y graphviz pandoc
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -e .[test]
-    
-      
+          pip install -r docs/requirements.txt
 
-  pages:
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    permissions:
-      pages: write
-      id-token: write
-    steps:
-    - id: pandoc-install
-      run: |
-        sudo apt install -y pandoc
+      - name: Build Sphinx Documentation
+        working-directory: ./docs
+        run: make html
 
-    - id: deployment
-      uses: sphinx-notes/pages@v3
-      with:
-        documentation_path: ./docs/
-        requirements_path: ./docs/requirements.txt
+      - name: Deploy to GitHub Pages
+        uses: sphinx-notes/pages@v3
+        with:
+          documentation_path: docs/_build/html
+          requirements_path: docs/requirements.txt

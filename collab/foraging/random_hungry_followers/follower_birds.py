@@ -2,13 +2,13 @@ import logging
 
 import numpy as np
 import pandas as pd
-
-from collab.foraging.toolkit import (
+import copy 
+from collab.foraging.random_hungry_followers.rhf_helpers import (
     construct_visibility,
     generate_proximity_score,
     update_rewards,
 )
-
+import matplotlib.pyplot as plt
 logging.basicConfig(level=logging.INFO, format="%(asctime)s:  %(message)s")
 
 
@@ -19,6 +19,7 @@ def add_follower_foragers(
     getting_worse=1.5,
     optimal=4,
     proximity_decay=1,
+    initial_positions=None,
 ):
     """
         A function to add follower foragers to a simulation.
@@ -35,9 +36,9 @@ def add_follower_foragers(
     # TODO Check if different forager types mix well
     how_many_foragers_already = len(old_foragers)
 
-    new_foragers = sim.generate_random_foragers(num_follower_foragers, size=1)[
-        "random_foragers"
-    ]
+    new_foragers = sim.generate_random_foragers(
+        num_follower_foragers, size=1, initial_positions=initial_positions
+    )["random_foragers"]
 
     for new_forager in new_foragers:
         new_forager["forager"] = new_forager["forager"] + how_many_foragers_already
@@ -55,6 +56,10 @@ def add_follower_foragers(
             end=t + 1,
         )["visibility"]
 
+#        print("in vis:", _vis[0][0]['time'][0])
+        # print first line of visibility
+        # print("vis", 0, _vis[0][0].head(1))
+
         _prox = generate_proximity_score(
             new_foragers,
             _vis,
@@ -62,32 +67,64 @@ def add_follower_foragers(
             getting_worse=getting_worse,
             optimal=optimal,
             proximity_decay=proximity_decay,
-            start=0,
+            start=0, #these are relative positions to _vis, which is generated for t only, so 0 in _vis is t
             end=1,
+            time_shift=t,
         )["proximity"]
 
+        # print("prox", _prox[0][0].head(1))
+
+        #assert  _prox[0][0]["time"][0] == _vis[0][0]["time"][0], "time mismatch"
+
         for b in range(num_follower_foragers):
-            options = _vis[b][0].copy()
+            options = copy.deepcopy(_vis[b][0])
+
+            
+            # print("option")
+            # print(options.head(1))
             options = options.merge(_prox[b][0], how="inner")
+            # print("options_merged")
+            # print(options.head(1))
+
+            if b == 0:
+                plt.scatter(options["x"], options["y"], c = options["proximity"])
+                plt.colorbar()
+                plt.title(f"Visibility for follower {b} at time {t}")
+                plt.xlim(0, 60)
+                plt.ylim(0, 60)
+                plt.show()
+
+
             options.sort_values(by="proximity", ascending=False, inplace=True)
             options = options.head(10)
+            if b == 1:
+                print("options", options)
+
             chosen_option = options.iloc[np.random.randint(0, 10)]
-            # chosen_option = options.head(0)
+
+            # if b == 1:
+            #     print(chosen_option)
+                # chosen_option = options.head(0)
 
             if t < sim.num_frames - 1:
                 new_x = chosen_option["x"]
                 new_y = chosen_option["y"]
 
+
                 new_row = {
                     "x": new_x,
                     "y": new_y,
-                    "time": t + 2,
-                    "forager": b + 1,
+                    "time": t + 1,
+                    "forager": b,
                     "type": "follower",
                 }
+               
 
                 new_foragers[b].loc[len(new_foragers[b])] = new_row
 
+                if t >= 15 and t <= 20 and b == 1:
+                    print(new_row)
+                   
     sim.foragers.extend(new_foragers)
     sim.foragersDF = pd.concat(sim.foragers)
 

@@ -2,7 +2,7 @@
 
 
 #TODO modify when notebooks land
-INCLUDED_NOTEBOOKS="docs/foraging/ docs/experimental/collab2_tests"
+INCLUDED_NOTEBOOKS="docs/foraging/ docs/experimental/collab_tests"
 
 EXCLUDED_NOTEBOOK="docs/foraging/locust/locust_ds_validate.ipynb"
  

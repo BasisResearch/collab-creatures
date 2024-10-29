@@ -22,6 +22,7 @@ release = "1.0.0"
 
 extensions = [
     "sphinx.ext.autodoc",
+    "sphinx.ext.napoleon",
     "sphinx.ext.mathjax",
     "sphinx.ext.intersphinx",
     "sphinx.ext.imgmath",
@@ -31,6 +32,28 @@ extensions = [
     "sphinxcontrib.jquery",
     "myst_parser",
 ]
+
+# Enable MyST in notebooks
+nb_custom_formats = {
+    ".ipynb": ["nbsphinx", {"mdformat": "myst"}],
+}
+
+# Enable MyST extensions
+myst_enable_extensions = [
+    "dollarmath",
+    "amsmath",
+    "deflist",
+    "fieldlist",
+    "html_admonition",
+    "html_image",
+    "colon_fence",
+    "smartquotes",
+    "replacements",
+    "linkify",
+]
+
+# Enable cross-references
+myst_heading_anchors = 3
 
 # Point sphinxcontrib.bibtex to the bibtex file.
 bibtex_bibfiles = ["refs.bib"]

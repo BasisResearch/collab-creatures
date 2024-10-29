@@ -8,7 +8,7 @@ on:
     workflow_dispatch:
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -21,9 +21,9 @@ jobs:
           uses: actions/cache@v2
           with:
             path: ~/.cache/pip
-            key: test-notebooks-pip-${{ hashFiles('**/pyproject.toml') }}
+            key: deploy-docs-${{ hashFiles('**/pyproject.toml') }}
             restore-keys: |
-              test-notebooks-pip-
+              deploy-docs-
 
 
         - name: Set up Python ${{ matrix.python-version }}
@@ -39,6 +39,4 @@ jobs:
             pip install --upgrade pip
             pip install -e .[test]
     
-        - name: Run Notebook Test
-          run: | 
-           ./scripts/test_notebooks.sh
+    

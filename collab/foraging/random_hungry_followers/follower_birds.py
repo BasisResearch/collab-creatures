@@ -86,7 +86,7 @@ def add_follower_foragers(
             # print("options_merged")
             # print(options.head(1))
 
-            if b == 0:
+            if b == 1:
                 plt.scatter(options["x"], options["y"], c = options["proximity"])
                 plt.colorbar()
                 plt.title(f"Visibility for follower {b} at time {t}")

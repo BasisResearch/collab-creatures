@@ -10,6 +10,8 @@ import os
 import sys
 
 sys.path.insert(0, os.path.abspath("../"))
+sys.path.insert(0, os.path.abspath('./foraging'))
+sys.path.insert(0, os.path.abspath('./foraging/random-hungry-followers'))
 import sphinx_rtd_theme
 
 project = "Collaborative Intelligence Systems"

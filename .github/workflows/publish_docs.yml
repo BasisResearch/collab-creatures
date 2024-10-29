@@ -3,7 +3,7 @@ name: Deploy Sphinx documentation to Pages
 
 on:
   push:
-    branches: [db-collab2-sphinx] # branch to trigger deployment
+    branches: [docs-deploy] # branch to trigger deployment
 
 jobs:
   pages:

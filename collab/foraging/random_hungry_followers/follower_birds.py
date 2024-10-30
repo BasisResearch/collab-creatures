@@ -43,10 +43,11 @@ def add_follower_foragers(
         new_forager["forager"] = new_forager["forager"] + how_many_foragers_already
         new_forager["type"] = "follower"
 
+
     for t in range(0, sim.num_frames):
 
-        sim.foragers.extend(new_foragers)
 
+        sim.foragers.extend(new_foragers)
 
         if t > 0 and t % 10 == 0:
             logging.info(f"Generating frame {t}/{sim.num_frames} ")
@@ -81,13 +82,13 @@ def add_follower_foragers(
             
             options = options.merge(_prox[b][0], how="inner")
 
-            if b == 1:
-                plt.scatter(options["x"], options["y"], c = options["proximity"])
-                plt.colorbar()
-                plt.title(f"Visibility for follower {b} at time {t}")
-                plt.xlim(0, 60)
-                plt.ylim(0, 60)
-                plt.show()
+            # if b == 1:
+            #     plt.scatter(options["x"], options["y"], c = options["proximity"])
+            #     plt.colorbar()
+            #     plt.title(f"Visibility for follower {b} at time {t}")
+            #     plt.xlim(0, 60)
+            #     plt.ylim(0, 60)
+            #     plt.show()
 
 
             options.sort_values(by="proximity", ascending=False, inplace=True)
@@ -111,13 +112,17 @@ def add_follower_foragers(
                     "type": "follower",
                 }
                
-                new_foragers[b] = pd.DataFrame(new_row, index = [0])
+                #new_foragers[b] = pd.DataFrame(new_row, index = [0])
                 #new_foragers[b].loc[len(new_foragers[b])] = new_row
 
 
-    sim.foragersDF = pd.concat(sim.foragers)
+    #sim.strange_foragersDF = pd.concat(strange_foragers)
+    #sim.foragersDF = pd.concat(sim.foragers)
                    
-    
+    #test strange
+    #sim.foragers = sim.strange_foragers_list
+    sim.foragers.extend(new_foragers)
+    sim.foragersDF = pd.concat(sim.foragers)
 
     rew = update_rewards(sim, sim.rewards, sim.foragers, start=1)
 

@@ -55,8 +55,9 @@ def add_follower_foragers(
             new_foragers,
             sim.grid_size,
             visibility_range=visibility_range,
-            start=t,
-            end=t + 1,
+            start=0, #we only have a single frame all the time, built from new foragers
+            # which is also one frame at a time, updated in place
+            end=1,
         )["visibility"]
 
 

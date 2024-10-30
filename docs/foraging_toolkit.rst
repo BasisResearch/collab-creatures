@@ -1,6 +1,10 @@
 Foraging Toolkit
 ===========================
 
+The foraging toolkit provides a set of tools for representing, simulating, analyzing and visualizing dynamic measurements of foraging agents.
+
+The main reference is :cite:`urbaniak2024`.
+
 .. automodule:: collab.foraging.toolkit
    :members:
    :undoc-members:
@@ -56,3 +60,9 @@ Predictors and Scores
    :members:
    :undoc-members:
    :show-inheritance:
+
+
+References
+---------------------------
+.. bibliography:: refs.bib
+   :style: plain

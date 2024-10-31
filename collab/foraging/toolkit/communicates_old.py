@@ -1,9 +1,15 @@
 import numpy as np
 import pandas as pd
 
-from collab.foraging.toolkit.trace import rewards_trace
-from collab.foraging.toolkit.utils import generate_grid
-from collab.foraging.toolkit.visibility import filter_by_visibility
+#from collab.foraging.toolkit.trace import rewards_trace
+#from collab.foraging.toolkit.utils import generate_grid
+# from collab.foraging.toolkit.visibility import filter_by_visibility
+
+from collab.foraging.random_hungry_followers.rhf_helpers import (
+    rewards_trace,
+    generate_grid,
+    filter_by_visibility
+)
 
 
 def generate_communicates(
@@ -17,6 +23,7 @@ def generate_communicates(
     filter_by_on_reward=True,
 ):
     communicates = []
+    communicates_nested = []
 
     for b in range(1, sim.num_foragers + 1):
 
@@ -67,6 +74,8 @@ def generate_communicates(
 
         communicates_b_df = pd.concat(communicates_b)
         communicates.append(communicates_b_df)
+        communicates_nested.append(communicates_b)
+
     communicates_df = pd.concat(communicates)
 
-    return {"communicates": communicates, "communicatesDF": communicates_df}
+    return {"communicates": communicates, "communicates_nested": communicates_nested, "communicatesDF": communicates_df}

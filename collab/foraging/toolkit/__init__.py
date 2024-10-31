@@ -69,3 +69,4 @@ from .velocity import (  # noqa: F401
 from .visualization import animate_predictors, plot_predictor  # noqa: F401
 
 # from .trace import rewards_to_trace, rewards_trace  # noqa: F401
+from .communicates_old import generate_communicates # noqa: F401

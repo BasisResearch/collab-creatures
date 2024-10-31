@@ -84,7 +84,7 @@ Before submitting a pull request, please autoformat code and ensure that unit te
 Getting started and demo notebooks
 ------------------------------
 
-All the notebooks are located in the `docs` (especially `docs/foraging`) folder. 
+All the notebooks are located in the `docs` (mostly `docs/foraging`) folder. 
 
 
 - `random-hungry-followers <https://basisresearch.github.io/collab-creatures/foraging/random-hungry-followers/index.html>`_ simulates three types of foraging agents, and profiles their foraging strategies using Bayesian inference.

@@ -6,6 +6,9 @@ from .animate_foragers import (  # noqa: F401
     plot_trajectories,
     visualise_forager_predictors,
 )
+
+# from .trace import rewards_to_trace, rewards_trace  # noqa: F401
+from .communicates_old import generate_communicates  # noqa: F401
 from .communication import generate_communication_predictor  # noqa: F401
 from .derive import (  # noqa: F401
     derive_predictors_and_scores,
@@ -67,5 +70,3 @@ from .velocity import (  # noqa: F401
     generate_vicsek_predictor,
 )
 from .visualization import animate_predictors, plot_predictor  # noqa: F401
-
-# from .trace import rewards_to_trace, rewards_trace  # noqa: F401

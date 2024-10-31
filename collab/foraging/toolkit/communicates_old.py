@@ -1,9 +1,15 @@
 import numpy as np
 import pandas as pd
 
-from collab.foraging.toolkit.trace import rewards_trace
-from collab.foraging.toolkit.utils import generate_grid
-from collab.foraging.toolkit.visibility import filter_by_visibility
+from collab.foraging.random_hungry_followers.rhf_helpers import (
+    filter_by_visibility,
+    generate_grid,
+    rewards_trace,
+)
+
+# from collab.foraging.toolkit.trace import rewards_trace
+# from collab.foraging.toolkit.utils import generate_grid
+# from collab.foraging.toolkit.visibility import filter_by_visibility
 
 
 def generate_communicates(

@@ -11,6 +11,7 @@ def filter_by_distance(
     t: int,
     interaction_length: float,
     interaction_constraint: Optional[Callable] = None,  # TODO add more type hints?
+    interaction_minimal_distance: float = 0,
     **interaction_constraint_params,
 ) -> List[int]:
     """
@@ -25,6 +26,7 @@ def filter_by_distance(
     :param f: The index of the forager whose neighbors are being filtered
     :param t: The time step at which the filtering is performed.
     :param interaction_length: The maximum distance within which foragers are considered neighbors.
+    :param interaction_minimal_distance: The minimum distance at which foragers are considered neighbors.
     :param interaction_constraint: An optional callable that imposes additional filtering criteria. The callable should
                                    take in the list of forager indices, the current forager index `f`, time `t`, the
                                    full foragers DataFrame, and any optional parameters.
@@ -41,9 +43,12 @@ def filter_by_distance(
         + (positions["y"] - positions.loc[positions["forager"] == f, "y"].values) ** 2
     )
     positions.loc[positions["forager"] == f, "distance"] = np.nan
-    foragers_ind = positions.loc[
-        positions["distance"] <= interaction_length, "forager"
-    ].tolist()
+
+    mask = (positions["distance"] > interaction_minimal_distance) & (
+        positions["distance"] <= interaction_length
+    )
+
+    foragers_ind = positions.loc[mask, "forager"].tolist()
 
     if interaction_constraint is not None:
         foragers_ind = interaction_constraint(

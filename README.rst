@@ -11,7 +11,7 @@
 Collaborative Animal Behavior Modeling with Collab
 ===================================================
 
-`**Collab** <https://basisresearch.github.io/collab-creatures/getting_started.html>`_ is a package that supports the use of Bayesian and causal inference 
+`Collab <https://basisresearch.github.io/collab-creatures/getting_started.html>`_ is a package that supports the use of Bayesian and causal inference 
 with  `Pyro <https://github.com/pyro-ppl/pyro>`_ and `ChiRho <https://github.com/BasisResearch/chirho>`_ 
 in the study of animal collaborative behavior. It is developed by the Collaborative Intelligent Systems team at `Basis <https://www.basis.ai/>`_, with the goal of reasoning about a large class of collaborative behavior, spanning a broad range of species and contexts.  
 

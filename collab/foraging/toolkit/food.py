@@ -1,5 +1,5 @@
 import copy
-from typing import Callable, List
+from typing import Callable, List, Union
 
 import pandas as pd
 
@@ -7,7 +7,7 @@ from collab.foraging.toolkit.point_contribution import (
     _exponential_decay,
     _point_contribution,
 )
-from collab.foraging.toolkit.utils import dataObject
+from collab.foraging.toolkit.utils import dataObject  # noqa: F401
 
 
 def _generate_food_predictor(
@@ -15,6 +15,7 @@ def _generate_food_predictor(
     foragers: List[pd.DataFrame],
     local_windows: List[List[pd.DataFrame]],
     predictor_name: str,
+    interaction_length: Union[None, float] = None,
     decay_contribution_function: Callable = _exponential_decay,
     **decay_contribution_function_kwargs,
 ) -> List[List[pd.DataFrame]]:
@@ -31,18 +32,44 @@ def _generate_food_predictor(
 
                 rewards_now = rewards[t]
 
+                #     positions = copy.deepcopy(foragersDF[foragersDF["time"] == t])
+                #     positions["distance"] = np.sqrt(
+                # (positions["x"] - positions.loc[positions["forager"] == f, "x"].values) ** 2
+                #     + (positions["y"] - positions.loc[positions["forager"] == f, "y"].values) ** 2
+                # )
+                # positions.loc[positions["forager"] == f, "distance"] = np.nan
+
                 if len(rewards_now) > 0:
                     for _, row in rewards_now.iterrows():
                         reward_x = row["x"]
                         reward_y = row["y"]
 
-                        predictor[f][t][predictor_name] += _point_contribution(
-                            reward_x,
-                            reward_y,
-                            local_windows[f][t],
-                            decay_contribution_function,
-                            **decay_contribution_function_kwargs,
-                        )
+                        include_reward = True
+                        if interaction_length is not None:
+                            forager_x = (
+                                foragers[f].loc[foragers[f]["time"] == t, "x"].values[0]
+                            )
+                            forager_y = (
+                                foragers[f].loc[foragers[f]["time"] == t, "y"].values[0]
+                            )
+
+                            # compute distance between reward and forager
+                            distance = (
+                                (reward_x - forager_x) ** 2
+                                + (reward_y - forager_y) ** 2
+                            ) ** 0.5
+
+                            if distance > interaction_length:
+                                include_reward = False
+
+                        if include_reward:
+                            predictor[f][t][predictor_name] += _point_contribution(
+                                reward_x,
+                                reward_y,
+                                local_windows[f][t],
+                                decay_contribution_function,
+                                **decay_contribution_function_kwargs,
+                            )
 
                 max_abs_over_grid = predictor[f][t][predictor_name].abs().max()
                 if max_abs_over_grid > 0:
@@ -70,9 +97,12 @@ def generate_food_predictor(foragers_object: dataObject, predictor_name: str):
              predictor values.
 
     Predictor-specific keyword arguments:
-        :param decay_contribution_function: The decay function for computing the value for each reward.
-        The value of the food predictor will be equal to the total contribution from the
-        individual rewards.
+        :param interaction_length: The maximum distance at which a reward
+            can be considered by the predictor.
+        :param decay_contribution_function: The decay function for computing
+            the value for each reward.
+            The value of the food predictor will be equal to the total contribution from the
+            individual rewards.
             The default value is the exponential decay function: f(dist) = exp(-decay_factor * dist).
             The default decay factor is 0.5, it can be customized by passing
             an additional `decay_factor` keyword argument.

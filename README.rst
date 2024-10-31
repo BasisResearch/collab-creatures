@@ -13,9 +13,9 @@ Collaborative Animal Behavior Modeling with Collab
 
 **Collab** is a package that supports the use of Bayesian and causal inference 
 with  `Pyro <https://github.com/pyro-ppl/pyro>`_ and `ChiRho <https://github.com/BasisResearch/chirho>`_ 
-in the study of animal collaborative behavior, with the long-term goal of reasoning about a large class of collaborative behavior, spanning a broad range of species and contexts.  
+in the study of animal collaborative behavior. It is developed by the Collaborative Intelligent Systems team at `Basis <https://www.basis.ai/>'_, with the goal of reasoning about a large class of collaborative behavior, spanning a broad range of species and contexts.  
 
-Current analyses focus on foraging
+The analyses in this package focus on foraging
 animals and the probabilistic identification of foraging strategies, linking ideas from neuroscience, cognitive science, and statistics. When foraging, animals must assess where to move based on internal preferences (e.g., how they value food) and external cues (e.g., food location or presence of other animals). From a cognitive standpoint, animals may use an internal value function to decide on the optimal action at any moment. From a neuroscience perspective, this process involves the brain mapping environments and potential rewards, while statistical models predict movement patterns from available data. For instance, when a bird forages, the brain might generate a predictive map to estimate which locations are more or less valuable. Our analysis framework translates this into a statistical model that can then be used to predict the bird’s movement.
 
 For more information, please see `our paper <https://www.nature.com/articles/s41598-024-71931-0>`_ :

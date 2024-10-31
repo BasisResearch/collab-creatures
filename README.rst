@@ -19,8 +19,7 @@ Current analyses focus on foraging
 animals and the probabilistic identification of foraging strategies, linking ideas from neuroscience, cognitive science, and statistics. When foraging, animals must assess where to move based on internal preferences (e.g., how they value food) and external cues (e.g., food location or presence of other animals). From a cognitive standpoint, animals may use an internal value function to decide on the optimal action at any moment. From a neuroscience perspective, this process involves the brain mapping environments and potential rewards, while statistical models predict movement patterns from available data. For instance, when a bird forages, the brain might generate a predictive map to estimate which locations are more or less valuable. Our analysis framework translates this into a statistical model that can then be used to predict the bird’s movement.
 
 For more information, please see `our paper <https://www.nature.com/articles/s41598-024-71931-0>`_ :
-
-Urbaniak, R., Xie, M. & Mackevicius, E. Linking cognitive strategy, neural mechanism, and movement statistics in group foraging behaviors. Nature Scientific Reports 14, 21770 (2024). https://doi.org/10.1038/s41598-024-71931-0
+   Urbaniak, R., Xie, M. & Mackevicius, E. Linking cognitive strategy, neural mechanism, and movement statistics in group foraging behaviors. Nature Scientific Reports 14, 21770 (2024). https://doi.org/10.1038/s41598-024-71931-0
 
 An archival version of the repository from the time of the paper submission can be found `here <https://github.com/BasisResearch/collab-creatures/pull/137>`_ , in the ru-staging-foraging-archive branch. 
 

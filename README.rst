@@ -61,13 +61,13 @@ To install dev dependencies needed to contribute to Collab, run the following co
 
 .. code-block:: sh
 
-    pip install -e ".[test]"
+    pip install -e ".[dev]"
 
 or 
 
 .. code-block:: sh
   
-    pip install -e .[test]
+    pip install -e .[dev]
 
 
 **Contributing:**
@@ -78,7 +78,7 @@ Before submitting a pull request, please autoformat code and ensure that unit te
 
      make format            # runs black and isort
      make lint              # linting
-     make tests             # notebook and unit tests
+     make test             # notebook and unit tests
 
 
 Getting started and demo notebooks

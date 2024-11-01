@@ -4,6 +4,8 @@ lint: FORCE
 format:
 	./scripts/clean.sh
 
+test: test_modules test_notebooks
+
 test_modules: FORCE
 	./scripts/test_modules.sh
 

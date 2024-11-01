@@ -218,9 +218,9 @@ class LocustDynamics(pyro.nn.PyroModule):
 
 def bayesian_locust(base_model=LocustDynamics) -> Dynamics[torch.Tensor]:
     with pyro.plate("attr", size=5):
-        attraction = pyro.sample("attraction", dist.Uniform(0.00001, 0.1))
+        attraction = pyro.sample("attraction", dist.Uniform(0.00001, 0.1))  # type: ignore
     with pyro.plate("wond", size=4):
-        wander = pyro.sample("wander", dist.Uniform(0.00001, 0.3))
+        wander = pyro.sample("wander", dist.Uniform(0.00001, 0.3))  # type: ignore
     locust_model = base_model(attraction, wander)
     return locust_model
 
@@ -237,7 +237,7 @@ def locust_noisy_model(X: State[torch.Tensor]) -> None:
     with pyro.plate("data", len(X["edge_l"])):
         pyro.sample(
             "counts_obs",
-            dist.Multinomial(total_count, probs=probs),  # .to_event(event_dim)
+            dist.Multinomial(total_count, probs=probs),  # type: ignore
         )
 
 
@@ -398,7 +398,7 @@ def plot_ds_estimates(
             ax[0].axvline(true_wander[i], color="black", linestyle="--")
 
     ax[0].set_title(
-        f"Prior ({coef_names[group][i]}, mean {round(prior_samples[group][:, i].mean().item(),3)})"
+        f"Prior ({coef_names[group][i]}, mean {round(prior_samples[group][:, i].mean().item(), 3)})"
     )
     sns.despine(ax=ax[0])
     ax[0].set_yticks([])
@@ -429,7 +429,7 @@ def plot_ds_estimates(
             ax[1].axvline(true_wander[i], color="black", linestyle="--")
 
     ax[1].set_title(
-        f"Posterior ({coef_names[group][i]}, mean {round(posterior_samples[group][:, i].mean().item(),3)})"
+        f"Posterior ({coef_names[group][i]}, mean {round(posterior_samples[group][:, i].mean().item(), 3)})"
     )
     sns.despine(ax=ax[1])
     ax[1].set_yticks([])

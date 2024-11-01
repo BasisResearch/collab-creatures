@@ -21,9 +21,9 @@ animals and the probabilistic identification of foraging strategies, linking ide
 For more information, please see `our paper <https://www.nature.com/articles/s41598-024-71931-0>`_ :
    Urbaniak, R., Xie, M. & Mackevicius, E. Linking cognitive strategy, neural mechanism, and movement statistics in group foraging behaviors. Nature Scientific Reports 14, 21770 (2024). https://doi.org/10.1038/s41598-024-71931-0
 
-An archival version of the repository from the time of the paper submission can be found `here <https://github.com/BasisResearch/collab-creatures/pull/137>`_ , in the ru-staging-foraging-archive branch. 
+An archival version of the repository from the time of the paper submission can be found `here <https://github.com/BasisResearch/collab-creatures/pull/137>`_ , in the `ru-staging-foraging-archive` branch. 
 
-*This repository is a work in progress, and we are continuously working on improving it, and applying it to new types of multi-agent behaviors. Please reach out if you're interested in collaborating or contributing.* 
+*This repository is a work in progress. We are continuously working on improving it, and applying it to new types of multi-agent behaviors. Please reach out if you're interested in collaborating or contributing.* 
 
 All the functionalities are illustrated in Jupyter notebooks (listed further down).
 
@@ -37,9 +37,9 @@ Using the package you can:
 
 4. **Compare** different species, behaviors, strategies, and tasks.
 
-4. **Compartmentalize synthetic or real-world animal movement data** in preparation for Bayesian dynamical systems inference.
+5. **Compartmentalize synthetic or real-world animal movement data** in preparation for Bayesian dynamical systems inference.
 
-5. **Build your own dynamical systems model** of the compartmentalized data and use it within a Bayesian inferential workflow.
+6. **Build your own dynamical systems model** of the compartmentalized data and use it within a Bayesian inferential workflow.
 
 
 Installation
@@ -78,8 +78,15 @@ Before submitting a pull request, please autoformat code and ensure that unit te
 
      make format            # runs black and isort
      make lint              # linting
-     make tests             # notebook and unit tests
+     make test_modules      # unit tests
+     make test_notebooks    # notebook tests 
 
+To generate local version of the html documentation, and to serve on a local server run:
+
+  .. code-block:: sh
+
+     make gendoc
+     make docserve 
 
 Getting started and demo notebooks
 ------------------------------

@@ -21,6 +21,8 @@ def generate_communicates(
     grid=None,
     visibility_restriction="invisible",
     filter_by_on_reward=True,
+    colname = "communicate",
+    colname_standardized = "communicate_standardized"
 ):
     communicates = []
     communicates_nested = []
@@ -48,12 +50,12 @@ def generate_communicates(
             communicate = grid.copy()
             communicate["forager"] = b
             communicate["time"] = t
-            communicate["communicate"] = 0
-            communicate["communicate_standardized"] = 0
+            communicate[colname] = 0
+            communicate[colname_standardized] = 0
 
             if slice_t.shape[0] > 0:
                 for _step in range(slice_t.shape[0]):
-                    communicate["communicate"] += rewards_trace(
+                    communicate[colname] += rewards_trace(
                         np.sqrt(
                             (slice_t["x"].iloc[_step] - communicate["x"]) ** 2
                             + (slice_t["y"].iloc[_step] - communicate["y"]) ** 2
@@ -61,12 +63,12 @@ def generate_communicates(
                         info_spatial_decay,
                     )
 
-            if communicate["communicate"].sum() > 0:
-                communicate["communicate_standardized"] = (
-                    communicate["communicate"] - communicate["communicate"].mean()
-                ) / communicate["communicate"].std()
+            if communicate[colname].sum() > 0:
+                communicate[colname_standardized] = (
+                    communicate[colname] - communicate[colname].mean()
+                ) / communicate[colname].std()
             else:
-                communicate["communicate_standardized"] = 0
+                communicate[colname_standardized] = 0
 
             communicate["time"] = communicate["time"]
 

@@ -37,6 +37,6 @@ jobs:
         - name: Install Python packages
           run: |
             pip install --upgrade pip
-            pip install -e .[test]
+            pip install -e .[dev]
     
     

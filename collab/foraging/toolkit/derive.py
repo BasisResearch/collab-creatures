@@ -24,7 +24,7 @@ def derive_predictors(
     optimal=4,
     proximity_decay=1,
     generate_communicates_indicator=True,
-    info_time_decay=3,
+    info_time_decay=0,
     info_spatial_decay=0.15,
     finders_tolerance=2,
     time_shift=0,

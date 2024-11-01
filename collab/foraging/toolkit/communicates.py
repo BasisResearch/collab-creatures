@@ -69,13 +69,17 @@ def generate_communicates(
             == True  # noqa E712   the == True  removal or switching to `is True` leads to failure
         ]
 
-        expansion = [
-            out_of_range_foragersDF.assign(time=out_of_range_foragersDF["time"] + i)
-            for i in range(1, info_time_decay + 1)
-        ]
 
-        expansion_df = pd.concat(expansion, ignore_index=True)
 
+        if info_time_decay>0:
+            expansion = [
+                out_of_range_foragersDF.assign(time=out_of_range_foragersDF["time"] + i)
+                for i in range(1, info_time_decay + 1)
+            ]
+            expansion_df = pd.concat(expansion, ignore_index=True)
+        else:
+            expansion_df = out_of_range_foragersDF.copy()
+        
         callingDF = pd.concat([out_of_range_foragersDF, expansion_df])
 
         if grid is None:

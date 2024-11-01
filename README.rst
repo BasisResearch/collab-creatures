@@ -82,7 +82,7 @@ Before submitting a pull request, please autoformat code and ensure that unit te
 
 
 Getting started and demo notebooks
-------------------------------
+----------------------------------
 
 All the notebooks are located in the `docs` (mostly `docs/foraging`) folder. 
 

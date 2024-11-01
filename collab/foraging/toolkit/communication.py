@@ -21,6 +21,7 @@ def _generate_communication_predictor(
     local_windows: List[List[pd.DataFrame]],
     predictor_name: str,
     interaction_length: float,
+    interaction_minimal_distance: float = 0,
     interaction_constraint: Optional[
         Union[
             Callable[[List[int], int, int, pd.DataFrame], List[int]],
@@ -54,6 +55,7 @@ def _generate_communication_predictor(
                     f,
                     t,
                     interaction_length,
+                    interaction_minimal_distance=interaction_minimal_distance,
                     interaction_constraint=interaction_constraint,
                     **interaction_constraint_params,
                 )

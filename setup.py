@@ -22,7 +22,8 @@ DEV_REQUIRE = [
             "sphinxcontrib-jquery",
             "sphinx_rtd_theme==1.3.0",
             "nbsphinx",
-            "myst_parser"
+            "myst_parser", 
+            "pandoc",
         ]   
 
 setup(

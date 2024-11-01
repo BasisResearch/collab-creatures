@@ -56,8 +56,7 @@ Installation
 
 
 **Dev Setup:**
-
-To install dev dependencies needed to contribute to Collab, run the following command:
+Make sure you have GraphViz, Pandoc, and LaTeX installed on your system. Then, to install dev dependencies needed to contribute to Collab, run the following command:
 
 .. code-block:: sh
 
@@ -93,7 +92,7 @@ All the notebooks are located in the `docs` (mostly `docs/foraging`) folder.
 
 - `Communicators <https://basisresearch.github.io/collab-creatures/foraging/communicators/index.html>`_ simulates groups of foraging agents, some of which communicate about food locations, and uses Bayesian inference to infer the degree of communication.
 
-- `Locust <https://basisresearch.github.io/collab-creatures/foraging/locust/index.html>`_ analyses communication in a real-world dataset of foraging locust, related to `Information integration for decision-making in desert locusts <https://doi.org/10.1016/j.isci.2023.106388>`_ by  Günzel, Oberhauser and Couzin-Fuchs.
+- `Locust <https://basisresearch.github.io/collab-creatures/foraging/locust/index.html>`_ analyses a real-world dataset of foraging locusts, related to `Information integration for decision-making in desert locusts <https://doi.org/10.1016/j.isci.2023.106388>`_ by  Günzel, Oberhauser and Couzin-Fuchs.
   
 
 *Note*: The inference steps assume some familiarity with `Pyro <https://github.com/pyro-ppl/pyro>`_ and 

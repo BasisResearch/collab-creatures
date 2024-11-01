@@ -1,0 +1,127 @@
+.
+├── conf.py
+├── doctree.txt
+├── experimental
+│   ├── add_velocity.ipynb
+│   ├── collab_tests
+│   │   ├── 4wpf_test.csv
+│   │   ├── access_predictor.ipynb
+│   │   ├── communication_predictor.ipynb
+│   │   ├── compute_velocity.ipynb
+│   │   ├── derive_predictors.ipynb
+│   │   ├── filtering.ipynb
+│   │   ├── local_windows.ipynb
+│   │   ├── next_step_score.ipynb
+│   │   ├── object_creation.ipynb
+│   │   ├── proximity_predictor.ipynb
+│   │   └── trace_predictor.ipynb
+│   ├── collab_tests_suspended
+│   │   ├── velocity_predictors.ipynb
+│   │   └── vicsek_predictors.ipynb
+│   ├── filter_others.ipynb
+│   └── test_rhf.ipynb
+├── figures
+│   ├── duck_coefs_plot.png
+│   ├── fig2_proximity_cropped.png
+│   ├── fig2_proximity.png
+│   ├── fig2_rfh.png
+│   ├── fig2_trace_cropped.png
+│   ├── fig2_trace.png
+│   ├── fig3_communication06.png
+│   ├── fig3_no_communication.png
+│   ├── fig_bird_trajectories.png
+│   ├── fig_distance_distribution_ducks.png
+│   ├── fig_distance_distribution_sps.png
+│   ├── locust_ds_validation.png
+│   ├── locust_posterior_check.png
+│   └── sps_coefs_plot.png
+├── foraging
+│   ├── central-park-birds
+│   │   ├── central_park_birds.ipynb
+│   │   ├── duck_distances.pkl
+│   │   ├── ducks_proximity_single_optimizer.pkl
+│   │   ├── index.rst
+│   │   ├── sparrows_proximity_single_optimizer.pkl
+│   │   ├── sps_distances.pkl
+│   │   └── xmemo
+│   │       ├── 03c2d8b1494a3e504319b40f5ffc90781373e2496c930af0bac88e686b924fcc.pickle
+│   │       ├── 06533e0d1dd819d6d3ead5c5d630444c68eaab0d39d22cd7c041d5e4a8a2d3b4.pickle
+│   │       ├── 0d7000e3ace2566cb33e19f8157c73411b75d7565fbf2c63ae2854282e2ffffb.pickle
+│   │       ├── 10f86923d0f0c097094e24d784a17fdec7de5c5efff0d97256c3a5735bec8420.pickle
+│   │       ├── 16178c26c9ef24b41591a0fede6af2f2a0dc1c8c52c1b5da50ec3b38af277053.pickle
+│   │       ├── 19327b6018560e8cbd65c0fecd9db365a27bb11a82e4250a44043379ab30fdec.pickle
+│   │       ├── 1a9317aa78251f887f7a993271cb299b8086ce82cdbe2a33793d5e1f849438e4.pickle
+│   │       ├── 1afd68ac8cf2a86489593189d88aa9a457df5fccc6c21bf5fe906b8a2980df37.pickle
+│   │       ├── 2549f49951a3675121d07ba074b257eb9d41d043a0045e7e59d53c925dcb3c83.pickle
+│   │       ├── 275bea00f16e433d65fba41ca9300e2f85cfd1b2ee805a6a2075dde04f15ebac.pickle
+│   │       ├── 362c05a58bb6a9fd2ea59ab962251c14ef3204cf6524da8c976568534b67fead.pickle
+│   │       ├── 3d7091dca37535235fcecc36d8fe80e4255da160e4b915735bd883e96a45bfcb.pickle
+│   │       ├── 4585dfa49c5a41a303186819849ba3fa263fbb7c8f4c92a07f1f946a9a2ac84d.pickle
+│   │       ├── 47c05097f85e7e6dd66363c59aabed71b7ae93f19236cdc4f537c59391f87b21.pickle
+│   │       ├── 50468639092f23f1ec6ee6b15e31ff5987930545d4f05626e71c64d88ee26aae.pickle
+│   │       ├── 5119e9155f4474c6f730e1378ced2096d26f26ccdb25354c3df0f9d64a9b4bdc.pickle
+│   │       ├── 56fd0a7c66a5dcabfc0fe49ca3b28cf03cc0815ab7cd67f03c27f3623ecc9ddc.pickle
+│   │       ├── 5f73a227489c74a511bbb04ebd366e5639dcb974590065ebbf80df7fb9e2345b.pickle
+│   │       ├── 62206944a17c001d20c5c510b53b3b16a098f44eee7a1f7cc242d39f1cad2cb7.pickle
+│   │       ├── 6ca2c6e4ae7f2c6e14c0491aa75a51832831faba075dda80d0cc856f3eedd6a5.pickle
+│   │       ├── 76c5c518f8fd00fb1bc11543a6feb26b1f510597c48ed0adee1d46330642e0ca.pickle
+│   │       ├── 7c69022fab7a4895c2706ca4e5237a204092bb929aabc532fd48c0fb34fba28d.pickle
+│   │       ├── 82a56f842fded8fb1603d93fc43e34ede545391cb1cc57bcaf7d9e893a75d613.pickle
+│   │       ├── 84c8e08206defa3a352f3160c2108a5135dc30a21489cbbde24d9580be66b520.pickle
+│   │       ├── 889c18c54092b20b8bdce73eed62858a0cb3f5d3a806f362b8e089a563e6b05e.pickle
+│   │       ├── 95f127c7b0d71f445ea03770a2c0f8d8e8cfa2c97e1321eff27668512239ff97.pickle
+│   │       ├── 96e97452ab987f015543bef7da597dad4842dde0e91b048bf24f90aed2225243.pickle
+│   │       ├── a29fde9ab9cd591bb4ee26e6cdcf6c5e6231969948d61f33e53b035a2ffd5b42.pickle
+│   │       ├── a40dfd12c1532ae14811056b47aaa822c6f0a1ec0b4b45628938edf4201fe0cc.pickle
+│   │       ├── a84f68a509422b757c42a5d5341863da480ecb2e949075515b370420ef4b3b48.pickle
+│   │       ├── b8a764b353fcd962ed38ac614b4cd7f88c05b7feda16ab02bf4982c9cfaec6d0.pickle
+│   │       ├── ba7864e8d5a3b937d9ba13a29883bd03ccd90ba02f7b360386f1eb2d964f76e6.pickle
+│   │       ├── bc8b677ffb8c2e027a7849eeacdc1cf2858a4c64742745416ca7c0121a13d920.pickle
+│   │       ├── bf9d37a822d9f416e528b9f835aebad5716d5253b27e59d2c3133a361f236a51.pickle
+│   │       ├── c04a7f0d0936984db5fd3d725588add7d4710526dd58eae8a1087262edb7f6bd.pickle
+│   │       ├── c083c0283b30a9e5a6e0f0d6d185fc7e0769fdac6671236a69dc0b06a5efeafb.pickle
+│   │       ├── c37d3397ca823cd2220b601a89f2e869004a77dc864d7d28e3db92d7ba87ecb2.pickle
+│   │       ├── c578ab7533e60005baa6dca7fb23f9c16daaa1a5cd0031ee607404248b9b2e46.pickle
+│   │       ├── caa95c3691eef9a1ed505fdff75ec5bfb5be72be682cd50b62e0822acedfd8b8.pickle
+│   │       ├── dedc68a16a053f4bce9fa92826cb085a92a6ba4875eb6708ac0eea5b30fef9fd.pickle
+│   │       ├── e6e4dff7dd31298fa00386af86c3405ad0df14778d96ddd856318efccf5ddc61.pickle
+│   │       ├── ede9b24e5248d28fc2891a79374157a45cb4a1efa72b8e6916a2eb3ca1342df0.pickle
+│   │       ├── f81796a7e4ed6bf7dcd960a6a812c08ff6c06e8906d489cdef86cfd222d03084.pickle
+│   │       └── fc8692c0d173600e96a97248891f89996ffaab574a86ba5f26a9100c1d74ba41.pickle
+│   ├── communicators
+│   │   ├── communicators0.pkl
+│   │   ├── communicators6.pkl
+│   │   ├── communicators_derivedDF_0.pkl
+│   │   ├── communicators_derivedDF_6.pkl
+│   │   ├── communicators_inference.ipynb
+│   │   ├── communicators_simulations.ipynb
+│   │   └── index.rst
+│   ├── locust
+│   │   ├── index.rst
+│   │   ├── locust_ds_class.ipynb
+│   │   ├── locust_ds_data.ipynb
+│   │   ├── locust_ds_interpret.ipynb
+│   │   ├── locust_ds_validate.ipynb
+│   │   ├── locust_low_level.ipynb
+│   │   └── xmemo
+│   │       └── 333aaea37809b21eaf788bdc3cd1a667a62ffe74e1880b6b9be25064a3e3b376.pickle
+│   └── random-hungry-followers
+│       ├── follower_foragers.ipynb
+│       ├── hungry_foragers.ipynb
+│       ├── index.rst
+│       ├── random_foragers.ipynb
+│       ├── rhf_comparative.ipynb
+│       └── sim_data
+│           ├── follower_foragers_samples.dill
+│           ├── hungry_foragers_samples.dill
+│           ├── hungry_sim.dill
+│           └── random_foragers_samples.dill
+├── foraging_toolkit.rst
+├── getting_started.rst
+├── index.rst
+├── make.bat
+├── Makefile
+├── refs.bib
+└── requirements.txt
+
+12 directories, 112 files

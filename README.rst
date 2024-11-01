@@ -56,18 +56,17 @@ Installation
 
 
 **Dev Setup:**
-
-To install dev dependencies needed to contribute to Collab, run the following command:
+Make sure you have GraphViz, Pandoc, and LaTeX installed on your system. Then, to install dev dependencies needed to contribute to Collab, run the following command:
 
 .. code-block:: sh
 
-    pip install -e ".[test]"
+    pip install -e ".[dev]"
 
 or 
 
 .. code-block:: sh
   
-    pip install -e .[test]
+    pip install -e .[dev]
 
 
 **Contributing:**
@@ -78,8 +77,7 @@ Before submitting a pull request, please autoformat code and ensure that unit te
 
      make format            # runs black and isort
      make lint              # linting
-     make test_modules      # unit tests
-     make test_notebooks    # notebook tests 
+     make test              # notebook and unit tests
 
 To generate local version of the html documentation, and to serve on a local server run:
 
@@ -89,7 +87,7 @@ To generate local version of the html documentation, and to serve on a local ser
      make docserve 
 
 Getting started and demo notebooks
-------------------------------
+----------------------------------
 
 All the notebooks are located in the `docs` (mostly `docs/foraging`) folder. 
 
@@ -100,7 +98,7 @@ All the notebooks are located in the `docs` (mostly `docs/foraging`) folder.
 
 - `Communicators <https://basisresearch.github.io/collab-creatures/foraging/communicators/index.html>`_ simulates groups of foraging agents, some of which communicate about food locations, and uses Bayesian inference to infer the degree of communication.
 
-- `Locust <https://basisresearch.github.io/collab-creatures/foraging/locust/index.html>`_ analyses communication in a real-world dataset of foraging locust, related to `Information integration for decision-making in desert locusts <https://doi.org/10.1016/j.isci.2023.106388>`_ by  Günzel, Oberhauser and Couzin-Fuchs.
+- `Locust <https://basisresearch.github.io/collab-creatures/foraging/locust/index.html>`_ analyses a real-world dataset of foraging locusts, related to `Information integration for decision-making in desert locusts <https://doi.org/10.1016/j.isci.2023.106388>`_ by  Günzel, Oberhauser and Couzin-Fuchs.
   
 
 *Note*: The inference steps assume some familiarity with `Pyro <https://github.com/pyro-ppl/pyro>`_ and 

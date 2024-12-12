@@ -40,7 +40,9 @@ def _add_velocity(
             v_x = df["x"].diff(periods=dt) / dt
             v_y = df["y"].diff(periods=dt) / dt
             df[v_ID] = np.sqrt(v_x**2 + v_y**2)
-            df[theta_ID] = np.arctan2(v_y, v_x)
+            df[theta_ID] = np.arctan2(
+                v_y, v_x
+            )  # note that this returns 0 (instead of NaN) when vx=0,vy=0!
 
     return foragers_processed, pd.concat(foragers_processed)
 
@@ -71,12 +73,21 @@ def _velocity_predictor_contribution(
     v_implied = np.sqrt((grid["x"] - x) ** 2 + (grid["y"] - y) ** 2)
     theta_implied = np.arctan2(grid["y"] - y, grid["x"] - x)
     P_v = norm.pdf(x=v_implied, loc=v_pref, scale=sigma_v)
-    # there is a discontinuity when taking the difference of angles (2pi \equiv 0 !),
-    # so always choose the smaller difference
-    d_theta = theta_implied - theta_pref
-    d_theta[d_theta > np.pi] += -2 * np.pi
-    d_theta[d_theta < -np.pi] += 2 * np.pi
-    P_theta = norm.pdf(x=d_theta, loc=0, scale=sigma_t)
+
+    # note that np.arctan2(0,0) = 0 (instead of NaN)
+    # however, when |v|=0, the direction is meaningless, and it does not make sense to
+    # have angular preference in the predictor.
+    # therefore, we check for that condition and return an isotropic gaussian if true
+
+    if v_pref == 0 or np.isnan(theta_pref):  # then theta_pref does not matter!
+        P_theta = 1
+    else:
+        # there is a discontinuity when taking the difference of angles (2pi \equiv 0 !),
+        # so always choose the smaller difference
+        d_theta = theta_implied - theta_pref
+        d_theta[d_theta > np.pi] += -2 * np.pi
+        d_theta[d_theta < -np.pi] += 2 * np.pi
+        P_theta = norm.pdf(x=d_theta, loc=0, scale=sigma_t)
     return P_v * P_theta
 
 

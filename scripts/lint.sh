@@ -1,8 +1,8 @@
 #!/bin/bash
 set -euxo pipefail
 
-mypy --ignore-missing-imports collab/ collab2/ tests/
-isort --check --profile="black" --diff collab/ collab2/ tests/
-black --check collab/ collab2/ tests/ docs/
-flake8 collab/ collab2/ tests/
+mypy --ignore-missing-imports collab/  tests/
+isort --check --profile="black" --diff collab/ tests/
+black --check collab/ tests/ docs/
+flake8 collab/ tests/
 nbqa --nbqa-shell autoflake --nbqa-shell --recursive --check docs/

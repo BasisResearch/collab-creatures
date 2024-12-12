@@ -1,5 +1,6 @@
 import math
-from itertools import product
+import warnings
+from typing import Any, List, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -7,43 +8,98 @@ import pandas as pd
 from scipy.signal import find_peaks
 
 
-def object_from_data(
-    foragersDF,
-    grid_size=None,
-    rewardsDF=None,
-    frames=None,
-    calculate_step_size_max=False,
-):
-    if frames is None:
-        frames = foragersDF["time"].nunique()
+# define a class to streamline object creation
+class dataObject:
+    """
+    Object class containing foragers' trajectory data and other attributes.
+    """
 
-    if grid_size is None:
-        grid_size = int(max(max(foragersDF["x"]), max(foragersDF["y"])))
+    def __init__(
+        self,
+        foragersDF: pd.DataFrame,
+        grid_size: Optional[int] = None,
+        rewardsDF: Optional[pd.DataFrame] = None,
+    ):
+        """
+        Initializes an instance of dataObject with trajectory data
+        :param foragersDF: DataFrame containing foragers' trajectory data and additional attributes.
+            Must contain columns "x" : int, "y" : int, "time" : int, "forager" :int.
+            Time and forager indices must start at 0.
+        :param grid_size: size of grid used to discretize positional data.
+            If argument not provided, grid_size is set to the max "x" and "y" value in `foragersDF`
+        :param rewardsDF: location of rewards in grid, if applicable.
+            Must contain columns "x" : int, "y" : int, "time" : int, "reward" :int.
+        """
 
-    class EmptyObject:
-        pass
+        if grid_size is None:
+            grid_size = int(foragersDF.loc[:, ["x", "y"]].max(axis=None)) + 1
 
-    sim = EmptyObject()
+        self.grid_size = grid_size
+        self.num_frames = foragersDF["time"].max() + 1
 
-    sim.grid_size = grid_size
-    sim.num_frames = frames
-    sim.foragersDF = foragersDF
-    if sim.foragersDF["forager"].min() == 0:
-        sim.foragersDF["forager"] = sim.foragersDF["forager"] + 1
+        # raise warning if nan values in DataFrame
+        if foragersDF.isna().any(axis=None):
+            warnings.warn(
+                """
+                NaN values in data. The default behavior of predictor/score generating functions is
+                to ignore foragers with missing positional data. To modify, see documentation of
+                `derive_predictors_and_scores` and `generate_local_windows`
+                """
+            )
 
-    sim.foragers = [group for _, group in foragersDF.groupby("forager")]
+        # ensure that forager index is saved as an integer
+        foragersDF.loc[:, "forager"] = foragersDF.loc[:, "forager"].astype(int)
 
-    if rewardsDF is not None:
-        sim.rewardsDF = rewardsDF
-        sim.rewards = [group for _, group in rewardsDF.groupby("time")]
+        # group dfs by forager index
+        foragers = [group for _, group in foragersDF.groupby("forager")]
+        self.num_foragers = len(foragers)
 
-    sim.num_foragers = len(sim.foragers)
+        # add nans for any omitted frames & raise warning
+        all_frames = range(self.num_frames)
+        for f in range(self.num_foragers):
+            missing = set(all_frames) - set(foragers[f]["time"])
+            if missing:
+                warnings.warn(
+                    f"""
+                    Missing frames encountered for forager {f}, adding NaN fillers.
+                    The default behavior of predictor/score generating functions is
+                    to ignore foragers with missing positional data. To modify, see documentation of
+                    `derive_predictors_and_scores` and `generate_local_windows`
+                    """
+                )
+                filler_rows = pd.DataFrame(
+                    {"time": list(missing), "forager": [f] * len(missing)}
+                )
+                foragers[f] = pd.concat(
+                    [foragers[f], filler_rows]
+                )  # adds nan values for all other columns automatically
 
-    if calculate_step_size_max:
+            # sort by time
+            foragers[f].sort_values("time", ignore_index=True, inplace=True)
+
+        # save to object
+        self.foragers = foragers
+        self.foragersDF = pd.concat(foragers, ignore_index=True)
+
+        # add rewards
+        if rewardsDF is not None:
+            self.rewardsDF = rewardsDF
+            self.rewards = [group for _, group in rewardsDF.groupby("time")]
+
+        # save placeholders for local_windows, predictors and kwargs
+        self.local_windows: List[List[pd.DataFrame]] = [[]]
+        self.local_windows_kwargs: dict[str, Any] = {}
+        self.score_kwargs: dict[str, dict[str, Any]] = {}
+        self.predictor_kwargs: dict[str, dict[str, Any]] = {}
+        self.derived_quantities: dict[str, List[List[pd.DataFrame]]] = {}
+        self.derivedDF: pd.DataFrame
+
+    def calculate_step_size_max(self):
         step_maxes = []
 
-        for b in range(len(sim.foragers)):
-            df = sim.foragers[b]
+        for b in range(len(self.foragers)):
+            df = self.foragers[b]
+
             step_maxes.append(
                 max(
                     max(
@@ -60,12 +116,21 @@ def object_from_data(
                     ),
                 )
             )
-        sim.step_size_max = max(step_maxes)
 
-    return sim
+        self.step_size_max = max(step_maxes)
 
 
-def foragers_to_forager_distances(obj):
+def foragers_to_forager_distances(obj: dataObject) -> List[List[pd.DataFrame]]:
+    """
+    Calculate the distances between foragers at each time frame.
+
+    Args:
+        obj (dataObject): An object containing foragers and foragersDF data.
+
+    Returns:
+        list: A nested list where each sublist contains DataFrames of distances
+              between foragers at each time frame.
+    """
     distances = []
     foragers = obj.foragers
     foragersDF = obj.foragersDF
@@ -147,11 +212,6 @@ def distances_and_peaks(distances, bins=40, x_min=None, x_max=None):
             fontsize=10,
             color="red",
         )
-
-
-def generate_grid(grid_size):
-    grid = list(product(range(1, grid_size + 1), repeat=2))
-    return pd.DataFrame(grid, columns=["x", "y"])
 
 
 # remove rewards eaten by foragers in proximity

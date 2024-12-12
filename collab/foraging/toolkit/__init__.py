@@ -63,7 +63,7 @@ from .utils import (  # noqa: F401
 )
 from .velocity import (  # noqa: F401
     generate_pairwiseCopying_predictor,
+    generate_velocityDiffusion_predictor,
     generate_vicsek_predictor,
-    generate_velocityDiffusion_predictor
 )
 from .visualization import animate_predictors, plot_predictor  # noqa: F401

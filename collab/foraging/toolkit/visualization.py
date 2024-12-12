@@ -148,9 +148,9 @@ def animate_predictors(
     # TODO potentially expand with forager legend
     # ax.legend()
 
-    ax.set_xticks([0, grid_size])
-    ax.set_yticks([0, grid_size])
-    # ax.axis("off")
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.axis("off")
 
     # Initialize function to set up the background of each frame
     def init():

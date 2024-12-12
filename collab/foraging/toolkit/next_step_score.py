@@ -54,11 +54,7 @@ def _generate_nextStep_score(
                     score[f][t]["distance_to_next_step"] = np.nan
                     score[f][t][score_name] = np.nan
 
-<<<<<<< HEAD:collab2/foraging/toolkit/next_step_score.py
-        # save nans for last fram
-=======
         # save nans for last frame
->>>>>>> origin/main:collab/foraging/toolkit/next_step_score.py
         if (
             score[f][num_frames - 1] is not None
         ):  # conditioning needed as last frame is not always present

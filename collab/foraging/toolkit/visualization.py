@@ -57,17 +57,6 @@ def plot_predictor(
         else:
             ax = axes
 
-        # plot forager positions
-        for f in forager_position_indices:
-            ax.scatter(
-                foragers[f].loc[t, "x"],
-                foragers[f].loc[t, "y"],
-                s=50,
-                marker="s",
-                edgecolors="k",
-                facecolors=colors[f],
-            )
-
         # plot predictor values
         for f in forager_predictor_indices:
             if predictor[f][t] is not None:
@@ -84,6 +73,17 @@ def plot_predictor(
                     color=colors[f],
                     alpha=abs(size * 0.8),
                 )
+
+        # plot forager positions
+        for f in forager_position_indices:
+            ax.scatter(
+                foragers[f].loc[t, "x"],
+                foragers[f].loc[t, "y"],
+                s=50,
+                marker="s",
+                edgecolors="k",
+                facecolors=colors[f],
+            )
 
         ax.set_xlim([-1, grid_size])
         ax.set_ylim([-1, grid_size])

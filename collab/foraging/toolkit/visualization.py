@@ -38,9 +38,13 @@ def plot_predictor(
     nrows = np.ceil(len(time) / ncols).astype(int)
     fig, axes = plt.subplots(nrows, ncols, figsize=(3 * ncols, 3 * nrows))
     np.random.seed(random_state)
-    random_colors = np.random.randint(0, 256, size=(len(forager_position_indices), 3))
+    foragers_to_be_plotted = list(set(forager_position_indices) | set(forager_predictor_indices))
+    random_colors = np.random.randint(0, 256, size=(len(foragers_to_be_plotted), 3))
     # Convert the RGB values to hex format
-    colors = ["#{:02x}{:02x}{:02x}".format(r, g, b) for r, g, b in random_colors]
+    colors = {}
+    for i,f in enumerate(foragers_to_be_plotted):
+        r,g,b = random_colors[i]
+        colors[f] = "#{:02x}{:02x}{:02x}".format(r, g, b)
 
     for i, t in enumerate(time):
         if isinstance(axes, np.ndarray):
@@ -54,18 +58,18 @@ def plot_predictor(
             ax = axes
 
         # plot forager positions
-        for j, f in enumerate(forager_position_indices):
+        for f in forager_position_indices:
             ax.scatter(
                 foragers[f].loc[t, "x"],
                 foragers[f].loc[t, "y"],
                 s=50,
                 marker="s",
                 edgecolors="k",
-                facecolors=colors[j],
+                facecolors=colors[f],
             )
 
         # plot predictor values
-        for j, f in enumerate(forager_predictor_indices):
+        for f in forager_predictor_indices:
             if predictor[f][t] is not None:
                 # normalize predictor value to choose scatter size and alpha
                 size = (
@@ -77,7 +81,7 @@ def plot_predictor(
                     predictor[f][t]["x"],
                     predictor[f][t]["y"],
                     s=size * size_multiplier,
-                    color=colors[j],
+                    color=colors[f],
                     alpha=abs(size * 0.8),
                 )
 

@@ -21,9 +21,9 @@ jobs:
           uses: actions/cache@v2
           with:
             path: ~/.cache/pip
-            key: deploy-docs-${{ hashFiles('**/pyproject.toml') }}
+            key: test-notebooks-pip-${{ hashFiles('**/pyproject.toml') }}
             restore-keys: |
-              deploy-docs-
+              test-notebooks-pip-
 
 
         - name: Set up Python ${{ matrix.python-version }}
@@ -38,5 +38,8 @@ jobs:
           run: |
             pip install --upgrade pip
             pip install -e .[dev]
-    
+
+        - name: Run Notebook Test
+          run: | 
+            ./scripts/test_notebooks.sh    
     

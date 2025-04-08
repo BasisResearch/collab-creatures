@@ -19,7 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Ubuntu cache
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         if: startsWith(matrix.os, 'ubuntu')
         with:
           path: ~/.cache/pip
@@ -29,7 +29,7 @@ jobs:
             ${{ matrix.os }}-${{ matrix.python-version }}-
 
       - name: macOS cache
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         if: startsWith(matrix.os, 'macOS')
         with:
           path: ~/Library/Caches/pip

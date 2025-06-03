@@ -39,6 +39,7 @@ def test_dataObject():
     desired_frames = int(num_frames / frame_spacing)
     gridMin = -2
     gridMax = 2
+    n_columns = 5 # x, y, time, forager, global_forager_id
 
     foragersDF_scaled = rescale_to_grid(
         foragersDF, size=grid_size, gridMin=gridMin, gridMax=gridMax
@@ -60,7 +61,7 @@ def test_dataObject():
 
     # check that missing data was filled
     for f in range(num_foragers):
-        assert foragers_object1.foragers[f].shape == (desired_frames, 4)
+        assert foragers_object1.foragers[f].shape == (desired_frames, n_columns)
 
     # repeat for foragers_object2
     foragers_object2 = dataObject(foragersDF_scaled_subsampled2)
@@ -73,4 +74,4 @@ def test_dataObject():
 
     # check that missing data was filled
     for f in range(num_foragers):
-        assert foragers_object2.foragers[f].shape == (desired_frames, 4)
+        assert foragers_object2.foragers[f].shape == (desired_frames, n_columns)

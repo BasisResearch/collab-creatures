@@ -49,14 +49,16 @@ class dataObject:
 
         # Grab unique forager IDs and map them to consecutive indices
         forager_ids = foragersDF.forager.unique()
-        forager_id_map = {global_id: local_id for local_id, global_id in enumerate(forager_ids)}
+        forager_id_map = {
+            global_id: local_id for local_id, global_id in enumerate(forager_ids)
+        }
 
         # Save the original forager IDs before mapping the consecutive indices
         foragersDF = foragersDF.copy()
-        
-        if 'global_forager_id' not in foragersDF.columns:
-            foragersDF['global_forager_id'] = foragersDF['forager']
-        foragersDF['forager'] = foragersDF['forager'].map(forager_id_map)
+
+        if "global_forager_id" not in foragersDF.columns:
+            foragersDF["global_forager_id"] = foragersDF["forager"]
+        foragersDF["forager"] = foragersDF["forager"].map(forager_id_map)
 
         # group dfs by forager index
         foragers = [group for _, group in foragersDF.groupby("forager")]

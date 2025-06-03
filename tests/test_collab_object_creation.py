@@ -39,7 +39,7 @@ def test_dataObject():
     desired_frames = int(num_frames / frame_spacing)
     gridMin = -2
     gridMax = 2
-    n_columns = 5 # x, y, time, forager, global_forager_id
+    n_columns = 5  # x, y, time, forager, global_forager_id
 
     foragersDF_scaled = rescale_to_grid(
         foragersDF, size=grid_size, gridMin=gridMin, gridMax=gridMax

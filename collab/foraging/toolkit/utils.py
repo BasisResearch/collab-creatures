@@ -53,7 +53,9 @@ class dataObject:
 
         # Save the original forager IDs before mapping the consecutive indices
         foragersDF = foragersDF.copy()
-        foragersDF['global_forager_id'] = foragersDF['forager']
+        
+        if 'global_forager_id' not in foragersDF.columns:
+            foragersDF['global_forager_id'] = foragersDF['forager']
         foragersDF['forager'] = foragersDF['forager'].map(forager_id_map)
 
         # group dfs by forager index

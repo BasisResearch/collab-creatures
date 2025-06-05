@@ -1,4 +1,3 @@
-
 from setuptools import find_packages, setup
 
 VERSION = "0.2.0"
@@ -22,9 +21,9 @@ DEV_REQUIRE = [
             "sphinxcontrib-jquery",
             "sphinx_rtd_theme==1.3.0",
             "nbsphinx",
-            "myst_parser", 
+            "myst_parser",
             "pandoc",
-        ]   
+        ]
 
 setup(
     name="collab",
@@ -39,10 +38,10 @@ setup(
     },
     install_requires=[
         "chirho @ git+https://github.com/BasisResearch/chirho.git#egg=chirho",
-        "pyro-ppl>=1.8.6", "pandas==2.2.3", "plotly", "plotly.express", 
-        "torch", "scipy", "scikit-learn",
+        "pyro-ppl>=1.8.6", "pandas==2.2.3", "plotly", "plotly.express",
+        "torch>=2.2", "scipy", "scikit-learn",
         "matplotlib>=3.8.2", "dill", "torchdiffeq",
-        "numpy==1.25", # the latest compatible with current pytorch
+        "numpy",
         "jupyter", "graphviz", "matplotlib", "seaborn", "kaleido",
     ],
     extras_require={

@@ -8,7 +8,9 @@ def evaluate_performance(
     model, guide, predictors, outcome, num_samples=1000, plot=True
 ):
 
-    predictive = Predictive(model=model, guide=guide, num_samples=num_samples, parallel=True)
+    predictive = Predictive(
+        model=model, guide=guide, num_samples=num_samples, parallel=True
+    )
     samples = predictive(predictors, outcome={key: None for key in outcome.keys()})
 
     predictions = samples[next(iter(outcome.keys()))]

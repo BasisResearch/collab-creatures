@@ -1,11 +1,12 @@
 import math
 import warnings
-from typing import Any, Dict, List, Optional
+from typing import Any, List, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy.signal import find_peaks
+
 
 # define a class to streamline object creation
 class dataObject:

@@ -38,15 +38,23 @@ def _generate_combined_DF(
 
     :param predictors_and_scoress: dictionary of computed predictors/scores
     :param dropna: set to `True` to drop NaN elements from final DataFrame
-    :param add_scaled_values: set to `True` to scale the predictor/score columns and
+    :param add_scaled_values: set to `True` to scale the predictor/score columns using empirical CDF and
         add the values as additional columns in final DataFrame
     :return: final, flattened DataFrame containing all computed predictors as columns
     """
-    list_DFs = [_generate_DF_from_nestedList(p) for p in predictors_and_scores.values()]
-    combinedDF = list_DFs[0]
 
-    for i in range(1, len(list_DFs)):
-        combinedDF = combinedDF.merge(list_DFs[i], how="inner")
+    dict_DFs = {
+        key: _generate_DF_from_nestedList(predictors_and_scores[key])
+        for key in predictors_and_scores.keys()
+    }
+    combinedDF = pd.concat(
+        [dict_DFs[key][[key]] for key in dict_DFs.keys()], axis=1
+    )  # only combining predictor/score columns on index
+
+    # list_DFs = [_generate_DF_from_nestedList(p) for p in predictors_and_scores.values()]
+    # combinedDF = list_DFs[0]
+    # for i in range(1, len(list_DFs)):
+    #     combinedDF = combinedDF.merge(list_DFs[i], how="inner")
 
     if dropna:
         og_frames = len(combinedDF)
@@ -55,21 +63,17 @@ def _generate_combined_DF(
         if dropped_frames:
             warnings.warn(
                 f"""
-                      Dropped {dropped_frames}/{og_frames} frames from `derivedDF` due to NaN values.
-                      Missing values can arise when computations depend on next/previous step positions
-                      that are unavailable. See documentation of the corresponding predictor/score generating
-                      functions for more information.
+                      Dropped {dropped_frames}/{og_frames} (~{100*dropped_frames/og_frames:.2f}%) rows from `derivedDF`
+                      due to NaN values. Missing values can arise when computations depend on next/previous positions
+                      that are unavailable. See documentation of the corresponding predictor/score generating functions
+                      for more information.
                       """
             )
 
     # scale predictor columns
     if add_scaled_values:
         for key in predictors_and_scores.keys():
-            column_min = combinedDF[key].min()
-            column_max = combinedDF[key].max()
-            combinedDF[f"{key}_scaled"] = (combinedDF[key] - column_min) / (
-                column_max - column_min
-            )
+            combinedDF[f"{key}_scaled"] = combinedDF[key].rank(method="dense", pct=True)
 
     return combinedDF
 
@@ -106,8 +110,8 @@ def derive_predictors_and_scores(
                 "nextStep_squared" : {"nonlinearity_exponent" : 2},
             }
     :param dropna: set to `True` to drop NaN elements from the final DataFrame
-    :param add_scaled_values: set to `True` to compute scaled predictor scores
-        and add them as additional columns in final DataFrame
+    :param add_scaled_values: set to `True` to compute scaled predictors/scores using empirical
+        CDF and add them as additional columns in final DataFrame
     :return: final, flattened DataFrame containing all computed predictors as columns
     """
 
@@ -117,9 +121,11 @@ def derive_predictors_and_scores(
     foragers_object.score_kwargs = score_kwargs
 
     # generate local_windows and add to object
+    start = time.time()
     local_windows = generate_local_windows(foragers_object)
     foragers_object.local_windows = local_windows
-
+    end = time.time()
+    derivation_logger.info(f"Local windows completed in {end-start:.2f} seconds.")
     derived_quantities = {}
 
     # calculate predictors
@@ -150,8 +156,10 @@ def derive_predictors_and_scores(
     foragers_object.derived_quantities = derived_quantities
 
     # generate combined DF
+    start = time.time()
     derivedDF = _generate_combined_DF(derived_quantities, dropna, add_scaled_values)
-
+    end = time.time()
+    derivation_logger.info(f"derivedDF generated in {end-start:.2f} seconds.")
     # save to object
     foragers_object.derivedDF = derivedDF
 

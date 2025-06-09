@@ -43,8 +43,8 @@ from .models import (  # noqa: F401
     continuous_contribution,
 )
 from .next_step_score import (  # noqa: F401
-    _generate_nextStep_score,
     generate_nextStep_score,
+    generate_nextStepExponential_score,
 )
 from .proximity import (  # noqa: F401; foragers_to_forager_distances,
     generate_proximity_predictor,
@@ -62,10 +62,8 @@ from .utils import (  # noqa: F401
     update_rewards,
 )
 from .velocity import (  # noqa: F401
-    _add_velocity,
-    _generic_velocity_predictor,
-    _velocity_predictor_contribution,
     generate_pairwiseCopying_predictor,
+    generate_velocityDiffusion_predictor,
     generate_vicsek_predictor,
 )
 from .visualization import animate_predictors, plot_predictor  # noqa: F401

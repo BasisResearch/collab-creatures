@@ -38,9 +38,13 @@ def plot_predictor(
     nrows = np.ceil(len(time) / ncols).astype(int)
     fig, axes = plt.subplots(nrows, ncols, figsize=(3 * ncols, 3 * nrows))
     np.random.seed(random_state)
-    random_colors = np.random.randint(0, 256, size=(len(forager_position_indices), 3))
+    foragers_to_be_plotted = list(set(forager_position_indices) | set(forager_predictor_indices))
+    random_colors = np.random.randint(0, 256, size=(len(foragers_to_be_plotted), 3))
     # Convert the RGB values to hex format
-    colors = ["#{:02x}{:02x}{:02x}".format(r, g, b) for r, g, b in random_colors]
+    colors = {}
+    for i,f in enumerate(foragers_to_be_plotted):
+        r,g,b = random_colors[i]
+        colors[f] = "#{:02x}{:02x}{:02x}".format(r, g, b)
 
     for i, t in enumerate(time):
         if isinstance(axes, np.ndarray):
@@ -53,19 +57,8 @@ def plot_predictor(
         else:
             ax = axes
 
-        # plot forager positions
-        for j, f in enumerate(forager_position_indices):
-            ax.scatter(
-                foragers[f].loc[t, "x"],
-                foragers[f].loc[t, "y"],
-                s=50,
-                marker="s",
-                edgecolors="k",
-                facecolors=colors[j],
-            )
-
         # plot predictor values
-        for j, f in enumerate(forager_predictor_indices):
+        for f in forager_predictor_indices:
             if predictor[f][t] is not None:
                 # normalize predictor value to choose scatter size and alpha
                 size = (
@@ -77,9 +70,20 @@ def plot_predictor(
                     predictor[f][t]["x"],
                     predictor[f][t]["y"],
                     s=size * size_multiplier,
-                    color=colors[j],
+                    color=colors[f],
                     alpha=abs(size * 0.8),
                 )
+
+        # plot forager positions
+        for f in forager_position_indices:
+            ax.scatter(
+                foragers[f].loc[t, "x"],
+                foragers[f].loc[t, "y"],
+                s=50,
+                marker="s",
+                edgecolors="k",
+                facecolors=colors[f],
+            )
 
         ax.set_xlim([-1, grid_size])
         ax.set_ylim([-1, grid_size])
@@ -95,7 +99,9 @@ def plot_predictor(
             for c in range(len(time) % ncols, ncols):
                 fig.delaxes(axes[c])
 
+    fig.suptitle(f"Predictor: {predictor_name}")
     fig.tight_layout(pad=2)
+    fig.show()
 
 
 def animate_predictors(
@@ -124,6 +130,8 @@ def animate_predictors(
     Returns :
         - ani : animation
     """
+    trajectory_data = foragersDF[foragersDF["forager"].isin(forager_position_indices)]
+
     num_foragers = foragersDF["forager"].nunique()
     num_frames = foragersDF["time"].nunique()
 
@@ -167,19 +175,19 @@ def animate_predictors(
     # Update function for each frame
     def update(frame):
 
-        filtered_foragers = foragersDF[
-            foragersDF["forager"].isin(forager_position_indices)
-        ]
-
         # Update positions of the particles
-        current_positions = filtered_foragers.loc[
-            foragersDF["time"] == frame, ["x", "y"]
+        current_positions = trajectory_data.loc[
+            trajectory_data["time"] == frame, ["x", "y"]
         ].values
         foragers_scat.set_offsets(current_positions)
 
         # Update face and edge colors of the particles
-        foragers_scat.set_facecolor(colors)  # Set face colors directly
-        foragers_scat.set_edgecolor(colors)  # Set edge colors directly
+        foragers_scat.set_facecolor(
+            colors[forager_position_indices]
+        )  # Set face colors directly
+        foragers_scat.set_edgecolor(
+            colors[forager_position_indices]
+        )  # Set edge colors directly
 
         # Update predictor
         for i, f in enumerate(forager_predictor_indices):
@@ -201,7 +209,6 @@ def animate_predictors(
         return foragers_scat, *predictors_scat_list
 
     # Create the animation
-    print(num_frames)
     ani = animation.FuncAnimation(
         fig,
         update,

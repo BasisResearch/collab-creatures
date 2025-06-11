@@ -46,28 +46,7 @@ class dataObject:
                 `derive_predictors_and_scores` and `generate_local_windows`
                 """
             )
-
-        # Get unique forager IDs from the DataFrame
-        forager_ids = foragersDF.forager.unique()
-
-        # Check if forager IDs are already consecutive integers starting from 0
-        # Expected IDs are the consecutive integers starting from 0
-        self.local_forager_ids = sorted(range(len(forager_ids)))
-        self.global_forager_ids = sorted(forager_ids)
-
-        # Save the original forager IDs and map to consecutive indices if needed
-        if self.local_forager_ids != self.global_forager_ids:
-            warnings.warn(
-                f"""
-                Original forager indices were converted to consecutive integers starting from 0.
-                To access the original forager IDs, use the get_global_forager_id() method.
-                Original IDs were: {self.global_forager_ids}
-                """
-            )
-
-            # By default, convert global to local IDs
-            self.apply_forager_id_mapping(local_to_global=False)
-
+        
         # group dfs by forager index
         foragers = [group for _, group in foragersDF.groupby("forager")]
         self.num_foragers = len(foragers)

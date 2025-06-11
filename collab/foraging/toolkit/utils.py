@@ -81,6 +81,27 @@ class dataObject:
         self.foragers = foragers
         self.foragersDF = pd.concat(foragers, ignore_index=True)
 
+        # Get unique forager IDs from the DataFrame
+        forager_ids = foragersDF.forager.unique()
+
+        # Check if forager IDs are already consecutive integers starting from 0
+        # Expected IDs are the consecutive integers starting from 0
+        self.local_forager_ids = sorted(range(len(forager_ids)))
+        self.global_forager_ids = sorted(forager_ids)
+
+        # Save the original forager IDs and map to consecutive indices if needed
+        if self.local_forager_ids != self.global_forager_ids:
+            warnings.warn(
+                f"""
+                Original forager indices were converted to consecutive integers starting from 0.
+                To access the original forager IDs, use the apply_forager_id_mapping() method.
+                Original IDs were: {self.global_forager_ids}
+                """
+            )
+
+            # By default, convert global to local IDs
+            self.apply_forager_id_mapping(local_to_global=False)
+
         # add rewards
         if rewardsDF is not None:
             self.rewardsDF = rewardsDF
@@ -118,6 +139,56 @@ class dataObject:
             )
 
         self.step_size_max = max(step_maxes)
+
+    @property
+    def local_to_global_map(self) -> dict:
+        return {
+            local_id: global_id
+            for local_id, global_id in enumerate(self.global_forager_ids)
+        }
+
+    @property
+    def global_to_local_map(self) -> dict:
+        return {
+            global_id: local_id
+            for local_id, global_id in enumerate(self.global_forager_ids)
+        }
+
+    def apply_forager_id_mapping(self, local_to_global: bool = False):
+        """
+        Apply forager ID mapping to convert between local and global IDs. Applies
+        directly to the foragersDF attribute.
+
+        Args:
+            local_to_global: If True, converts from local to global IDs. If False, converts from global to local IDs
+        """
+
+        # Find current forager IDs and grab mapping
+        current_ids = set(self.foragersDF["forager"].unique())
+
+        if local_to_global:
+            mapping = self.local_to_global_map
+        else:
+            mapping = self.global_to_local_map
+
+        # Check if already mapped
+        target_ids = set(mapping.values())
+        if current_ids.issubset(target_ids):
+            warnings.warn(
+                "IDs are already in target format. Returning DataFrame unchanged."
+            )
+            return
+
+        # Ensure that all current IDs are in the mapping --> otherwise throw an error
+        source_ids = set(mapping.keys())
+        if not current_ids.issubset(source_ids):
+            unmapped = current_ids - source_ids
+            raise ValueError(f"Cannot map forager IDs: {unmapped}")
+
+        # Apply the mapping to the foragersDF
+        self.foragersDF = self.foragersDF.assign(
+            forager=self.foragersDF.forager.map(mapping).astype(int)
+        )
 
 
 def foragers_to_forager_distances(obj: dataObject) -> List[List[pd.DataFrame]]:

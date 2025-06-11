@@ -49,7 +49,7 @@ class dataObject:
 
         # ensure that forager index is saved as an integer
         foragersDF.loc[:, "forager"] = foragersDF.loc[:, "forager"].astype(int)
-        
+
         # group dfs by forager index
         foragers = [group for _, group in foragersDF.groupby("forager")]
         self.num_foragers = len(foragers)

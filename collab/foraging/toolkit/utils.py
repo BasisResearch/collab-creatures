@@ -67,7 +67,7 @@ class dataObject:
 
             # By default, convert global to local IDs
             self.apply_forager_id_mapping(local_to_global=False)
-        
+
         # group dfs by forager index
         foragers = [group for _, group in foragersDF.groupby("forager")]
         self.num_foragers = len(foragers)
@@ -98,44 +98,6 @@ class dataObject:
         # save to object
         self.foragers = foragers
         self.foragersDF = pd.concat(foragers, ignore_index=True)
-
-        # add rewards
-        if rewardsDF is not None:
-            self.rewardsDF = rewardsDF
-            self.rewards = [group for _, group in rewardsDF.groupby("time")]
-
-        # save placeholders for local_windows, predictors and kwargs
-        self.local_windows: List[List[pd.DataFrame]] = [[]]
-        self.local_windows_kwargs: dict[str, Any] = {}
-        self.score_kwargs: dict[str, dict[str, Any]] = {}
-        self.predictor_kwargs: dict[str, dict[str, Any]] = {}
-        self.derived_quantities: dict[str, List[List[pd.DataFrame]]] = {}
-        self.derivedDF: pd.DataFrame
-
-    def calculate_step_size_max(self):
-        step_maxes = []
-
-        for b in range(len(self.foragers)):
-            df = self.foragers[b]
-
-            step_maxes.append(
-                max(
-                    max(
-                        [
-                            abs(df["x"].iloc[t + 1] - df["x"].iloc[t])
-                            for t in range(len(df) - 1)
-                        ]
-                    ),
-                    max(
-                        [
-                            abs(df["y"].iloc[t + 1] - df["y"].iloc[t])
-                            for t in range(len(df) - 1)
-                        ]
-                    ),
-                )
-            )
-
-        self.step_size_max = max(step_maxes)
 
         # Get unique forager IDs from the DataFrame
         forager_ids = foragersDF.forager.unique()
@@ -198,12 +160,18 @@ class dataObject:
 
     @property
     def local_to_global_map(self) -> dict:
-        return {local_id: global_id for local_id, global_id in enumerate(self.global_forager_ids)}
+        return {
+            local_id: global_id
+            for local_id, global_id in enumerate(self.global_forager_ids)
+        }
 
     @property
     def global_to_local_map(self) -> dict:
-        return {global_id: local_id for local_id, global_id in enumerate(self.global_forager_ids)}
-    
+        return {
+            global_id: local_id
+            for local_id, global_id in enumerate(self.global_forager_ids)
+        }
+
     def apply_forager_id_mapping(self, local_to_global: bool = False):
         """
         Apply forager ID mapping to convert between local and global IDs. Applies
@@ -220,7 +188,7 @@ class dataObject:
             mapping = self.local_to_global_map
         else:
             mapping = self.global_to_local_map
-        
+
         # Check if already mapped
         target_ids = set(mapping.values())
         if current_ids.issubset(target_ids):
@@ -236,7 +204,9 @@ class dataObject:
             raise ValueError(f"Cannot map forager IDs: {unmapped}")
 
         # Apply the mapping to the foragersDF
-        self.foragersDF = self.foragersDF.assign(forager=self.foragersDF.forager.map(mapping).astype(int))
+        self.foragersDF = self.foragersDF.assign(
+            forager=self.foragersDF.forager.map(mapping).astype(int)
+        )
 
 
 def foragers_to_forager_distances(obj: dataObject) -> List[List[pd.DataFrame]]:

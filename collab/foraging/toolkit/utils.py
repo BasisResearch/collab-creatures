@@ -51,35 +51,23 @@ class dataObject:
         forager_ids = foragersDF.forager.unique()
 
         # Check if forager IDs are already consecutive integers starting from 0
-        expected_ids = set(range(len(forager_ids)))
-        actual_ids = set(forager_ids)
-
-        # Determine if remapping is needed
-        needs_remapping = expected_ids != actual_ids
-        self.local_to_global_map = {
-            local_id: global_id
-            for local_id, global_id in enumerate(sorted(forager_ids))
-        }
-        self.global_to_local_map = {
-            global_id: local_id
-            for local_id, global_id in enumerate(sorted(forager_ids))
-        }
+        # Expected IDs are the consecutive integers starting from 0
+        self.local_forager_ids = sorted(range(len(forager_ids)))
+        self.global_forager_ids = sorted(forager_ids)
 
         # Save the original forager IDs and map to consecutive indices if needed
-        foragersDF = foragersDF.copy()
-        if needs_remapping:
+        if self.local_forager_ids != self.global_forager_ids:
             warnings.warn(
                 f"""
                 Original forager indices were converted to consecutive integers starting from 0.
                 To access the original forager IDs, use the get_global_forager_id() method.
-                Original IDs were: {sorted(forager_ids)}
+                Original IDs were: {self.global_forager_ids}
                 """
             )
-            foragersDF["forager"] = foragersDF["forager"].map(self.global_to_local_map)
 
-        # ensure that forager index is saved as an integer
-        foragersDF.loc[:, "forager"] = foragersDF.loc[:, "forager"].astype(int)
-
+            # By default, convert global to local IDs
+            self.apply_forager_id_mapping(local_to_global=False)
+        
         # group dfs by forager index
         foragers = [group for _, group in foragersDF.groupby("forager")]
         self.num_foragers = len(foragers)
@@ -149,43 +137,106 @@ class dataObject:
 
         self.step_size_max = max(step_maxes)
 
-    def apply_forager_id_mapping(
-        self, df: pd.DataFrame, local_to_global: bool = True
-    ) -> pd.DataFrame:
+        # Get unique forager IDs from the DataFrame
+        forager_ids = foragersDF.forager.unique()
+
+        # Check if forager IDs are already consecutive integers starting from 0
+        # Expected IDs are the consecutive integers starting from 0
+        self.local_forager_ids = sorted(range(len(forager_ids)))
+        self.global_forager_ids = sorted(forager_ids)
+
+        # Save the original forager IDs and map to consecutive indices if needed
+        if self.local_forager_ids != self.global_forager_ids:
+            warnings.warn(
+                f"""
+                Original forager indices were converted to consecutive integers starting from 0.
+                To access the original forager IDs, use the apply_forager_id_mapping() method.
+                Original IDs were: {self.global_forager_ids}
+                """
+            )
+
+            # By default, convert global to local IDs
+            self.apply_forager_id_mapping(local_to_global=False)
+
+        # add rewards
+        if rewardsDF is not None:
+            self.rewardsDF = rewardsDF
+            self.rewards = [group for _, group in rewardsDF.groupby("time")]
+
+        # save placeholders for local_windows, predictors and kwargs
+        self.local_windows: List[List[pd.DataFrame]] = [[]]
+        self.local_windows_kwargs: dict[str, Any] = {}
+        self.score_kwargs: dict[str, dict[str, Any]] = {}
+        self.predictor_kwargs: dict[str, dict[str, Any]] = {}
+        self.derived_quantities: dict[str, List[List[pd.DataFrame]]] = {}
+        self.derivedDF: pd.DataFrame
+
+    def calculate_step_size_max(self):
+        step_maxes = []
+
+        for b in range(len(self.foragers)):
+            df = self.foragers[b]
+
+            step_maxes.append(
+                max(
+                    max(
+                        [
+                            abs(df["x"].iloc[t + 1] - df["x"].iloc[t])
+                            for t in range(len(df) - 1)
+                        ]
+                    ),
+                    max(
+                        [
+                            abs(df["y"].iloc[t + 1] - df["y"].iloc[t])
+                            for t in range(len(df) - 1)
+                        ]
+                    ),
+                )
+            )
+
+        self.step_size_max = max(step_maxes)
+
+    @property
+    def local_to_global_map(self) -> dict:
+        return {local_id: global_id for local_id, global_id in enumerate(self.global_forager_ids)}
+
+    @property
+    def global_to_local_map(self) -> dict:
+        return {global_id: local_id for local_id, global_id in enumerate(self.global_forager_ids)}
+    
+    def apply_forager_id_mapping(self, local_to_global: bool = False):
         """
-        Apply forager ID mapping to convert between local and global IDs.
+        Apply forager ID mapping to convert between local and global IDs. Applies
+        directly to the foragersDF attribute.
 
         Args:
-            df: DataFrame containing a 'forager' column with forager IDs
-            local_to_global: If True, converts from local to global IDs. If False, converts from local to global IDs
-
-        Returns:
-            DataFrame with transformed forager IDs
+            local_to_global: If True, converts from local to global IDs. If False, converts from global to local IDs
         """
 
         # Find current forager IDs and grab mapping
-        df = df.copy()
-        current_ids = set(df.forager.unique())
-        mapping = (
-            self.local_to_global_map if local_to_global else self.global_to_local_map
-        )
+        current_ids = set(self.foragersDF["forager"].unique())
 
+        if local_to_global:
+            mapping = self.local_to_global_map
+        else:
+            mapping = self.global_to_local_map
+        
         # Check if already mapped
         target_ids = set(mapping.values())
         if current_ids.issubset(target_ids):
             warnings.warn(
                 "IDs are already in target format. Returning DataFrame unchanged."
             )
-            return df
+            return
 
-        # Check if mapping exists for all IDs
+        # Ensure that all current IDs are in the mapping --> otherwise throw an error
         source_ids = set(mapping.keys())
         if not current_ids.issubset(source_ids):
             unmapped = current_ids - source_ids
             raise ValueError(f"Cannot map forager IDs: {unmapped}")
 
-        df["forager"] = df["forager"].map(mapping)
-        return df
+        # Apply the mapping to the foragersDF
+        self.foragersDF = self.foragersDF.assign(forager=self.foragersDF.forager.map(mapping).astype(int))
 
 
 def foragers_to_forager_distances(obj: dataObject) -> List[List[pd.DataFrame]]:
@@ -307,59 +358,3 @@ def update_rewards(sim, rewards, foragers, start=1, end=None):
     rewardsDF = pd.concat(rewards)
 
     return {"rewards": rewards, "rewardsDF": rewardsDF}
-
-
-def transform_forager_ids(
-    df: pd.DataFrame, global_to_local: bool = True
-) -> tuple[pd.DataFrame, dict]:
-    """
-    Transform forager IDs in a DataFrame between global (original) and local (consecutive) indices.
-
-    Args:
-        df: DataFrame containing a 'forager' column with forager IDs
-        global_to_local: If True, converts from global to local IDs. If False, converts from local to global IDs.
-
-    Returns:
-        tuple containing:
-            - DataFrame with transformed forager IDs
-            - Dictionary mapping between local and global IDs (global_to_local if global_to_local=True,
-              otherwise local_to_global)
-    """
-    df = df.copy()
-    forager_ids = df.forager.unique()
-
-    if global_to_local:
-        # Create mapping from global to local IDs
-        id_map = {id: i for i, id in enumerate(sorted(forager_ids))}
-        df["forager"] = df["forager"].map(id_map)
-    else:
-        # Verify input has consecutive IDs starting from 0
-        if not (
-            len(forager_ids) == len(range(len(forager_ids)))
-            and set(forager_ids) == set(range(len(forager_ids)))
-        ):
-            raise ValueError(
-                "For local to global conversion, input must have consecutive IDs starting from 0"
-            )
-        # Create mapping from local to global IDs
-        id_map = {i: id for i, id in enumerate(sorted(forager_ids))}
-        df["forager"] = df["forager"].map(id_map)
-
-    return df, id_map
-
-
-def create_forager_id_maps(forager_ids: np.ndarray) -> tuple[dict, dict]:
-    """
-    Create bidirectional mappings between local (consecutive) and global (original) forager IDs.
-
-    Args:
-        forager_ids: Array-like of original forager IDs
-
-    Returns:
-        tuple containing:
-            - Dictionary mapping local IDs to global IDs
-            - Dictionary mapping global IDs to local IDs
-    """
-    local_to_global = {i: id for i, id in enumerate(sorted(forager_ids))}
-    global_to_local = {id: i for i, id in local_to_global.items()}
-    return local_to_global, global_to_local

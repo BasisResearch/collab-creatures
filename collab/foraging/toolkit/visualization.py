@@ -201,7 +201,7 @@ def animate_predictors(
         return foragers_scat, *predictors_scat_list
 
     # Create the animation
-    print(num_frames)
+    print(f"Animation generation complete. Generated {num_frames} frames.")
     ani = animation.FuncAnimation(
         fig,
         update,
@@ -211,4 +211,5 @@ def animate_predictors(
         interval=500,
         repeat_delay=3500,
     )
+    plt.close(fig)  # Close the figure to prevent displaying the static plot
     return ani

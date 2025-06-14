@@ -100,7 +100,7 @@ def run_svi_inference(
         loss.backward()
         losses.append(loss.item())
         adam.step()
-        if (step % 200 == 0) or (step == 1) & verbose:
+        if verbose and ((step % 200 == 0) or (step == 1)):
             print("[iteration %04d] loss: %.4f" % (step, loss))
 
     if plot:

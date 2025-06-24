@@ -137,7 +137,7 @@ class dataObject:
 
     @property
     def needs_forager_id_mapping(self) -> bool:
-        return set(self._forager_ids) == set(range(len(self._forager_ids)))
+        return set(self._forager_ids) != set(range(len(self._forager_ids)))
     
     @property
     def local_to_global_map(self) -> dict:
@@ -184,7 +184,7 @@ class dataObject:
             raise ValueError(f"Cannot map forager IDs: {unmapped}")
 
         # Apply the mapping to the foragersDF (in place modification)
-        foragersDF['forager'] = foragersDF['forager'].map(mapping).astype(int)
+        foragersDF.loc[:, 'forager'] = foragersDF['forager'].map(mapping).astype(int)
         return foragersDF
 
 

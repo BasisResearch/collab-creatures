@@ -50,6 +50,22 @@ class dataObject:
         # ensure that forager index is saved as an integer
         foragersDF.loc[:, "forager"] = foragersDF.loc[:, "forager"].astype(int)
 
+        # Get unique forager IDs from the DataFrame --> we need to store these to be able to map back to the original IDs
+        self._forager_ids = foragersDF.forager.unique()
+
+        # Save the original forager IDs and map to consecutive indices if needed
+        if needs_forager_id_mapping:
+            warnings.warn(
+                f"""
+                Original forager indices were converted to consecutive integers starting from 0.
+                To access the original forager IDs, use the apply_forager_id_mapping() method.
+                Original IDs were: {self._forager_ids}
+                """
+            )
+
+            # By default, convert global to local IDs
+            foragersDF = self._apply_forager_id_mapping(foragersDF, local_to_global=False)
+
         # group dfs by forager index
         foragers = [group for _, group in foragersDF.groupby("forager")]
         self.num_foragers = len(foragers)
@@ -80,27 +96,6 @@ class dataObject:
         # save to object
         self.foragers = foragers
         self.foragersDF = pd.concat(foragers, ignore_index=True)
-
-        # Get unique forager IDs from the DataFrame
-        forager_ids = foragersDF.forager.unique()
-
-        # Check if forager IDs are already consecutive integers starting from 0
-        # Expected IDs are the consecutive integers starting from 0
-        self.local_forager_ids = sorted(range(len(forager_ids)))
-        self.global_forager_ids = sorted(forager_ids)
-
-        # Save the original forager IDs and map to consecutive indices if needed
-        if self.local_forager_ids != self.global_forager_ids:
-            warnings.warn(
-                f"""
-                Original forager indices were converted to consecutive integers starting from 0.
-                To access the original forager IDs, use the apply_forager_id_mapping() method.
-                Original IDs were: {self.global_forager_ids}
-                """
-            )
-
-            # By default, convert global to local IDs
-            self.apply_forager_id_mapping(local_to_global=False)
 
         # add rewards
         if rewardsDF is not None:
@@ -141,20 +136,23 @@ class dataObject:
         self.step_size_max = max(step_maxes)
 
     @property
+    def needs_forager_id_mapping(self) -> bool:
+        return set(self._forager_ids) == set(range(len(self._forager_ids)))
+    
+    @property
     def local_to_global_map(self) -> dict:
         return {
             local_id: global_id
-            for local_id, global_id in enumerate(self.global_forager_ids)
+            for local_id, global_id in enumerate(self._forager_ids)
         }
-
     @property
     def global_to_local_map(self) -> dict:
         return {
             global_id: local_id
-            for local_id, global_id in enumerate(self.global_forager_ids)
+            for local_id, global_id in enumerate(self._forager_ids)
         }
 
-    def apply_forager_id_mapping(self, local_to_global: bool = False):
+    def _apply_forager_id_mapping(foragersDF, local_to_global: bool = False):
         """
         Apply forager ID mapping to convert between local and global IDs. Applies
         directly to the foragersDF attribute.
@@ -164,7 +162,7 @@ class dataObject:
         """
 
         # Find current forager IDs and grab mapping
-        current_ids = set(self.foragersDF["forager"].unique())
+        current_ids = set(foragersDF["forager"].unique())
 
         if local_to_global:
             mapping = self.local_to_global_map
@@ -185,10 +183,9 @@ class dataObject:
             unmapped = current_ids - source_ids
             raise ValueError(f"Cannot map forager IDs: {unmapped}")
 
-        # Apply the mapping to the foragersDF
-        self.foragersDF = self.foragersDF.assign(
-            forager=self.foragersDF.forager.map(mapping).astype(int)
-        )
+        # Apply the mapping to the foragersDF (in place modification)
+        foragersDF['forager'] = foragersDF['forager'].map(mapping).astype(int)
+        return foragersDF
 
 
 def foragers_to_forager_distances(obj: dataObject) -> List[List[pd.DataFrame]]:

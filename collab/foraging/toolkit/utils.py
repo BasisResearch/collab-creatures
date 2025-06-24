@@ -152,7 +152,7 @@ class dataObject:
             for local_id, global_id in enumerate(self._forager_ids)
         }
 
-    def _apply_forager_id_mapping(foragersDF, local_to_global: bool = False):
+    def _apply_forager_id_mapping(self, foragersDF: pd.DataFrame, local_to_global: bool = False):
         """
         Apply forager ID mapping to convert between local and global IDs. Applies
         directly to the foragersDF attribute.

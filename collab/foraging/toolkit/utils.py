@@ -54,7 +54,7 @@ class dataObject:
         self._forager_ids = foragersDF.forager.unique()
 
         # Save the original forager IDs and map to consecutive indices if needed
-        if needs_forager_id_mapping:
+        if self.needs_forager_id_mapping:
             warnings.warn(
                 f"""
                 Original forager indices were converted to consecutive integers starting from 0.

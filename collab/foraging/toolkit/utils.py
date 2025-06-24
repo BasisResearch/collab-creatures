@@ -50,7 +50,8 @@ class dataObject:
         # ensure that forager index is saved as an integer
         foragersDF.loc[:, "forager"] = foragersDF.loc[:, "forager"].astype(int)
 
-        # Get unique forager IDs from the DataFrame --> we need to store these to be able to map back to the original IDs
+        # Get unique forager IDs from the DataFrame --> we need to store these to be able 
+        # to map back to the original IDs
         self._forager_ids = foragersDF.forager.unique()
 
         # Save the original forager IDs and map to consecutive indices if needed
@@ -64,7 +65,9 @@ class dataObject:
             )
 
             # By default, convert global to local IDs
-            foragersDF = self._apply_forager_id_mapping(foragersDF, local_to_global=False)
+            foragersDF = self._apply_forager_id_mapping(
+                foragersDF, local_to_global=False
+            )
 
         # group dfs by forager index
         foragers = [group for _, group in foragersDF.groupby("forager")]
@@ -138,21 +141,22 @@ class dataObject:
     @property
     def needs_forager_id_mapping(self) -> bool:
         return set(self._forager_ids) != set(range(len(self._forager_ids)))
-    
+
     @property
     def local_to_global_map(self) -> dict:
         return {
-            local_id: global_id
-            for local_id, global_id in enumerate(self._forager_ids)
+            local_id: global_id for local_id, global_id in enumerate(self._forager_ids)
         }
+
     @property
     def global_to_local_map(self) -> dict:
         return {
-            global_id: local_id
-            for local_id, global_id in enumerate(self._forager_ids)
+            global_id: local_id for local_id, global_id in enumerate(self._forager_ids)
         }
 
-    def _apply_forager_id_mapping(self, foragersDF: pd.DataFrame, local_to_global: bool = False):
+    def _apply_forager_id_mapping(
+        self, foragersDF: pd.DataFrame, local_to_global: bool = False
+    ):
         """
         Apply forager ID mapping to convert between local and global IDs. Applies
         directly to the foragersDF attribute.
@@ -184,7 +188,7 @@ class dataObject:
             raise ValueError(f"Cannot map forager IDs: {unmapped}")
 
         # Apply the mapping to the foragersDF (in place modification)
-        foragersDF.loc[:, 'forager'] = foragersDF['forager'].map(mapping).astype(int)
+        foragersDF.loc[:, "forager"] = foragersDF["forager"].map(mapping).astype(int)
         return foragersDF
 
 

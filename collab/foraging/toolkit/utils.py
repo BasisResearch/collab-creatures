@@ -50,7 +50,7 @@ class dataObject:
         # ensure that forager index is saved as an integer
         foragersDF.loc[:, "forager"] = foragersDF.loc[:, "forager"].astype(int)
 
-        # Get unique forager IDs from the DataFrame --> we need to store these to be able 
+        # Get unique forager IDs from the DataFrame --> we need to store these to be able
         # to map back to the original IDs
         self._forager_ids = foragersDF.forager.unique()
 

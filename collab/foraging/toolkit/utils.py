@@ -156,7 +156,7 @@ class dataObject:
 
     def _apply_forager_id_mapping(
         self, foragersDF: pd.DataFrame, local_to_global: bool = False
-    ):
+    ) -> pd.DataFrame:
         """
         Apply forager ID mapping to convert between local and global IDs. Applies
         directly to the foragersDF attribute.
@@ -179,7 +179,7 @@ class dataObject:
             warnings.warn(
                 "IDs are already in target format. Returning DataFrame unchanged."
             )
-            return
+            return foragersDF
 
         # Ensure that all current IDs are in the mapping --> otherwise throw an error
         source_ids = set(mapping.keys())

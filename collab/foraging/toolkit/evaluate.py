@@ -69,3 +69,9 @@ def evaluate_performance(
         fig.suptitle("Model evaluation", fontsize=16)
 
         plt.show()
+    else:
+        return {
+            "coverage": coverage,
+            "mae": mae,
+            "rsquared": rsquared,
+        }
